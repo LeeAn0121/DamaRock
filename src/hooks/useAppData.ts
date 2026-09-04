@@ -229,7 +229,7 @@ export function useAppData() {
   const addItem = useCallback(
     async (input: { title: string; category: Category; assignee?: string; meta?: string }) => {
       if (!family || !userId) return;
-      await supabase.from("items").insert({
+      const { error: insertError } = await supabase.from("items").insert({
         family_id: family.id,
         title: input.title,
         category: input.category,
@@ -237,6 +237,10 @@ export function useAppData() {
         assignee: input.assignee ?? null,
         meta: input.meta ?? null,
       });
+      if (insertError) {
+        console.error("Item add error:", insertError);
+        window.alert(`아이템 추가 실패: ${insertError.message}\n상세: ${insertError.details}\n힌트: ${insertError.hint}`);
+      }
     },
     [family, userId]
   );
