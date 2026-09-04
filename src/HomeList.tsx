@@ -77,7 +77,7 @@ export default function HomeList(props: {
       <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col">
         {/* Standard nav bar */}
         <header className="flex items-center justify-between px-5 py-4">
-          <span className="text-xl font-extrabold tracking-tight text-primary">투게더리</span>
+          <span className="text-xl font-extrabold tracking-tight text-primary">담아락</span>
           <div className="flex items-center gap-3">
             <div className="flex -space-x-2">
               {members.map((m, idx) => (

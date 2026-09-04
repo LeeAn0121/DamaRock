@@ -61,7 +61,7 @@ export default function AuthScreen() {
 
   return (
     <div className="flex min-h-dvh flex-col items-center justify-center bg-background px-6 font-sans text-foreground pb-10">
-      <span className="text-xl font-extrabold tracking-tight text-primary">투게더리</span>
+      <span className="text-xl font-extrabold tracking-tight text-primary">담아락</span>
       <h1 className="mt-5 text-center text-3xl font-extrabold leading-snug text-foreground">
         우리집 장보기와 할 일을
         <br />

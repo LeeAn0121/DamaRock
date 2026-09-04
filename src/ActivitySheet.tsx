@@ -60,10 +60,10 @@ export default function ActivitySheet({
               <span className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/20 text-primary shadow-sm">
                 <IconMail size={20} stroke={2} />
               </span>
-              <span className="font-extrabold text-primary text-base">투게더리 우체통</span>
+              <span className="font-extrabold text-primary text-base">담아락 우체통</span>
             </div>
             <p className="text-sm font-medium text-foreground leading-relaxed pl-1">
-              투게더리가 새롭게 단장했어요! 탭으로 편하게 나누고, 언제 어디서든 실시간으로 가족과 함께 챙겨보세요. 달력 기능도 준비 중이니 기대해주세요! 💌
+              담아락이 새롭게 단장했어요! 탭으로 편하게 나누고, 언제 어디서든 실시간으로 가족과 함께 챙겨보세요. 달력 기능도 준비 중이니 기대해주세요! 💌
             </p>
           </section>
 
