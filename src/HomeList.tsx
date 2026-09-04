@@ -20,6 +20,8 @@ export default function HomeList(props: {
   onToggleDone: (id: string) => void;
   onAssignCategory: (id: string, category: Category) => void;
   onQuickAdd: (title: string) => void;
+  addItem: (item: Pick<Item, "title" | "category" | "meta">) => void;
+  editItem: (id: string, title: string) => void;
   onOpenAddSheet: () => void;
   onOpenSettings: () => void;
   deleteItem: (id: string) => void;
@@ -30,6 +32,8 @@ export default function HomeList(props: {
     onToggleDone,
     onAssignCategory,
     onQuickAdd,
+    addItem,
+    editItem,
     onOpenAddSheet,
     onOpenSettings,
     deleteItem,
@@ -40,6 +44,13 @@ export default function HomeList(props: {
   const [showDoneTodo, setShowDoneTodo] = useState(false);
   const [activityOpen, setActivityOpen] = useState(false);
   const [draft, setDraft] = useState("");
+
+  const handleEdit = (item: Item) => {
+    const newTitle = window.prompt("수정할 내용을 입력하세요:", item.title);
+    if (newTitle && newTitle.trim() !== item.title) {
+      editItem(item.id, newTitle.trim());
+    }
+  };
 
   const activeItems = viewState === "empty" ? [] : items;
   const inbox = activeItems.filter((i) => i.category === "inbox");
@@ -78,7 +89,10 @@ export default function HomeList(props: {
       <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col">
         {/* Standard nav bar */}
         <header className="flex items-center justify-between px-5 py-4">
-          <span className="text-xl font-extrabold tracking-tight text-primary">담아락</span>
+          <div className="flex items-center gap-2">
+            <img src="/icon-192.png" alt="로고" className="h-6 w-6 rounded-md shadow-sm" />
+            <span className="text-xl font-extrabold tracking-tight text-primary">담아락</span>
+          </div>
           <div className="flex items-center gap-3">
             <div className="flex -space-x-2">
               {members.map((m, idx) => (
@@ -174,7 +188,7 @@ export default function HomeList(props: {
 
                   {/* Inbox: just captured, not sorted yet */}
                   {inbox.length > 0 && (
-                    <SectionGroup icon={<IconInbox size={16} stroke={1.75} />} label="새로 담은 것" count={inbox.length}>
+                    <SectionGroup label="새로 담은 것" count={inbox.length}>
                       <ul className="divide-y divide-border/60">
                         {inbox.map((item) => (
                           <li key={item.id} className="flex items-center gap-3 py-3">
@@ -203,35 +217,35 @@ export default function HomeList(props: {
 
                   {/* Lists */}
                   <div className="flex flex-col gap-6">
-                    <SectionGroup icon={<IconShoppingCart size={16} stroke={1.75} />} label="장보기" count={grocery.filter((i) => !i.done).length}>
-                      <ItemRows items={grocery.filter((i) => !i.done)} onToggle={onToggleDone} onDelete={deleteItem} members={members} />
+                    <SectionGroup label="장보기" count={grocery.filter((i) => !i.done).length}>
+                      <ItemRows items={grocery.filter((i) => !i.done)} onToggle={onToggleDone} onDelete={deleteItem} onEdit={handleEdit} members={members} />
                       {grocery.some((i) => i.done) && (
                         <DoneDisclosure
                           open={showDoneGrocery}
                           onToggle={() => setShowDoneGrocery((v) => !v)}
                           count={grocery.filter((i) => i.done).length}
                         >
-                          <ItemRows items={grocery.filter((i) => i.done)} onToggle={onToggleDone} onDelete={deleteItem} members={members} />
+                          <ItemRows items={grocery.filter((i) => i.done)} onToggle={onToggleDone} onDelete={deleteItem} onEdit={handleEdit} members={members} />
                         </DoneDisclosure>
                       )}
                     </SectionGroup>
 
-                    <SectionGroup icon={<IconChecklist size={16} stroke={1.75} />} label="할 일" count={todo.filter((i) => !i.done).length}>
-                      <ItemRows items={todo.filter((i) => !i.done)} onToggle={onToggleDone} onDelete={deleteItem} members={members} />
+                    <SectionGroup label="할 일" count={todo.filter((i) => !i.done).length}>
+                      <ItemRows items={todo.filter((i) => !i.done)} onToggle={onToggleDone} onDelete={deleteItem} onEdit={handleEdit} members={members} />
                       {todo.some((i) => i.done) && (
                         <DoneDisclosure
                           open={showDoneTodo}
                           onToggle={() => setShowDoneTodo((v) => !v)}
                           count={todo.filter((i) => i.done).length}
                         >
-                          <ItemRows items={todo.filter((i) => i.done)} onToggle={onToggleDone} onDelete={deleteItem} members={members} />
+                          <ItemRows items={todo.filter((i) => i.done)} onToggle={onToggleDone} onDelete={deleteItem} onEdit={handleEdit} members={members} />
                         </DoneDisclosure>
                       )}
                     </SectionGroup>
                   </div>
                 </>
               ) : (
-                <CalendarView items={items} members={members} onToggleDone={onToggleDone} />
+                <CalendarView items={items} members={members} onToggleDone={onToggleDone} onAddTodo={(title, dateStr) => props.addItem?.({ title, category: "todo", meta: dateStr })} />
               )}
             </>
           )}
@@ -278,23 +292,18 @@ export default function HomeList(props: {
 }
 
 function SectionGroup({
-  icon,
   label,
   count,
   children,
 }: {
-  icon: React.ReactNode;
   label: string;
   count: number;
   children: React.ReactNode;
 }) {
   return (
     <section className="mt-8">
-      <div className="mb-3 flex items-center gap-2 px-2 text-muted-foreground">
-        {icon}
-        <h2 className="text-sm font-bold">{label}</h2>
-        <span className="text-sm text-border">·</span>
-        <span className="text-sm font-medium">{count}</span>
+      <div className="mb-3 px-2">
+        <h2 className="text-sm font-bold text-muted-foreground">{label} <span className="font-normal">({count})</span></h2>
       </div>
       <div className="rounded-2xl bg-surface px-4 py-2">{children}</div>
     </section>
@@ -306,17 +315,18 @@ function SwipeableItem({
   members,
   onToggle,
   onDelete,
+  onEdit,
 }: {
   item: Item;
   members: Member[];
   onToggle: (id: string) => void;
   onDelete?: (id: string) => void;
+  onEdit?: (item: Item) => void;
 }) {
   return (
-    <li className="group relative overflow-hidden bg-surface">
-      <div className="flex w-full snap-x snap-mandatory overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        {/* Main Content */}
-        <div className="w-full shrink-0 snap-center">
+    <li className="relative flex overflow-x-auto snap-x snap-mandatory scrollbar-hide">
+      <div className="flex w-full min-w-full shrink-0 items-center snap-start">
+        <div className="flex-1 pr-4">
           <button
             type="button"
             onClick={() => onToggle(item.id)}
@@ -340,12 +350,27 @@ function SwipeableItem({
             </span>
           </button>
         </div>
-        {/* Swipe Action (Delete) */}
-        {onDelete && (
-          <div className="w-20 shrink-0 snap-center bg-danger/10 text-danger flex items-center justify-center font-bold text-sm">
-            <button type="button" className="w-full h-full flex items-center justify-center" onClick={() => onDelete(item.id)}>
-              삭제
-            </button>
+        {/* Swipe Actions */}
+        {(onEdit || onDelete) && (
+          <div className="flex h-full shrink-0 snap-end">
+            {onEdit && (
+              <button
+                type="button"
+                className="flex w-20 items-center justify-center bg-primary/10 text-primary font-bold text-sm"
+                onClick={() => onEdit(item)}
+              >
+                수정
+              </button>
+            )}
+            {onDelete && (
+              <button
+                type="button"
+                className="flex w-20 items-center justify-center bg-danger/10 text-danger font-bold text-sm"
+                onClick={() => onDelete(item.id)}
+              >
+                삭제
+              </button>
+            )}
           </div>
         )}
       </div>
@@ -358,11 +383,13 @@ function ItemRows({
   members,
   onToggle,
   onDelete,
+  onEdit,
 }: {
   items: Item[];
   members: Member[];
   onToggle: (id: string) => void;
   onDelete?: (id: string) => void;
+  onEdit?: (item: Item) => void;
 }) {
   if (items.length === 0) {
     return <p className="py-4 text-center text-sm text-muted-foreground">모두 담아뒀어요</p>;
@@ -370,7 +397,7 @@ function ItemRows({
   return (
     <ul className="divide-y divide-border/60">
       {items.map((item) => (
-        <SwipeableItem key={item.id} item={item} members={members} onToggle={onToggle} onDelete={onDelete} />
+        <SwipeableItem key={item.id} item={item} members={members} onToggle={onToggle} onDelete={onDelete} onEdit={onEdit} />
       ))}
     </ul>
   );

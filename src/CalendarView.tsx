@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { IconChevronLeft, IconChevronRight, IconCheck } from "@tabler/icons-react";
+import { IconChevronLeft, IconChevronRight, IconCheck, IconPlus } from "@tabler/icons-react";
 import type { Item, Member } from "./data";
 import { memberName } from "./data";
 import clsx from "clsx";
@@ -8,12 +8,15 @@ export default function CalendarView({
   items,
   members,
   onToggleDone,
+  onAddTodo,
 }: {
   items: Item[];
   members: Member[];
   onToggleDone: (id: string) => void;
+  onAddTodo: (title: string, dateStr: string) => void;
 }) {
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [draft, setDraft] = useState("");
 
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
@@ -111,10 +114,41 @@ export default function CalendarView({
 
           {/* Selected Day Items */}
           <div className="mt-8 px-5">
-            <h3 className="text-sm font-bold text-muted-foreground mb-4">
-              {selectedDay ? `${month + 1}월 ${selectedDay}일 일정` : "날짜를 선택하세요"}
-            </h3>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm font-bold text-muted-foreground">
+                {selectedDay ? `${month + 1}월 ${selectedDay}일 일정` : "날짜를 선택하세요"}
+              </h3>
+            </div>
             
+            {selectedDay && (
+              <form 
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  if (draft.trim() && selectedDay) {
+                    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(selectedDay).padStart(2, '0')}`;
+                    onAddTodo(draft.trim(), dateStr);
+                    setDraft("");
+                  }
+                }}
+                className="mb-5 flex items-center gap-2"
+              >
+                <input
+                  type="text"
+                  placeholder={`${selectedDay}일 할 일 추가...`}
+                  value={draft}
+                  onChange={(e) => setDraft(e.target.value)}
+                  className="flex-1 rounded-xl bg-surface px-4 py-3 text-sm font-medium outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/20"
+                />
+                <button
+                  type="submit"
+                  disabled={!draft.trim()}
+                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground disabled:opacity-50"
+                >
+                  <IconPlus size={20} stroke={2} />
+                </button>
+              </form>
+            )}
+
             {selectedDay && selectedItems.length === 0 ? (
               <div className="rounded-2xl border border-border border-dashed p-8 text-center text-muted-foreground">
                 <p className="text-sm font-medium">등록된 일정이 없어요</p>

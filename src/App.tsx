@@ -96,6 +96,8 @@ export default function App() {
         onToggleDone={data.toggleDone}
         onAssignCategory={(id: string, category: Category) => data.assignCategory(id, category)}
         onQuickAdd={data.quickAdd}
+        addItem={data.addItem}
+        editItem={data.editItem}
         onOpenAddSheet={() => setAddSheetOpen(true)}
         onOpenSettings={() => setScreen("settings")}
         deleteItem={data.deleteItem}

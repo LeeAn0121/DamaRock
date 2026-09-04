@@ -252,6 +252,15 @@ export function useAppData() {
     [userId, loadFamilyData]
   );
 
+  const editItem = useCallback(
+    async (id: string, title: string) => {
+      setItems((prev) => prev.map((i) => (i.id === id ? { ...i, title } : i)));
+      const { error: updateError } = await supabase.from("items").update({ title }).eq("id", id);
+      if (updateError && userId) loadFamilyData(userId);
+    },
+    [userId, loadFamilyData]
+  );
+
   const createFamily = useCallback(
     async (name: string) => {
       const { error: rpcError } = await supabase.rpc("create_family", { family_name: name });
@@ -307,6 +316,7 @@ export function useAppData() {
     addItem,
     quickAdd,
     deleteItem,
+    editItem,
     createFamily,
     joinFamily,
     cancelInvite,
