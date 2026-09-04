@@ -70,14 +70,14 @@ export default function HomeList({
     <div className="min-h-dvh bg-background font-sans text-foreground">
       <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col">
         {/* Standard nav bar */}
-        <header className="flex items-center justify-between border-b border-border/60 px-4 py-3">
-          <span className="text-base font-bold tracking-tight text-primary">담아락</span>
+        <header className="flex items-center justify-between px-5 py-4">
+          <span className="text-xl font-extrabold tracking-tight text-primary">투게더리</span>
           <div className="flex items-center gap-3">
             <div className="flex -space-x-2">
               {members.map((m, idx) => (
                 <div
                   key={m.id}
-                  className="relative flex h-8 w-8 items-center justify-center rounded-full border-2 border-background bg-chrome text-xs font-bold text-chrome-foreground overflow-hidden"
+                  className="relative flex h-8 w-8 items-center justify-center rounded-full border-2 border-background bg-chrome text-xs font-bold text-chrome-foreground overflow-hidden shadow-sm"
                   style={{ zIndex: members.length - idx }}
                 >
                   {m.avatar_url ? (
@@ -93,25 +93,51 @@ export default function HomeList({
             </div>
             <button
               type="button"
+              aria-label="소식"
+              onClick={() => alert("소식 기능이 새로 생겼어요. 곧 우체통이 열립니다!")}
+              className="flex h-11 w-11 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-chrome/60 active:bg-chrome"
+            >
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+              </svg>
+            </button>
+            <button
+              type="button"
               aria-label="설정"
               onClick={onOpenSettings}
               className="flex h-11 w-11 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-chrome/60 active:bg-chrome"
             >
-              <IconSettings size={19} stroke={1.75} />
+              <IconSettings size={22} stroke={2} />
             </button>
           </div>
         </header>
 
         {/* Content */}
-        <main className="flex-1 overflow-y-auto px-5 pb-36 pt-6">
-          <h1 className="text-sm font-medium text-muted-foreground">우리집 공유 리스트</h1>
-
+        <main className="flex-1 overflow-y-auto px-5 pb-36 pt-2">
           {activeItems.length === 0 ? (
             <EmptyState />
           ) : (
             <>
+              {/* Tabs */}
+              <div className="mb-4 flex gap-2">
+                <button type="button" className="rounded-full bg-foreground px-4 py-1.5 text-sm font-bold text-background shadow-sm">
+                  전체보기
+                </button>
+                <button type="button" className="rounded-full border border-border/50 bg-surface px-4 py-1.5 text-sm font-medium text-muted-foreground shadow-sm">
+                  장보기
+                </button>
+                <button type="button" className="rounded-full border border-border/50 bg-surface px-4 py-1.5 text-sm font-medium text-muted-foreground shadow-sm">
+                  할 일
+                </button>
+                <button type="button" className="rounded-full border border-border/50 bg-surface px-4 py-1.5 text-sm font-medium text-muted-foreground shadow-sm ml-auto flex items-center gap-1">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                  달력
+                </button>
+              </div>
+
               {/* Dominant summary */}
-              <section aria-label="오늘의 상태" className="mt-4 rounded-2xl bg-surface p-5">
+              <section aria-label="오늘의 상태" className="mb-6 rounded-2xl bg-primary/5 p-5 border border-primary/10">
                 <div className="flex items-baseline gap-2">
                   <span className="text-4xl font-extrabold leading-none tracking-tight text-foreground">
                     {remaining}

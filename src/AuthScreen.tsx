@@ -63,29 +63,23 @@ export default function AuthScreen() {
     <div className="flex min-h-dvh flex-col items-center justify-center bg-background px-6 font-sans text-foreground pb-10">
       <span className="text-xl font-extrabold tracking-tight text-primary">투게더리</span>
       <h1 className="mt-5 text-center text-3xl font-extrabold leading-snug text-foreground">
-        함께 쓰고,
+        우리집 장보기와 할 일을
         <br />
-        함께 기억해요
+        가족과 한곳에 모아요.
       </h1>
       <p className="mt-4 text-center text-sm font-medium leading-relaxed text-muted-foreground">
-        카톡 메시지에, 냉장고 포스트잇에, 각자의 머릿속에
+        누가 적어도 그 순간 모두의 화면에 함께 채워져요.
         <br />
-        흩어지던 것들을 하나로.
+        초대 코드 하나면 가족과 바로 시작해요.
       </p>
 
-      <div className="mt-8 flex flex-col gap-5 text-sm font-medium text-foreground">
-        <div className="flex flex-col gap-1 rounded-2xl bg-surface p-4 shadow-sm">
-          <span className="font-bold text-primary">지금까지는</span>
-          <span className="text-muted-foreground">카톡에 적어두면 다른 대화에 금방 묻혀요.</span>
-          <span className="text-muted-foreground">포스트잇은 집에 있어야만 보여요.</span>
-          <span className="text-muted-foreground">“그거 샀어?” 매번 다시 물어봐야 해요.</span>
-        </div>
-        <div className="flex flex-col gap-1 rounded-2xl bg-surface p-4 shadow-sm border border-primary/20">
-          <span className="font-bold text-primary">투게더리에서는</span>
-          <span>떠오르면 한 줄, 가족 모두의 화면에 바로 보여요.</span>
-          <span>장 보는 중에도 손안에 그대로 있어요.</span>
-          <span>무엇이 남았는지 리스트에 다 보여요.</span>
-        </div>
+      <div className="mt-8 flex flex-col gap-4 text-sm font-medium text-foreground">
+        <ul className="flex flex-col gap-2 rounded-2xl bg-surface p-5 shadow-sm border border-primary/20 text-muted-foreground">
+          <li className="flex items-start gap-2"><span className="text-primary">•</span> 장보기 탭과 할일 탭, 따로 또 같이</li>
+          <li className="flex items-start gap-2"><span className="text-primary">•</span> 항목 안에서 메모와 댓글로 바로 상의해요</li>
+          <li className="flex items-start gap-2"><span className="text-primary">•</span> 폴더로 우리 방식대로 정리, 검색은 한 번에</li>
+          <li className="flex items-start gap-2"><span className="text-primary">•</span> 마감일 있는 할일은 캘린더로 한눈에</li>
+        </ul>
       </div>
 
       <div className="mt-12 flex w-full max-w-xs flex-col gap-3">
