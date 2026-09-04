@@ -3,6 +3,7 @@ import clsx from "clsx";
 import { IconCheck, IconChecklist, IconChevronDown, IconInbox, IconPackage, IconPlus, IconSettings, IconShoppingCart, IconWifiOff } from "@tabler/icons-react";
 import { memberName, type Category, type Item, type Member } from "./data";
 import ActivitySheet from "./ActivitySheet";
+import CalendarView from "./CalendarView";
 
 type ViewState = "normal" | "empty" | "loading" | "error";
 
@@ -21,7 +22,6 @@ export default function HomeList(props: {
   onQuickAdd: (title: string) => void;
   onOpenAddSheet: () => void;
   onOpenSettings: () => void;
-  onOpenCalendar: () => void;
   deleteItem: (id: string) => void;
 }) {
   const {
@@ -32,11 +32,10 @@ export default function HomeList(props: {
     onQuickAdd,
     onOpenAddSheet,
     onOpenSettings,
-    onOpenCalendar,
     deleteItem,
   } = props;
   const viewState = useUrlState();
-  const [currentTab, setCurrentTab] = useState<"all" | "grocery" | "todo">("all");
+  const [currentTab, setCurrentTab] = useState<"grocery" | "todo">("grocery");
   const [showDoneGrocery, setShowDoneGrocery] = useState(false);
   const [showDoneTodo, setShowDoneTodo] = useState(false);
   const [activityOpen, setActivityOpen] = useState(false);
@@ -131,19 +130,9 @@ export default function HomeList(props: {
               <div className="mb-4 flex gap-2 overflow-x-auto scrollbar-hide py-1 px-1 -mx-1">
                 <button
                   type="button"
-                  onClick={() => setCurrentTab("all")}
-                  className={clsx(
-                    "whitespace-nowrap rounded-full px-4 py-1.5 text-sm font-bold shadow-sm transition-colors",
-                    currentTab === "all" ? "bg-foreground text-background" : "border border-border/50 bg-surface text-muted-foreground"
-                  )}
-                >
-                  전체보기
-                </button>
-                <button
-                  type="button"
                   onClick={() => setCurrentTab("grocery")}
                   className={clsx(
-                    "whitespace-nowrap rounded-full px-4 py-1.5 text-sm font-bold shadow-sm transition-colors",
+                    "whitespace-nowrap rounded-full px-5 py-1.5 text-sm font-bold shadow-sm transition-colors",
                     currentTab === "grocery" ? "bg-primary text-primary-foreground" : "border border-border/50 bg-surface text-muted-foreground"
                   )}
                 >
@@ -153,103 +142,97 @@ export default function HomeList(props: {
                   type="button"
                   onClick={() => setCurrentTab("todo")}
                   className={clsx(
-                    "whitespace-nowrap rounded-full px-4 py-1.5 text-sm font-bold shadow-sm transition-colors",
+                    "whitespace-nowrap rounded-full px-5 py-1.5 text-sm font-bold shadow-sm transition-colors",
                     currentTab === "todo" ? "bg-primary text-primary-foreground" : "border border-border/50 bg-surface text-muted-foreground"
                   )}
                 >
                   할 일
                 </button>
-                <button
-                  type="button"
-                  onClick={onOpenCalendar}
-                  className="whitespace-nowrap ml-auto flex items-center gap-1 rounded-full border border-border/50 bg-surface px-4 py-1.5 text-sm font-medium text-muted-foreground shadow-sm"
-                >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                  달력
-                </button>
               </div>
 
-              {/* Dominant summary */}
-              <section aria-label="오늘의 상태" className="mb-6 rounded-2xl bg-primary/5 p-5 border border-primary/10">
-                <div className="flex items-baseline gap-2">
-                  <span className="text-4xl font-extrabold leading-none tracking-tight text-foreground">
-                    {currentTab === "all" ? remaining : currentTab === "grocery" ? grocery.filter(i => !i.done).length : todo.filter(i => !i.done).length}
-                  </span>
-                  <span className="text-base font-medium text-muted-foreground">개 남았어요</span>
-                </div>
-                <div className="mt-3 flex items-center gap-2 text-sm text-muted-foreground">
-                  <span className="font-medium">{currentTab === "all" ? summaryLine : currentTab === "grocery" ? "장보기 탭" : "할 일 탭"}</span>
-                  {doneToday > 0 && currentTab === "all" && (
-                    <span className="flex items-center gap-1 font-medium text-success">
-                      <span className="text-border">·</span>
-                      <IconCheck size={14} stroke={3} />
-                      오늘 {doneToday}개 완료
-                    </span>
+              {currentTab === "grocery" ? (
+                <>
+                  {/* Dominant summary */}
+                  <section aria-label="오늘의 상태" className="mb-6 rounded-2xl bg-primary/5 p-5 border border-primary/10">
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-4xl font-extrabold leading-none tracking-tight text-foreground">
+                        {remaining}
+                      </span>
+                      <span className="text-base font-medium text-muted-foreground">개 남았어요</span>
+                    </div>
+                    <div className="mt-3 flex items-center gap-2 text-sm text-muted-foreground">
+                      <span className="font-medium">{summaryLine}</span>
+                      {doneToday > 0 && (
+                        <span className="flex items-center gap-1 font-medium text-success">
+                          <span className="text-border">·</span>
+                          <IconCheck size={14} stroke={3} />
+                          오늘 {doneToday}개 완료
+                        </span>
+                      )}
+                    </div>
+                  </section>
+
+                  {/* Inbox: just captured, not sorted yet */}
+                  {inbox.length > 0 && (
+                    <SectionGroup icon={<IconInbox size={16} stroke={1.75} />} label="새로 담은 것" count={inbox.length}>
+                      <ul className="divide-y divide-border/60">
+                        {inbox.map((item) => (
+                          <li key={item.id} className="flex items-center gap-3 py-3">
+                            <span className="min-w-0 flex-1 truncate text-base text-foreground">{item.title}</span>
+                            <div className="flex shrink-0 gap-2">
+                              <button
+                                type="button"
+                                onClick={() => onAssignCategory(item.id, "grocery")}
+                                className="inline-flex min-h-11 items-center justify-center rounded border border-border px-3 text-xs text-muted-foreground transition-colors hover:border-primary hover:text-primary active:bg-chrome"
+                              >
+                                장보기
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => onAssignCategory(item.id, "todo")}
+                                className="inline-flex min-h-11 items-center justify-center rounded border border-border px-3 text-xs text-muted-foreground transition-colors hover:border-primary hover:text-primary active:bg-chrome"
+                              >
+                                할 일
+                              </button>
+                            </div>
+                          </li>
+                        ))}
+                      </ul>
+                    </SectionGroup>
                   )}
-                </div>
-              </section>
 
-              {/* Inbox: just captured, not sorted yet */}
-              {inbox.length > 0 && (
-                <SectionGroup icon={<IconInbox size={16} stroke={1.75} />} label="새로 담은 것" count={inbox.length}>
-                  <ul className="divide-y divide-border/60">
-                    {inbox.map((item) => (
-                      <li key={item.id} className="flex items-center gap-3 py-3">
-                        <span className="min-w-0 flex-1 truncate text-base text-foreground">{item.title}</span>
-                        <div className="flex shrink-0 gap-2">
-                          <button
-                            type="button"
-                            onClick={() => onAssignCategory(item.id, "grocery")}
-                            className="inline-flex min-h-11 items-center justify-center rounded border border-border px-3 text-xs text-muted-foreground transition-colors hover:border-primary hover:text-primary active:bg-chrome"
-                          >
-                            장보기
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => onAssignCategory(item.id, "todo")}
-                            className="inline-flex min-h-11 items-center justify-center rounded border border-border px-3 text-xs text-muted-foreground transition-colors hover:border-primary hover:text-primary active:bg-chrome"
-                          >
-                            할 일
-                          </button>
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
-                </SectionGroup>
+                  {/* Lists */}
+                  <div className="flex flex-col gap-6">
+                    <SectionGroup icon={<IconShoppingCart size={16} stroke={1.75} />} label="장보기" count={grocery.filter((i) => !i.done).length}>
+                      <ItemRows items={grocery.filter((i) => !i.done)} onToggle={onToggleDone} onDelete={deleteItem} members={members} />
+                      {grocery.some((i) => i.done) && (
+                        <DoneDisclosure
+                          open={showDoneGrocery}
+                          onToggle={() => setShowDoneGrocery((v) => !v)}
+                          count={grocery.filter((i) => i.done).length}
+                        >
+                          <ItemRows items={grocery.filter((i) => i.done)} onToggle={onToggleDone} onDelete={deleteItem} members={members} />
+                        </DoneDisclosure>
+                      )}
+                    </SectionGroup>
+
+                    <SectionGroup icon={<IconChecklist size={16} stroke={1.75} />} label="할 일" count={todo.filter((i) => !i.done).length}>
+                      <ItemRows items={todo.filter((i) => !i.done)} onToggle={onToggleDone} onDelete={deleteItem} members={members} />
+                      {todo.some((i) => i.done) && (
+                        <DoneDisclosure
+                          open={showDoneTodo}
+                          onToggle={() => setShowDoneTodo((v) => !v)}
+                          count={todo.filter((i) => i.done).length}
+                        >
+                          <ItemRows items={todo.filter((i) => i.done)} onToggle={onToggleDone} onDelete={deleteItem} members={members} />
+                        </DoneDisclosure>
+                      )}
+                    </SectionGroup>
+                  </div>
+                </>
+              ) : (
+                <CalendarView items={items} members={members} onToggleDone={onToggleDone} />
               )}
-
-              {/* Lists */}
-              <div className="flex flex-col gap-6">
-                {(currentTab === "all" || currentTab === "grocery") && (
-                  <SectionGroup icon={<IconShoppingCart size={16} stroke={1.75} />} label="장보기" count={grocery.filter((i) => !i.done).length}>
-                    <ItemRows items={grocery.filter((i) => !i.done)} onToggle={onToggleDone} onDelete={deleteItem} members={members} />
-                    {grocery.some((i) => i.done) && (
-                      <DoneDisclosure
-                        open={showDoneGrocery}
-                        onToggle={() => setShowDoneGrocery((v) => !v)}
-                        count={grocery.filter((i) => i.done).length}
-                      >
-                        <ItemRows items={grocery.filter((i) => i.done)} onToggle={onToggleDone} onDelete={deleteItem} members={members} />
-                      </DoneDisclosure>
-                    )}
-                  </SectionGroup>
-                )}
-
-                {(currentTab === "all" || currentTab === "todo") && (
-                  <SectionGroup icon={<IconChecklist size={16} stroke={1.75} />} label="할 일" count={todo.filter((i) => !i.done).length}>
-                    <ItemRows items={todo.filter((i) => !i.done)} onToggle={onToggleDone} onDelete={deleteItem} members={members} />
-                    {todo.some((i) => i.done) && (
-                      <DoneDisclosure
-                        open={showDoneTodo}
-                        onToggle={() => setShowDoneTodo((v) => !v)}
-                        count={todo.filter((i) => i.done).length}
-                      >
-                        <ItemRows items={todo.filter((i) => i.done)} onToggle={onToggleDone} onDelete={deleteItem} members={members} />
-                      </DoneDisclosure>
-                    )}
-                  </SectionGroup>
-                )}
-              </div>
             </>
           )}
         </main>

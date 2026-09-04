@@ -5,11 +5,10 @@ import SettingsPage from "./SettingsPage";
 import FamilyInvite from "./FamilyInvite";
 import AuthScreen from "./AuthScreen";
 import FamilyOnboarding from "./FamilyOnboarding";
-import CalendarPage from "./CalendarPage";
 import { useAppData } from "./hooks/useAppData";
 import type { Category, Item } from "./data";
 
-type Screen = "home" | "settings" | "invite" | "calendar";
+type Screen = "home" | "settings" | "invite";
 
 function useInitialScreen(): Screen {
   if (typeof window === "undefined") return "home";
@@ -89,17 +88,6 @@ export default function App() {
     );
   }
 
-  if (screen === "calendar") {
-    return (
-      <CalendarPage
-        items={data.items}
-        members={data.members}
-        onBack={() => setScreen("home")}
-        onToggleDone={data.toggleDone}
-      />
-    );
-  }
-
   return (
     <>
       <HomeList
@@ -110,7 +98,6 @@ export default function App() {
         onQuickAdd={data.quickAdd}
         onOpenAddSheet={() => setAddSheetOpen(true)}
         onOpenSettings={() => setScreen("settings")}
-        onOpenCalendar={() => setScreen("calendar")}
         deleteItem={data.deleteItem}
       />
       <AddItemSheet

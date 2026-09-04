@@ -4,15 +4,13 @@ import type { Item, Member } from "./data";
 import { memberName } from "./data";
 import clsx from "clsx";
 
-export default function CalendarPage({
+export default function CalendarView({
   items,
   members,
-  onBack,
   onToggleDone,
 }: {
   items: Item[];
   members: Member[];
-  onBack: () => void;
   onToggleDone: (id: string) => void;
 }) {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -37,7 +35,6 @@ export default function CalendarPage({
     const map = new Map<number, Item[]>();
     items.forEach(item => {
       // Use created_at as the primary date for display purposes
-      // (Ideally this would be a separate due_date column)
       const date = new Date(item.created_at);
       if (date.getFullYear() === year && date.getMonth() === month) {
         const d = date.getDate();
@@ -55,32 +52,8 @@ export default function CalendarPage({
   const groceries = selectedItems.filter(i => i.category === "grocery");
 
   return (
-    <div className="flex min-h-dvh flex-col bg-background font-sans text-foreground">
-      <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col">
-        {/* Header */}
-        <header className="flex items-center justify-between border-b border-border/60 px-2 py-3">
-          <div className="flex items-center gap-1">
-            <button
-              type="button"
-              aria-label="뒤로"
-              onClick={onBack}
-              className="flex h-11 w-11 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-chrome/60 active:bg-chrome"
-            >
-              <IconChevronLeft size={24} stroke={1.75} />
-            </button>
-            <h1 className="text-lg font-extrabold text-foreground tracking-tight">가족 달력</h1>
-          </div>
-          <button
-            type="button"
-            onClick={() => setCurrentDate(new Date())}
-            className="mr-3 px-3 py-1.5 text-sm font-bold text-primary bg-primary/10 rounded-full active:bg-primary/20 transition-colors"
-          >
-            오늘
-          </button>
-        </header>
-
-        <main className="flex-1 overflow-y-auto pb-10">
-          {/* Calendar Controls */}
+    <div className="flex-1 pb-10">
+      {/* Calendar Controls */}
           <div className="flex items-center justify-between px-6 py-5">
             <h2 className="text-2xl font-extrabold tracking-tight text-foreground">
               {year}년 {month + 1}월
@@ -189,8 +162,6 @@ export default function CalendarPage({
                 )}
               </div>
             )}
-          </div>
-        </main>
       </div>
     </div>
   );
