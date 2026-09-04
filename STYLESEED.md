@@ -1,0 +1,28 @@
+# StyleSeed — Design Lock
+<!-- Selections persist here. This file cannot waive StyleSeed core invariants. -->
+- App domain: productivity
+- Surface: mobile-web-app
+- Surface adapter: product-ui
+- Page type: list
+- Output grammar: consumer-service
+- Grammar path: built-in:engine/RULESETS.md
+- Grammar fallback: consumer-service
+- Reference confidence: n/a
+- Brand recipe: calm-consumer
+- Palette recipe: quiet-mineral
+- Key color: #276B5E
+- Palette character: calm
+- Palette mode: light
+- Palette harmony: auto
+- Surface temperature: warm
+- Aesthetic profile: none
+- Skin: custom
+- Primary action: #276B5E
+- Font: Pretendard
+- Radius: soft
+- Elevation: light=tonal grouping + restrained shadow · dark=tonal ramp + hairline
+- Density: comfortable
+- Motion: Spring restrained
+- Imagery/data role: household state first (what's missing, what's due); no decorative photography
+- Signature move: one always-reachable quick-capture bar at the thumb that files a typed item into the right shared list automatically
+- Locked: 2026-09-04

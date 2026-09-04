@@ -1,0 +1,51 @@
+@import "tailwindcss";
+@import "../.styleseed/palette.css";
+
+@theme {
+  --color-background: var(--ss-background);
+  --color-surface: var(--ss-surface);
+  --color-chrome: var(--ss-chrome);
+  --color-foreground: var(--ss-foreground);
+  --color-muted-foreground: var(--ss-muted-foreground);
+  --color-chrome-foreground: var(--ss-chrome-foreground);
+  --color-border: var(--ss-border);
+  --color-primary: var(--ss-primary);
+  --color-primary-foreground: var(--ss-primary-foreground);
+  --color-accent: var(--ss-accent);
+  --color-accent-foreground: var(--ss-accent-foreground);
+  --color-focus: var(--ss-focus);
+  --color-success: var(--ss-success);
+  --color-success-foreground: var(--ss-success-foreground);
+  --color-warning: var(--ss-warning);
+  --color-warning-foreground: var(--ss-warning-foreground);
+  --color-danger: var(--ss-danger);
+  --color-danger-foreground: var(--ss-danger-foreground);
+
+  --font-sans: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+}
+
+@layer base {
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    background-color: var(--ss-background);
+    color: var(--ss-foreground);
+    font-family: var(--font-sans);
+  }
+  ::selection {
+    background-color: var(--ss-primary);
+    color: var(--ss-primary-foreground);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
