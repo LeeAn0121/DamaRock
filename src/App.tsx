@@ -4,16 +4,17 @@ import AddItemSheet from "./AddItemSheet";
 import SettingsPage from "./SettingsPage";
 import FamilyInvite from "./FamilyInvite";
 import AuthScreen from "./AuthScreen";
+import AnnouncementPage from "./AnnouncementPage";
 import FamilyOnboarding from "./FamilyOnboarding";
 import { useAppData } from "./hooks/useAppData";
 import type { Category, Item } from "./data";
 
-type Screen = "home" | "settings" | "invite";
+type Screen = "home" | "settings" | "invite" | "announcement";
 
 function useInitialScreen(): Screen {
   if (typeof window === "undefined") return "home";
   const v = new URLSearchParams(window.location.search).get("screen");
-  if (v === "settings" || v === "invite") return v;
+  if (v === "settings" || v === "invite" || v === "announcement") return v;
   return "home";
 }
 
@@ -71,7 +72,18 @@ export default function App() {
         userId={data.userId}
         onBack={() => setScreen("home")}
         onOpenInvite={() => setScreen("invite")}
+        onOpenAnnouncements={() => setScreen("announcement")}
         onSignOut={data.signOut}
+      />
+    );
+  }
+
+  if (screen === "announcement") {
+    return (
+      <AnnouncementPage
+        familyId={data.family?.id ?? ""}
+        userId={data.userId ?? ""}
+        onBack={() => setScreen("settings")}
       />
     );
   }

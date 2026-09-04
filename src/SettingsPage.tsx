@@ -9,6 +9,7 @@ export default function SettingsPage({
   userId,
   onBack,
   onOpenInvite,
+  onOpenAnnouncements,
   onSignOut,
 }: {
   familyName: string;
@@ -16,6 +17,7 @@ export default function SettingsPage({
   userId: string | null;
   onBack: () => void;
   onOpenInvite: () => void;
+  onOpenAnnouncements: () => void;
   onSignOut: () => void;
 }) {
   const [newItemAlerts, setNewItemAlerts] = useState(true);
@@ -104,6 +106,13 @@ export default function SettingsPage({
             <SettingsRow
               label="완료 알림"
               trailing={<Switch checked={doneAlerts} onChange={setDoneAlerts} label="완료 알림" />}
+            />
+          </SettingsGroup>
+
+          <SettingsGroup label="관리">
+            <SettingsRow
+              label="우체통 소식 관리"
+              onClick={onOpenAnnouncements}
             />
           </SettingsGroup>
 

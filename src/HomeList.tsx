@@ -160,7 +160,7 @@ export default function HomeList(props: {
                     currentTab === "todo" ? "bg-primary text-primary-foreground" : "border border-border/50 bg-surface text-muted-foreground"
                   )}
                 >
-                  할 일
+                  일
                 </button>
               </div>
 
