@@ -96,7 +96,7 @@ export function useAppData() {
             id: r.user_id,
             name: r.profiles?.display_name ?? "가족",
             initial: r.profiles?.initial ?? "가",
-            avatar_url: r.profiles?.avatar_url,
+            avatar_url: r.profiles?.avatar_url?.replace(/^http:\/\//i, 'https://'),
             role: r.role,
           }))
         )

@@ -111,7 +111,7 @@ export default function HomeList(props: {
         {/* Standard nav bar */}
         <header className="flex items-center justify-between px-5 py-4">
           <div className="flex items-center gap-2">
-            <img src="/icon-192.png" alt="로고" className="h-6 w-6 rounded-md shadow-sm" />
+            <img src={`${import.meta.env.BASE_URL}icon-192.png`} alt="로고" className="h-6 w-6 rounded-md shadow-sm" />
             <span className="text-xl font-extrabold tracking-tight text-primary">담아락</span>
           </div>
           <div className="flex items-center gap-3">
