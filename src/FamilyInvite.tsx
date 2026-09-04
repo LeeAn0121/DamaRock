@@ -58,25 +58,25 @@ export default function FamilyInvite({
           <h1 className="text-base font-bold text-foreground">가족 구성원</h1>
         </header>
 
-        <main className="flex-1 overflow-y-auto px-4 pb-10 pt-4">
+        <main className="flex-1 overflow-y-auto px-5 pb-10 pt-4">
           {/* Dominant invite block */}
-          <section className="rounded-lg border border-border bg-surface p-4 text-center">
-            <p className="text-sm text-muted-foreground">이 코드로 우리집에 초대하세요</p>
-            <p className="mt-2 text-4xl font-bold tracking-[0.08em] text-primary">{code}</p>
-            <div className="mt-4 flex gap-2">
+          <section className="rounded-3xl bg-surface p-6 text-center shadow-sm">
+            <p className="text-sm font-medium text-muted-foreground">이 코드로 우리집에 초대하세요</p>
+            <p className="mt-3 text-5xl font-extrabold tracking-[0.1em] text-primary">{code}</p>
+            <div className="mt-6 flex gap-3">
               <button
                 type="button"
                 onClick={copyCode}
-                className="flex min-h-12 flex-1 items-center justify-center gap-1.5 rounded-lg border border-border text-sm font-bold text-foreground transition-colors active:bg-chrome"
+                className="flex min-h-14 flex-1 items-center justify-center gap-2 rounded-xl border border-border/50 bg-background text-sm font-bold text-foreground shadow-sm transition-colors active:bg-chrome"
               >
                 {copied ? (
                   <>
-                    <IconCheck size={16} stroke={2.5} className="text-success" />
-                    복사됨
+                    <IconCheck size={18} stroke={3} className="text-success" />
+                    <span className="text-success">복사됨</span>
                   </>
                 ) : (
                   <>
-                    <IconCopy size={16} stroke={1.75} />
+                    <IconCopy size={18} stroke={2} />
                     코드 복사
                   </>
                 )}
@@ -84,32 +84,32 @@ export default function FamilyInvite({
               <button
                 type="button"
                 onClick={shareCode}
-                className="flex min-h-12 flex-1 items-center justify-center gap-1.5 rounded-lg bg-primary text-sm font-bold text-primary-foreground transition-transform active:scale-[0.98]"
+                className="flex min-h-14 flex-1 items-center justify-center gap-2 rounded-xl bg-primary text-sm font-bold text-primary-foreground shadow-sm transition-transform active:scale-[0.98]"
               >
-                <IconShare2 size={16} stroke={1.75} />
+                <IconShare2 size={18} stroke={2} />
                 공유하기
               </button>
             </div>
           </section>
 
           {/* Members */}
-          <section className="mt-6">
-            <div className="mb-2 flex items-center gap-2 px-1 text-muted-foreground">
+          <section className="mt-8">
+            <div className="mb-3 flex items-center gap-2 px-2 text-muted-foreground">
               <h2 className="text-sm font-bold">구성원</h2>
               <span className="text-sm text-border">·</span>
-              <span className="text-sm">{members.length}</span>
+              <span className="text-sm font-medium">{members.length}</span>
             </div>
-            <div className="rounded-lg border border-border bg-surface">
-              <ul className="divide-y divide-border/60">
+            <div className="rounded-2xl bg-surface px-2">
+              <ul className="divide-y divide-border/40">
                 {members.map((m) => (
-                  <li key={m.id} className="flex items-center gap-3 px-4 py-3">
-                    <span className="relative flex h-10 w-10 items-center justify-center rounded-full bg-chrome text-sm font-bold text-chrome-foreground">
+                  <li key={m.id} className="flex items-center gap-4 px-3 py-3.5">
+                    <span className="relative flex h-12 w-12 items-center justify-center rounded-full bg-chrome text-base font-bold text-chrome-foreground shadow-sm">
                       {m.initial}
                       {m.online && (
-                        <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-surface bg-success" />
+                        <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-surface bg-success" />
                       )}
                     </span>
-                    <span className="flex-1 text-base text-foreground">{m.name}</span>
+                    <span className="flex-1 text-base font-medium text-foreground">{m.name}</span>
                   </li>
                 ))}
               </ul>
@@ -118,27 +118,27 @@ export default function FamilyInvite({
 
           {/* Pending invites */}
           {invites.length > 0 && (
-            <section className="mt-6">
-              <div className="mb-2 flex items-center gap-2 px-1 text-muted-foreground">
+            <section className="mt-8">
+              <div className="mb-3 flex items-center gap-2 px-2 text-muted-foreground">
                 <h2 className="text-sm font-bold">초대 대기 중</h2>
                 <span className="text-sm text-border">·</span>
-                <span className="text-sm">{invites.length}</span>
+                <span className="text-sm font-medium">{invites.length}</span>
               </div>
-              <div className="rounded-lg border border-border bg-surface">
-                <ul className="divide-y divide-border/60">
+              <div className="rounded-2xl bg-surface px-2">
+                <ul className="divide-y divide-border/40">
                   {invites.map((invite) => (
-                    <li key={invite.id} className="flex items-center gap-3 px-4 py-3">
-                      <span className="flex h-10 w-10 items-center justify-center rounded-full bg-chrome/60 text-muted-foreground">
-                        <IconMail size={17} stroke={1.75} />
+                    <li key={invite.id} className="flex items-center gap-4 px-3 py-3.5">
+                      <span className="flex h-12 w-12 items-center justify-center rounded-full bg-chrome/60 text-muted-foreground shadow-sm">
+                        <IconMail size={20} stroke={2} />
                       </span>
                       <span className="flex-1">
-                        <span className="block text-base text-foreground">{invite.invitedName}</span>
-                        <span className="block text-xs text-muted-foreground">코드 공유함 · 아직 참여 전</span>
+                        <span className="block text-base font-medium text-foreground">{invite.invitedName}</span>
+                        <span className="block mt-0.5 text-xs font-medium text-muted-foreground">코드 공유함 · 아직 참여 전</span>
                       </span>
                       <button
                         type="button"
                         onClick={() => onCancelInvite(invite.id)}
-                        className="inline-flex min-h-11 items-center justify-center rounded px-3 text-xs text-muted-foreground hover:text-danger active:bg-chrome/60"
+                        className="inline-flex min-h-11 items-center justify-center rounded-lg px-3 text-sm font-bold text-muted-foreground hover:text-danger active:bg-chrome/60"
                       >
                         취소
                       </button>

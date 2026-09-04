@@ -38,34 +38,34 @@ export default function SettingsPage({
           <h1 className="text-base font-bold text-foreground">설정</h1>
         </header>
 
-        <main className="flex-1 overflow-y-auto px-4 pb-10 pt-4">
+        <main className="flex-1 overflow-y-auto px-5 pb-10 pt-4">
           {/* Profile */}
-          <section className="flex items-center gap-4 rounded-lg border border-border bg-surface p-4">
-            <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-chrome text-xl font-bold text-chrome-foreground">
+          <section className="flex items-center gap-4 rounded-2xl bg-surface p-5">
+            <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-chrome text-2xl font-bold text-chrome-foreground shadow-sm">
               {me?.initial ?? "나"}
             </span>
             <span className="min-w-0">
               <span className="block truncate text-lg font-bold text-foreground">
                 {memberName(members, userId ?? undefined)}
               </span>
-              <span className="block text-sm text-muted-foreground">{me?.role ?? "가족 구성원"}</span>
+              <span className="block text-sm font-medium text-muted-foreground">{me?.role ?? "가족 구성원"}</span>
             </span>
           </section>
 
           <SettingsGroup label="우리집">
-            <SettingsRow label="가족 이름" trailing={<span className="text-sm text-muted-foreground">{familyName}</span>} />
+            <SettingsRow label="가족 이름" trailing={<span className="text-sm font-medium text-muted-foreground">{familyName}</span>} />
             <SettingsRow
               label="가족 구성원"
-              icon={<IconUsers size={17} stroke={1.75} />}
+              icon={<IconUsers size={18} stroke={2} />}
               onClick={onOpenInvite}
               trailing={
-                <span className="flex items-center gap-2 text-sm text-muted-foreground">
+                <span className="flex items-center gap-3 text-sm font-medium text-muted-foreground">
                   {members.length}명
-                  <span className="flex -space-x-1.5">
+                  <span className="flex -space-x-2">
                     {members.map((m) => (
                       <span
                         key={m.id}
-                        className="flex h-5 w-5 items-center justify-center rounded-full border border-surface bg-chrome text-xs font-bold text-chrome-foreground"
+                        className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-surface bg-chrome text-xs font-bold text-chrome-foreground"
                       >
                         {m.initial}
                       </span>
@@ -90,13 +90,13 @@ export default function SettingsPage({
           <SettingsGroup label="계정">
             <SettingsRow
               label="로그아웃"
-              icon={<IconLogout size={17} stroke={1.75} />}
+              icon={<IconLogout size={18} stroke={2} className="text-danger" />}
               onClick={onSignOut}
               chevron={false}
             />
           </SettingsGroup>
 
-          <p className="mt-8 text-center text-xs text-muted-foreground">담아락 v0.1.0</p>
+          <p className="mt-10 text-center text-xs font-medium text-muted-foreground/60">담아락 v0.1.0</p>
         </main>
       </div>
     </div>
@@ -105,9 +105,9 @@ export default function SettingsPage({
 
 function SettingsGroup({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <section className="mt-6">
-      <h2 className="mb-2 px-1 text-sm font-bold text-muted-foreground">{label}</h2>
-      <div className="divide-y divide-border/60 rounded-lg border border-border bg-surface">
+    <section className="mt-8">
+      <h2 className="mb-3 px-2 text-sm font-bold text-muted-foreground">{label}</h2>
+      <div className="divide-y divide-border/40 rounded-2xl bg-surface px-2">
         {children}
       </div>
     </section>

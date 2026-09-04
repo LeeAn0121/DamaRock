@@ -99,27 +99,27 @@ export default function HomeList({
         </header>
 
         {/* Content */}
-        <main className="flex-1 overflow-y-auto px-4 pb-36 pt-4">
-          <h1 className="text-sm text-muted-foreground">우리집 공유 리스트</h1>
+        <main className="flex-1 overflow-y-auto px-5 pb-36 pt-6">
+          <h1 className="text-sm font-medium text-muted-foreground">우리집 공유 리스트</h1>
 
           {activeItems.length === 0 ? (
             <EmptyState />
           ) : (
             <>
               {/* Dominant summary */}
-              <section aria-label="오늘의 상태" className="mt-3 rounded-lg border border-border bg-surface p-4">
+              <section aria-label="오늘의 상태" className="mt-4 rounded-2xl bg-surface p-5">
                 <div className="flex items-baseline gap-2">
-                  <span className="text-4xl font-bold leading-none tracking-tight text-foreground">
+                  <span className="text-4xl font-extrabold leading-none tracking-tight text-foreground">
                     {remaining}
                   </span>
-                  <span className="text-base text-muted-foreground">개 남았어요</span>
+                  <span className="text-base font-medium text-muted-foreground">개 남았어요</span>
                 </div>
-                <div className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
-                  <span>{summaryLine}</span>
+                <div className="mt-3 flex items-center gap-2 text-sm text-muted-foreground">
+                  <span className="font-medium">{summaryLine}</span>
                   {doneToday > 0 && (
-                    <span className="flex items-center gap-1 text-success">
+                    <span className="flex items-center gap-1 font-medium text-success">
                       <span className="text-border">·</span>
-                      <IconCheck size={13} stroke={2.5} />
+                      <IconCheck size={14} stroke={3} />
                       오늘 {doneToday}개 완료
                     </span>
                   )}
@@ -188,13 +188,13 @@ export default function HomeList({
 
         {/* Quick capture — always reachable at the thumb */}
         <div className="fixed inset-x-0 bottom-0 mx-auto w-full max-w-md">
-          <div className="border-t border-border bg-surface px-4 pb-[calc(env(safe-area-inset-bottom)+12px)] pt-3">
+          <div className="bg-surface/80 px-5 pb-[calc(env(safe-area-inset-bottom)+16px)] pt-4 backdrop-blur-md">
             <form
               onSubmit={(e) => {
                 e.preventDefault();
                 submitDraft();
               }}
-              className="flex items-center gap-2"
+              className="flex items-center gap-3 rounded-full border border-border/50 bg-background p-1.5 shadow-sm focus-within:border-primary/50 focus-within:ring-2 focus-within:ring-primary/20"
             >
               <input
                 value={draft}
@@ -202,14 +202,14 @@ export default function HomeList({
                 type="text"
                 placeholder="다 떨어진 것이나 할 일을 적어보세요"
                 aria-label="새 항목 담기"
-                className="h-11 min-w-0 flex-1 rounded border border-border bg-background px-3 text-base text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-focus/40"
+                className="h-11 min-w-0 flex-1 bg-transparent px-4 text-base text-foreground placeholder:text-muted-foreground focus:outline-none"
               />
               <button
                 type="submit"
                 aria-label={draft.trim() ? "담기" : "자세히 담기"}
-                className="flex h-11 w-11 shrink-0 items-center justify-center rounded bg-primary text-primary-foreground transition-transform active:scale-95"
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-sm transition-transform active:scale-95"
               >
-                <IconPlus size={22} stroke={2} />
+                <IconPlus size={22} stroke={2.5} />
               </button>
             </form>
           </div>
@@ -231,14 +231,14 @@ function SectionGroup({
   children: React.ReactNode;
 }) {
   return (
-    <section className="mt-6">
-      <div className="mb-2 flex items-center gap-2 px-1 text-muted-foreground">
+    <section className="mt-8">
+      <div className="mb-3 flex items-center gap-2 px-2 text-muted-foreground">
         {icon}
         <h2 className="text-sm font-bold">{label}</h2>
         <span className="text-sm text-border">·</span>
-        <span className="text-sm">{count}</span>
+        <span className="text-sm font-medium">{count}</span>
       </div>
-      <div className="rounded-lg border border-border bg-surface px-3">{children}</div>
+      <div className="rounded-2xl bg-surface px-4 py-2">{children}</div>
     </section>
   );
 }

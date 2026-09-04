@@ -43,25 +43,25 @@ export default function AuthScreen() {
 
   return (
     <div className="flex min-h-dvh flex-col items-center justify-center bg-background px-6 font-sans text-foreground">
-      <span className="text-lg font-bold tracking-tight text-primary">담아락</span>
-      <h1 className="mt-4 text-center text-2xl font-bold leading-snug text-foreground">
+      <span className="text-xl font-extrabold tracking-tight text-primary">담아락</span>
+      <h1 className="mt-5 text-center text-3xl font-extrabold leading-snug text-foreground">
         가족과 함께
         <br />
         담아보세요
       </h1>
-      <p className="mt-3 text-center text-sm leading-relaxed text-muted-foreground">
+      <p className="mt-4 text-center text-sm font-medium leading-relaxed text-muted-foreground">
         장보기 목록과 할 일을 가족 모두가
         <br />
         실시간으로 함께 확인해요
       </p>
 
-      <div className="mt-10 flex w-full max-w-xs flex-col gap-3">
+      <div className="mt-12 flex w-full max-w-xs flex-col gap-3">
         <button
           type="button"
           onClick={() => signIn("kakao")}
-          className="relative flex min-h-12 items-center justify-center rounded-lg bg-[#FEE500] text-sm font-bold text-[#191600] transition-transform active:scale-[0.98]"
+          className="relative flex min-h-14 items-center justify-center rounded-xl bg-[#FEE500] text-sm font-bold text-[#191600] shadow-sm transition-transform active:scale-[0.98]"
         >
-          <span className="absolute left-4 flex items-center">
+          <span className="absolute left-5 flex items-center">
             <KakaoMark />
           </span>
           카카오로 시작하기
@@ -69,9 +69,9 @@ export default function AuthScreen() {
         <button
           type="button"
           onClick={() => signIn("google")}
-          className="relative flex min-h-12 items-center justify-center rounded-lg border border-border bg-surface text-sm font-bold text-foreground transition-transform active:scale-[0.98]"
+          className="relative flex min-h-14 items-center justify-center rounded-xl border border-border/50 bg-surface text-sm font-bold text-foreground shadow-sm transition-transform active:scale-[0.98]"
         >
-          <span className="absolute left-4 flex items-center">
+          <span className="absolute left-5 flex items-center">
             <GoogleMark />
           </span>
           Google로 시작하기
