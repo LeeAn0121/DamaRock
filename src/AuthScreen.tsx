@@ -2,7 +2,10 @@ import { supabase } from "./lib/supabaseClient";
 
 export default function AuthScreen() {
   const signIn = (provider: "google" | "kakao") =>
-    supabase.auth.signInWithOAuth({ provider, options: { redirectTo: window.location.origin } });
+    supabase.auth.signInWithOAuth({
+      provider,
+      options: { redirectTo: window.location.origin + import.meta.env.BASE_URL },
+    });
 
   return (
     <div className="flex min-h-dvh flex-col items-center justify-center bg-background px-6 font-sans text-foreground">
