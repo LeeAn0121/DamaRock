@@ -39,7 +39,7 @@ export default function SettingsPage({
 
   return (
     <div className="min-h-dvh bg-background font-sans text-foreground">
-      <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col">
+      <div className="mx-auto flex min-h-dvh w-full max-w-md md:max-w-2xl lg:max-w-4xl flex-col">
         <header className="flex items-center gap-1 border-b border-border/60 px-2 py-3">
           <button
             type="button"

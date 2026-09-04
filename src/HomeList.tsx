@@ -96,7 +96,7 @@ export default function HomeList(props: {
 
   return (
     <div className="flex min-h-dvh flex-col bg-background font-sans text-foreground pb-24">
-      <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col relative">
+      <div className="mx-auto flex min-h-dvh w-full max-w-md md:max-w-3xl lg:max-w-5xl flex-col relative">
         {/* Standard nav bar */}
         <header className="flex items-center justify-between px-5 py-4">
           <div className="flex items-center gap-2">
@@ -275,7 +275,7 @@ export default function HomeList(props: {
 
         {/* Bottom bar */}
         {currentTab === "grocery" && (
-          <div className="fixed inset-x-0 bottom-0 mx-auto w-full max-w-md z-10">
+          <div className="fixed inset-x-0 bottom-0 mx-auto w-full max-w-md md:max-w-3xl lg:max-w-5xl z-10">
             <div className="bg-surface/80 px-5 pb-[calc(env(safe-area-inset-bottom)+16px)] pt-4 backdrop-blur-md">
               <form
                 onSubmit={(e) => {

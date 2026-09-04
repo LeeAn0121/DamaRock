@@ -102,47 +102,53 @@ export default function GroceryFolders({
         </button>
       </div>
 
-      {folders.map(folder => {
-        const folderItems = grouped.get(folder.id) || [];
-        const active = folderItems.filter(i => !i.done);
-        const done = folderItems.filter(i => i.done);
-        
-        return (
-          <section key={folder.id} className="rounded-2xl bg-surface px-4 py-3 shadow-sm border border-border/40">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {folders.map(folder => {
+          const folderItems = grouped.get(folder.id) || [];
+          const active = folderItems.filter(i => !i.done);
+          const done = folderItems.filter(i => i.done);
+          
+          return (
+            <section key={folder.id} className="flex flex-col rounded-2xl bg-surface px-4 py-3 shadow-sm border border-border/40">
+              <div className="flex items-center justify-between mb-3 border-b border-border/40 pb-2">
+                <h3 className="text-base font-extrabold flex items-center gap-2 text-foreground">
+                  <span className="text-xl">{folder.icon}</span> {folder.name} <span className="text-muted-foreground font-normal text-sm">({active.length})</span>
+                </h3>
+                <button onClick={() => handleDeleteFolder(folder.id)} className="text-muted-foreground hover:text-danger active:bg-chrome p-1.5 rounded-full transition-colors">
+                  <IconTrash size={16} stroke={2} />
+                </button>
+              </div>
+              
+              <div className="flex-1">
+                <ItemRows items={active} onToggle={onToggleDone} onDelete={onDelete} onEdit={onEdit} onMove={handleMove} onSelect={onSelect} members={members} />
+                {done.length > 0 && (
+                  <DoneDisclosure count={done.length}>
+                    <ItemRows items={done} onToggle={onToggleDone} onDelete={onDelete} onEdit={onEdit} onMove={handleMove} onSelect={onSelect} members={members} />
+                  </DoneDisclosure>
+                )}
+              </div>
+            </section>
+          );
+        })}
+
+        {(unassigned.length > 0 || folders.length === 0) && (
+          <section className="flex flex-col rounded-2xl bg-surface px-4 py-3 shadow-sm border border-border/40">
             <div className="flex items-center justify-between mb-3 border-b border-border/40 pb-2">
               <h3 className="text-base font-extrabold flex items-center gap-2 text-foreground">
-                <span className="text-xl">{folder.icon}</span> {folder.name} <span className="text-muted-foreground font-normal text-sm">({active.length})</span>
+                <span className="text-muted-foreground"><IconFolder size={18} /></span> 미분류 <span className="text-muted-foreground font-normal text-sm">({unassigned.filter(i => !i.done).length})</span>
               </h3>
-              <button onClick={() => handleDeleteFolder(folder.id)} className="text-muted-foreground hover:text-danger active:bg-chrome p-1.5 rounded-full transition-colors">
-                <IconTrash size={16} stroke={2} />
-              </button>
             </div>
-            
-            <ItemRows items={active} onToggle={onToggleDone} onDelete={onDelete} onEdit={onEdit} onMove={handleMove} onSelect={onSelect} members={members} />
-            {done.length > 0 && (
-              <DoneDisclosure count={done.length}>
-                <ItemRows items={done} onToggle={onToggleDone} onDelete={onDelete} onEdit={onEdit} onMove={handleMove} onSelect={onSelect} members={members} />
-              </DoneDisclosure>
-            )}
+            <div className="flex-1">
+              <ItemRows items={unassigned.filter(i => !i.done)} onToggle={onToggleDone} onDelete={onDelete} onEdit={onEdit} onMove={handleMove} onSelect={onSelect} members={members} />
+              {unassigned.some((i) => i.done) && (
+                <DoneDisclosure count={unassigned.filter(i => i.done).length}>
+                  <ItemRows items={unassigned.filter((i) => i.done)} onToggle={onToggleDone} onDelete={onDelete} onEdit={onEdit} onMove={handleMove} onSelect={onSelect} members={members} />
+                </DoneDisclosure>
+              )}
+            </div>
           </section>
-        );
-      })}
-
-      {(unassigned.length > 0 || folders.length === 0) && (
-        <section className="rounded-2xl bg-surface px-4 py-3 shadow-sm border border-border/40">
-          <div className="flex items-center justify-between mb-3 border-b border-border/40 pb-2">
-            <h3 className="text-base font-extrabold flex items-center gap-2 text-foreground">
-              <span className="text-muted-foreground"><IconFolder size={18} /></span> 미분류 <span className="text-muted-foreground font-normal text-sm">({unassigned.filter(i => !i.done).length})</span>
-            </h3>
-          </div>
-          <ItemRows items={unassigned.filter(i => !i.done)} onToggle={onToggleDone} onDelete={onDelete} onEdit={onEdit} onMove={handleMove} onSelect={onSelect} members={members} />
-          {unassigned.some((i) => i.done) && (
-            <DoneDisclosure count={unassigned.filter(i => i.done).length}>
-              <ItemRows items={unassigned.filter((i) => i.done)} onToggle={onToggleDone} onDelete={onDelete} onEdit={onEdit} onMove={handleMove} onSelect={onSelect} members={members} />
-            </DoneDisclosure>
-          )}
-        </section>
-      )}
+        )}
+      </div>
     </div>
   );
 }

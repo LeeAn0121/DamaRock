@@ -45,7 +45,7 @@ export default function FamilyInvite({
 
   return (
     <div className="flex min-h-dvh flex-col bg-gradient-to-b from-background via-background to-primary/5 font-sans text-foreground pb-10">
-      <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col">
+      <div className="mx-auto flex min-h-dvh w-full max-w-md md:max-w-2xl lg:max-w-4xl flex-col">
         <header className="flex items-center gap-1 border-b border-border/40 px-2 py-3 bg-background/80 backdrop-blur-md sticky top-0 z-10">
           <button
             type="button"
