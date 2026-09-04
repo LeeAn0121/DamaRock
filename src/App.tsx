@@ -46,12 +46,12 @@ export default function App() {
   if (data.status === "error") {
     return (
       <div className="flex min-h-dvh flex-col items-center justify-center gap-3 bg-background px-6 text-center font-sans">
-        <p className="text-base font-medium text-foreground">문제가 생겼어요</p>
+        <p className="text-base font-bold text-foreground">문제가 생겼어요</p>
         <p className="text-sm text-muted-foreground">{data.error}</p>
         <button
           type="button"
           onClick={() => window.location.reload()}
-          className="mt-2 inline-flex min-h-11 items-center justify-center rounded-full bg-primary px-5 text-sm font-semibold text-primary-foreground"
+          className="mt-2 inline-flex min-h-11 items-center justify-center rounded-full bg-primary px-5 text-sm font-bold text-primary-foreground"
         >
           다시 시도
         </button>

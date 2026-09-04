@@ -91,7 +91,7 @@ export default function AddItemSheet({
                 type="button"
                 onClick={() => setDraft((d) => ({ ...d, category: c }))}
                 aria-pressed={draft.category === c}
-                className={`min-h-11 flex-1 rounded-full text-sm font-semibold transition-colors ${
+                className={`min-h-11 flex-1 rounded-full text-sm font-bold transition-colors ${
                   draft.category === c
                     ? "bg-primary text-primary-foreground"
                     : "text-muted-foreground"
@@ -104,7 +104,7 @@ export default function AddItemSheet({
 
           {/* Title */}
           <label className="flex flex-col gap-1.5">
-            <span className="text-sm font-medium text-foreground">
+            <span className="text-sm font-bold text-foreground">
               무엇을 담을까요<span className="text-danger"> *</span>
             </span>
             <input
@@ -118,7 +118,7 @@ export default function AddItemSheet({
 
           {draft.category === "grocery" ? (
             <label className="flex flex-col gap-1.5">
-              <span className="text-sm font-medium text-foreground">
+              <span className="text-sm font-bold text-foreground">
                 수량이나 메모<span className="text-muted-foreground"> (선택)</span>
               </span>
               <input
@@ -130,7 +130,7 @@ export default function AddItemSheet({
             </label>
           ) : (
             <div className="flex flex-col gap-1.5">
-              <span className="text-sm font-medium text-foreground">
+              <span className="text-sm font-bold text-foreground">
                 언제까지<span className="text-muted-foreground"> (선택)</span>
               </span>
               <div className="flex flex-wrap gap-2">
@@ -142,7 +142,7 @@ export default function AddItemSheet({
                       setDraft((d) => ({ ...d, due: d.due === chip ? undefined : chip }))
                     }
                     aria-pressed={draft.due === chip}
-                    className={`inline-flex min-h-11 items-center justify-center rounded-full border px-4 text-sm font-medium transition-colors ${
+                    className={`inline-flex min-h-11 items-center justify-center rounded-full border px-4 text-sm transition-colors ${
                       draft.due === chip
                         ? "border-primary bg-primary text-primary-foreground"
                         : "border-border text-muted-foreground hover:border-primary hover:text-primary"
@@ -157,7 +157,7 @@ export default function AddItemSheet({
 
           {/* Assignee */}
           <div className="flex flex-col gap-1.5">
-            <span className="text-sm font-medium text-foreground">
+            <span className="text-sm font-bold text-foreground">
               담당자<span className="text-muted-foreground"> (선택)</span>
             </span>
             <div className="flex gap-3">
@@ -172,7 +172,7 @@ export default function AddItemSheet({
                   className="flex flex-col items-center gap-1"
                 >
                   <span
-                    className={`flex h-11 w-11 items-center justify-center rounded-full text-sm font-semibold transition-colors ${
+                    className={`flex h-11 w-11 items-center justify-center rounded-full text-sm font-bold transition-colors ${
                       draft.assignee === m.id
                         ? "bg-primary text-primary-foreground ring-2 ring-primary ring-offset-2 ring-offset-surface"
                         : "bg-chrome text-chrome-foreground"
@@ -192,7 +192,7 @@ export default function AddItemSheet({
             type="button"
             onClick={submit}
             disabled={!canSubmit}
-            className="flex min-h-12 w-full items-center justify-center rounded-full bg-primary text-base font-semibold text-primary-foreground transition-transform disabled:bg-chrome disabled:text-muted-foreground active:scale-[0.98]"
+            className="flex min-h-12 w-full items-center justify-center rounded-full bg-primary text-base font-bold text-primary-foreground transition-transform disabled:bg-chrome disabled:text-muted-foreground active:scale-[0.98]"
           >
             담기
           </button>

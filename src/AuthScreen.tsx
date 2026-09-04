@@ -4,12 +4,7 @@ export default function AuthScreen() {
   const signIn = (provider: "google" | "kakao") =>
     supabase.auth.signInWithOAuth({
       provider,
-      options: {
-        redirectTo: window.location.origin + import.meta.env.BASE_URL,
-        // profiles only ever reads nickname + profile image — skip the email
-        // scope so login works without Kakao business-app email verification.
-        ...(provider === "kakao" ? { scopes: "profile_nickname profile_image" } : {}),
-      },
+      options: { redirectTo: window.location.origin + import.meta.env.BASE_URL },
     });
 
   return (
@@ -30,14 +25,14 @@ export default function AuthScreen() {
         <button
           type="button"
           onClick={() => signIn("kakao")}
-          className="flex min-h-12 items-center justify-center gap-2 rounded-full bg-[#FEE500] text-sm font-semibold text-[#191600] transition-transform active:scale-[0.98]"
+          className="flex min-h-12 items-center justify-center gap-2 rounded-full bg-[#FEE500] text-sm font-bold text-[#191600] transition-transform active:scale-[0.98]"
         >
           카카오로 시작하기
         </button>
         <button
           type="button"
           onClick={() => signIn("google")}
-          className="flex min-h-12 items-center justify-center gap-2 rounded-full border border-border bg-surface text-sm font-semibold text-foreground transition-transform active:scale-[0.98]"
+          className="flex min-h-12 items-center justify-center gap-2 rounded-full border border-border bg-surface text-sm font-bold text-foreground transition-transform active:scale-[0.98]"
         >
           Google로 시작하기
         </button>

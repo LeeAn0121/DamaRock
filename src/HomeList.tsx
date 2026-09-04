@@ -84,7 +84,7 @@ export default function HomeList({
               {members.map((m, idx) => (
                 <div
                   key={m.id}
-                  className="relative flex h-7 w-7 items-center justify-center rounded-full border-2 border-background bg-chrome text-xs font-semibold text-chrome-foreground"
+                  className="relative flex h-7 w-7 items-center justify-center rounded-full border-2 border-background bg-chrome text-xs font-bold text-chrome-foreground"
                   style={{ zIndex: members.length - idx }}
                 >
                   {m.initial}
@@ -107,7 +107,7 @@ export default function HomeList({
 
         {/* Content */}
         <main className="flex-1 overflow-y-auto px-4 pb-36 pt-5">
-          <h1 className="text-sm font-medium text-muted-foreground">우리집 공유 리스트</h1>
+          <h1 className="text-sm text-muted-foreground">우리집 공유 리스트</h1>
 
           {activeItems.length === 0 ? (
             <EmptyState />
@@ -122,7 +122,7 @@ export default function HomeList({
                   <span className="text-4xl font-bold leading-none tracking-tight text-foreground">
                     {remaining}
                   </span>
-                  <span className="text-base font-medium text-muted-foreground">개 남았어요</span>
+                  <span className="text-base text-muted-foreground">개 남았어요</span>
                 </div>
                 <div className="mt-3 flex items-center gap-2 text-sm text-muted-foreground">
                   <span>{summaryLine}</span>
@@ -147,14 +147,14 @@ export default function HomeList({
                           <button
                             type="button"
                             onClick={() => onAssignCategory(item.id, "grocery")}
-                            className="inline-flex min-h-11 items-center justify-center rounded-full border border-border px-3 text-xs font-medium text-muted-foreground transition-colors hover:border-primary hover:text-primary active:bg-chrome"
+                            className="inline-flex min-h-11 items-center justify-center rounded-full border border-border px-3 text-xs text-muted-foreground transition-colors hover:border-primary hover:text-primary active:bg-chrome"
                           >
                             장보기
                           </button>
                           <button
                             type="button"
                             onClick={() => onAssignCategory(item.id, "todo")}
-                            className="inline-flex min-h-11 items-center justify-center rounded-full border border-border px-3 text-xs font-medium text-muted-foreground transition-colors hover:border-primary hover:text-primary active:bg-chrome"
+                            className="inline-flex min-h-11 items-center justify-center rounded-full border border-border px-3 text-xs text-muted-foreground transition-colors hover:border-primary hover:text-primary active:bg-chrome"
                           >
                             할 일
                           </button>
@@ -253,7 +253,7 @@ function SectionGroup({
     <section className="mt-6">
       <div className="mb-2 flex items-center gap-2 px-1 text-muted-foreground">
         {icon}
-        <h2 className="text-sm font-semibold">{label}</h2>
+        <h2 className="text-sm font-bold">{label}</h2>
         <span className="text-sm text-border">·</span>
         <span className="text-sm">{count}</span>
       </div>
@@ -327,7 +327,7 @@ function DoneDisclosure({
       <button
         type="button"
         onClick={onToggle}
-        className="flex min-h-11 w-full items-center gap-1 py-3 text-xs font-medium text-muted-foreground"
+        className="flex min-h-11 w-full items-center gap-1 py-3 text-xs text-muted-foreground"
       >
         <ChevronDown
           size={14}
@@ -347,7 +347,7 @@ function EmptyState() {
       <div className="flex h-14 w-14 items-center justify-center rounded-full bg-chrome/60 text-muted-foreground">
         <PackageOpen size={26} strokeWidth={1.5} />
       </div>
-      <p className="mt-4 text-base font-medium text-foreground">아직 담긴 게 없어요</p>
+      <p className="mt-4 text-base font-bold text-foreground">아직 담긴 게 없어요</p>
       <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
         다 떨어진 것이나 할 일이 떠오르면
         <br />
@@ -386,7 +386,7 @@ function ErrorState() {
         <div className="flex h-14 w-14 items-center justify-center rounded-full bg-chrome/60 text-danger">
           <WifiOff size={24} strokeWidth={1.5} />
         </div>
-        <p className="mt-4 text-base font-medium text-foreground">목록을 불러오지 못했어요</p>
+        <p className="mt-4 text-base font-bold text-foreground">목록을 불러오지 못했어요</p>
         <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
           인터넷 연결을 확인하고
           <br />
@@ -397,7 +397,7 @@ function ErrorState() {
           onClick={() => {
             window.location.href = window.location.pathname;
           }}
-          className="mt-5 inline-flex min-h-11 items-center justify-center rounded-full bg-primary px-5 text-sm font-semibold text-primary-foreground active:scale-95"
+          className="mt-5 inline-flex min-h-11 items-center justify-center rounded-full bg-primary px-5 text-sm font-bold text-primary-foreground active:scale-95"
         >
           다시 시도
         </button>

@@ -60,13 +60,13 @@ export default function FamilyInvite({
         <main className="flex-1 overflow-y-auto px-4 pb-10 pt-3">
           {/* Dominant invite block */}
           <section className="rounded-2xl bg-surface p-5 text-center shadow-[0_1px_2px_rgba(20,20,10,0.04),0_10px_28px_-14px_rgba(20,20,10,0.18)]">
-            <p className="text-sm font-medium text-muted-foreground">이 코드로 우리집에 초대하세요</p>
+            <p className="text-sm text-muted-foreground">이 코드로 우리집에 초대하세요</p>
             <p className="mt-2 text-4xl font-bold tracking-[0.08em] text-primary">{code}</p>
             <div className="mt-4 flex gap-2">
               <button
                 type="button"
                 onClick={copyCode}
-                className="flex min-h-12 flex-1 items-center justify-center gap-1.5 rounded-full border border-border text-sm font-semibold text-foreground transition-colors active:bg-chrome"
+                className="flex min-h-12 flex-1 items-center justify-center gap-1.5 rounded-full border border-border text-sm font-bold text-foreground transition-colors active:bg-chrome"
               >
                 {copied ? (
                   <>
@@ -83,7 +83,7 @@ export default function FamilyInvite({
               <button
                 type="button"
                 onClick={shareCode}
-                className="flex min-h-12 flex-1 items-center justify-center gap-1.5 rounded-full bg-primary text-sm font-semibold text-primary-foreground transition-transform active:scale-[0.98]"
+                className="flex min-h-12 flex-1 items-center justify-center gap-1.5 rounded-full bg-primary text-sm font-bold text-primary-foreground transition-transform active:scale-[0.98]"
               >
                 <Share2 size={16} strokeWidth={1.75} />
                 공유하기
@@ -94,7 +94,7 @@ export default function FamilyInvite({
           {/* Members */}
           <section className="mt-6">
             <div className="mb-2 flex items-center gap-2 px-1 text-muted-foreground">
-              <h2 className="text-sm font-semibold">구성원</h2>
+              <h2 className="text-sm font-bold">구성원</h2>
               <span className="text-sm text-border">·</span>
               <span className="text-sm">{members.length}</span>
             </div>
@@ -102,7 +102,7 @@ export default function FamilyInvite({
               <ul className="divide-y divide-border/60">
                 {members.map((m) => (
                   <li key={m.id} className="flex items-center gap-3 px-4 py-3">
-                    <span className="relative flex h-10 w-10 items-center justify-center rounded-full bg-chrome text-sm font-semibold text-chrome-foreground">
+                    <span className="relative flex h-10 w-10 items-center justify-center rounded-full bg-chrome text-sm font-bold text-chrome-foreground">
                       {m.initial}
                       {m.online && (
                         <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-surface bg-success" />
@@ -125,7 +125,7 @@ export default function FamilyInvite({
           {invites.length > 0 && (
             <section className="mt-6">
               <div className="mb-2 flex items-center gap-2 px-1 text-muted-foreground">
-                <h2 className="text-sm font-semibold">초대 대기 중</h2>
+                <h2 className="text-sm font-bold">초대 대기 중</h2>
                 <span className="text-sm text-border">·</span>
                 <span className="text-sm">{invites.length}</span>
               </div>
@@ -143,7 +143,7 @@ export default function FamilyInvite({
                       <button
                         type="button"
                         onClick={() => onCancelInvite(invite.id)}
-                        className="inline-flex min-h-11 items-center justify-center rounded-full px-3 text-xs font-medium text-muted-foreground hover:text-danger active:bg-chrome/60"
+                        className="inline-flex min-h-11 items-center justify-center rounded-full px-3 text-xs text-muted-foreground hover:text-danger active:bg-chrome/60"
                       >
                         취소
                       </button>

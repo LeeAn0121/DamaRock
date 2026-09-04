@@ -30,7 +30,7 @@ export default function FamilyOnboarding({
         </button>
       </header>
 
-      <div className="flex flex-1 flex-col justify-center pb-16">
+      <div className="flex flex-1 flex-col pt-14 pb-16">
         {mode === "choose" && (
           <>
             <h1 className="text-2xl font-bold leading-snug text-foreground">
@@ -50,7 +50,7 @@ export default function FamilyOnboarding({
                   <Users size={19} strokeWidth={1.75} />
                 </span>
                 <span>
-                  <span className="block text-base font-semibold text-foreground">가족 공간 만들기</span>
+                  <span className="block text-base font-bold text-foreground">가족 공간 만들기</span>
                   <span className="block text-xs text-muted-foreground">우리집을 새로 시작해요</span>
                 </span>
               </button>
@@ -64,7 +64,7 @@ export default function FamilyOnboarding({
                   <UserPlus size={19} strokeWidth={1.75} />
                 </span>
                 <span>
-                  <span className="block text-base font-semibold text-foreground">초대 코드로 참여하기</span>
+                  <span className="block text-base font-bold text-foreground">초대 코드로 참여하기</span>
                   <span className="block text-xs text-muted-foreground">가족에게 받은 코드를 입력해요</span>
                 </span>
               </button>
@@ -82,7 +82,7 @@ export default function FamilyOnboarding({
           >
             <h1 className="text-xl font-bold text-foreground">가족 공간 만들기</h1>
             <label className="flex flex-col gap-1.5">
-              <span className="text-sm font-medium text-foreground">가족 이름</span>
+              <span className="text-sm font-bold text-foreground">가족 이름</span>
               <input
                 autoFocus
                 value={name}
@@ -96,13 +96,13 @@ export default function FamilyOnboarding({
               <button
                 type="button"
                 onClick={() => setMode("choose")}
-                className="flex min-h-12 flex-1 items-center justify-center rounded-full border border-border text-sm font-semibold text-foreground active:bg-chrome"
+                className="flex min-h-12 flex-1 items-center justify-center rounded-full border border-border text-sm font-bold text-foreground active:bg-chrome"
               >
                 뒤로
               </button>
               <button
                 type="submit"
-                className="flex min-h-12 flex-[2] items-center justify-center rounded-full bg-primary text-base font-semibold text-primary-foreground transition-transform active:scale-[0.98]"
+                className="flex min-h-12 flex-[2] items-center justify-center rounded-full bg-primary text-base font-bold text-primary-foreground transition-transform active:scale-[0.98]"
               >
                 만들기
               </button>
@@ -120,13 +120,13 @@ export default function FamilyOnboarding({
           >
             <h1 className="text-xl font-bold text-foreground">초대 코드로 참여하기</h1>
             <label className="flex flex-col gap-1.5">
-              <span className="text-sm font-medium text-foreground">초대 코드</span>
+              <span className="text-sm font-bold text-foreground">초대 코드</span>
               <input
                 autoFocus
                 value={code}
                 onChange={(e) => setCode(e.target.value)}
                 placeholder="예: 742-819"
-                className="h-12 rounded-2xl border border-border bg-surface px-4 text-center text-lg font-semibold tracking-widest text-foreground placeholder:text-muted-foreground placeholder:tracking-normal placeholder:font-normal focus:border-primary focus:outline-none focus:ring-2 focus:ring-focus/40"
+                className="h-12 rounded-2xl border border-border bg-surface px-4 text-center text-lg font-bold tracking-widest text-foreground placeholder:text-muted-foreground placeholder:tracking-normal placeholder:font-normal focus:border-primary focus:outline-none focus:ring-2 focus:ring-focus/40"
               />
             </label>
             {error && <p className="text-sm text-danger">{error}</p>}
@@ -134,14 +134,14 @@ export default function FamilyOnboarding({
               <button
                 type="button"
                 onClick={() => setMode("choose")}
-                className="flex min-h-12 flex-1 items-center justify-center rounded-full border border-border text-sm font-semibold text-foreground active:bg-chrome"
+                className="flex min-h-12 flex-1 items-center justify-center rounded-full border border-border text-sm font-bold text-foreground active:bg-chrome"
               >
                 뒤로
               </button>
               <button
                 type="submit"
                 disabled={!code.trim()}
-                className="flex min-h-12 flex-[2] items-center justify-center rounded-full bg-primary text-base font-semibold text-primary-foreground transition-transform disabled:bg-chrome disabled:text-muted-foreground active:scale-[0.98]"
+                className="flex min-h-12 flex-[2] items-center justify-center rounded-full bg-primary text-base font-bold text-primary-foreground transition-transform disabled:bg-chrome disabled:text-muted-foreground active:scale-[0.98]"
               >
                 참여하기
               </button>

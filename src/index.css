@@ -1,6 +1,14 @@
 @import "tailwindcss";
 @import "../.styleseed/palette.css";
 
+:root {
+  /* Soften the generated near-black (#0D0B09) to a warm dark grey — pure/near
+     black on a light page reads harsher than it needs to (still 12:1+ on
+     background/surface, well past the 4.5:1 AA floor). */
+  --ss-foreground: #332e29;
+  --ss-chrome-foreground: #332e29;
+}
+
 @theme {
   --color-background: var(--ss-background);
   --color-surface: var(--ss-surface);

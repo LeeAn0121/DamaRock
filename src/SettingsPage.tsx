@@ -47,7 +47,7 @@ export default function SettingsPage({
                     {members.map((m) => (
                       <span
                         key={m.id}
-                        className="flex h-5 w-5 items-center justify-center rounded-full border border-surface bg-chrome text-xs font-semibold text-chrome-foreground"
+                        className="flex h-5 w-5 items-center justify-center rounded-full border border-surface bg-chrome text-xs font-bold text-chrome-foreground"
                       >
                         {m.initial}
                       </span>
@@ -88,7 +88,7 @@ export default function SettingsPage({
 function SettingsGroup({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <section className="mt-6 first:mt-2">
-      <h2 className="mb-2 px-1 text-sm font-semibold text-muted-foreground">{label}</h2>
+      <h2 className="mb-2 px-1 text-sm font-bold text-muted-foreground">{label}</h2>
       <div className="divide-y divide-border/60 rounded-2xl border border-border/60 bg-surface">
         {children}
       </div>
