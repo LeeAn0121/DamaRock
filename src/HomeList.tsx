@@ -12,15 +12,7 @@ function useUrlState(): ViewState {
   return "normal";
 }
 
-export default function HomeList({
-  items,
-  members,
-  onToggleDone,
-  onAssignCategory,
-  onQuickAdd,
-  onOpenAddSheet,
-  onOpenSettings,
-}: {
+export default function HomeList(props: {
   items: Item[];
   members: Member[];
   onToggleDone: (id: string) => void;
@@ -28,8 +20,20 @@ export default function HomeList({
   onQuickAdd: (title: string) => void;
   onOpenAddSheet: () => void;
   onOpenSettings: () => void;
+  deleteItem: (id: string) => void;
 }) {
+  const {
+    items,
+    members,
+    onToggleDone,
+    onAssignCategory,
+    onQuickAdd,
+    onOpenAddSheet,
+    onOpenSettings,
+    deleteItem,
+  } = props;
   const viewState = useUrlState();
+  const [currentTab, setCurrentTab] = useState<"all" | "grocery" | "todo">("all");
   const [showDoneGrocery, setShowDoneGrocery] = useState(false);
   const [showDoneTodo, setShowDoneTodo] = useState(false);
   const [draft, setDraft] = useState("");
@@ -120,17 +124,42 @@ export default function HomeList({
           ) : (
             <>
               {/* Tabs */}
-              <div className="mb-4 flex gap-2">
-                <button type="button" className="rounded-full bg-foreground px-4 py-1.5 text-sm font-bold text-background shadow-sm">
+              <div className="mb-4 flex gap-2 overflow-x-auto scrollbar-hide py-1 px-1 -mx-1">
+                <button
+                  type="button"
+                  onClick={() => setCurrentTab("all")}
+                  className={clsx(
+                    "whitespace-nowrap rounded-full px-4 py-1.5 text-sm font-bold shadow-sm transition-colors",
+                    currentTab === "all" ? "bg-foreground text-background" : "border border-border/50 bg-surface text-muted-foreground"
+                  )}
+                >
                   전체보기
                 </button>
-                <button type="button" className="rounded-full border border-border/50 bg-surface px-4 py-1.5 text-sm font-medium text-muted-foreground shadow-sm">
+                <button
+                  type="button"
+                  onClick={() => setCurrentTab("grocery")}
+                  className={clsx(
+                    "whitespace-nowrap rounded-full px-4 py-1.5 text-sm font-bold shadow-sm transition-colors",
+                    currentTab === "grocery" ? "bg-primary text-primary-foreground" : "border border-border/50 bg-surface text-muted-foreground"
+                  )}
+                >
                   장보기
                 </button>
-                <button type="button" className="rounded-full border border-border/50 bg-surface px-4 py-1.5 text-sm font-medium text-muted-foreground shadow-sm">
+                <button
+                  type="button"
+                  onClick={() => setCurrentTab("todo")}
+                  className={clsx(
+                    "whitespace-nowrap rounded-full px-4 py-1.5 text-sm font-bold shadow-sm transition-colors",
+                    currentTab === "todo" ? "bg-primary text-primary-foreground" : "border border-border/50 bg-surface text-muted-foreground"
+                  )}
+                >
                   할 일
                 </button>
-                <button type="button" className="rounded-full border border-border/50 bg-surface px-4 py-1.5 text-sm font-medium text-muted-foreground shadow-sm ml-auto flex items-center gap-1">
+                <button
+                  type="button"
+                  onClick={() => alert("캘린더(달력) 기능이 곧 추가됩니다!")}
+                  className="whitespace-nowrap ml-auto flex items-center gap-1 rounded-full border border-border/50 bg-surface px-4 py-1.5 text-sm font-medium text-muted-foreground shadow-sm"
+                >
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
                   달력
                 </button>
@@ -140,13 +169,13 @@ export default function HomeList({
               <section aria-label="오늘의 상태" className="mb-6 rounded-2xl bg-primary/5 p-5 border border-primary/10">
                 <div className="flex items-baseline gap-2">
                   <span className="text-4xl font-extrabold leading-none tracking-tight text-foreground">
-                    {remaining}
+                    {currentTab === "all" ? remaining : currentTab === "grocery" ? grocery.filter(i => !i.done).length : todo.filter(i => !i.done).length}
                   </span>
                   <span className="text-base font-medium text-muted-foreground">개 남았어요</span>
                 </div>
                 <div className="mt-3 flex items-center gap-2 text-sm text-muted-foreground">
-                  <span className="font-medium">{summaryLine}</span>
-                  {doneToday > 0 && (
+                  <span className="font-medium">{currentTab === "all" ? summaryLine : currentTab === "grocery" ? "장보기 탭" : "할 일 탭"}</span>
+                  {doneToday > 0 && currentTab === "all" && (
                     <span className="flex items-center gap-1 font-medium text-success">
                       <span className="text-border">·</span>
                       <IconCheck size={14} stroke={3} />
@@ -185,33 +214,38 @@ export default function HomeList({
                 </SectionGroup>
               )}
 
-              {/* Grocery */}
-              <SectionGroup icon={<IconShoppingCart size={16} stroke={1.75} />} label="장보기" count={grocery.filter((i) => !i.done).length}>
-                <ItemRows items={grocery.filter((i) => !i.done)} onToggle={onToggleDone} members={members} />
-                {grocery.some((i) => i.done) && (
-                  <DoneDisclosure
-                    open={showDoneGrocery}
-                    onToggle={() => setShowDoneGrocery((v) => !v)}
-                    count={grocery.filter((i) => i.done).length}
-                  >
-                    <ItemRows items={grocery.filter((i) => i.done)} onToggle={onToggleDone} members={members} />
-                  </DoneDisclosure>
+              {/* Lists */}
+              <div className="flex flex-col gap-6">
+                {(currentTab === "all" || currentTab === "grocery") && (
+                  <SectionGroup icon={<IconShoppingCart size={16} stroke={1.75} />} label="장보기" count={grocery.filter((i) => !i.done).length}>
+                    <ItemRows items={grocery.filter((i) => !i.done)} onToggle={onToggleDone} onDelete={deleteItem} members={members} />
+                    {grocery.some((i) => i.done) && (
+                      <DoneDisclosure
+                        open={showDoneGrocery}
+                        onToggle={() => setShowDoneGrocery((v) => !v)}
+                        count={grocery.filter((i) => i.done).length}
+                      >
+                        <ItemRows items={grocery.filter((i) => i.done)} onToggle={onToggleDone} onDelete={deleteItem} members={members} />
+                      </DoneDisclosure>
+                    )}
+                  </SectionGroup>
                 )}
-              </SectionGroup>
 
-              {/* Todo */}
-              <SectionGroup icon={<IconChecklist size={16} stroke={1.75} />} label="할 일" count={todo.filter((i) => !i.done).length}>
-                <ItemRows items={todo.filter((i) => !i.done)} onToggle={onToggleDone} members={members} />
-                {todo.some((i) => i.done) && (
-                  <DoneDisclosure
-                    open={showDoneTodo}
-                    onToggle={() => setShowDoneTodo((v) => !v)}
-                    count={todo.filter((i) => i.done).length}
-                  >
-                    <ItemRows items={todo.filter((i) => i.done)} onToggle={onToggleDone} members={members} />
-                  </DoneDisclosure>
+                {(currentTab === "all" || currentTab === "todo") && (
+                  <SectionGroup icon={<IconChecklist size={16} stroke={1.75} />} label="할 일" count={todo.filter((i) => !i.done).length}>
+                    <ItemRows items={todo.filter((i) => !i.done)} onToggle={onToggleDone} onDelete={deleteItem} members={members} />
+                    {todo.some((i) => i.done) && (
+                      <DoneDisclosure
+                        open={showDoneTodo}
+                        onToggle={() => setShowDoneTodo((v) => !v)}
+                        count={todo.filter((i) => i.done).length}
+                      >
+                        <ItemRows items={todo.filter((i) => i.done)} onToggle={onToggleDone} onDelete={deleteItem} members={members} />
+                      </DoneDisclosure>
+                    )}
+                  </SectionGroup>
                 )}
-              </SectionGroup>
+              </div>
             </>
           )}
         </main>
@@ -273,44 +307,37 @@ function SectionGroup({
   );
 }
 
-function ItemRows({
-  items,
+function SwipeableItem({
+  item,
   members,
   onToggle,
+  onDelete,
 }: {
-  items: Item[];
+  item: Item;
   members: Member[];
   onToggle: (id: string) => void;
+  onDelete?: (id: string) => void;
 }) {
-  if (items.length === 0) {
-    return <p className="py-4 text-center text-sm text-muted-foreground">모두 담아뒀어요</p>;
-  }
   return (
-    <ul className="divide-y divide-border/60">
-      {items.map((item) => (
-        <li key={item.id}>
+    <li className="group relative overflow-hidden bg-surface">
+      <div className="flex w-full snap-x snap-mandatory overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        {/* Main Content */}
+        <div className="w-full shrink-0 snap-center">
           <button
             type="button"
             onClick={() => onToggle(item.id)}
-            className="flex min-h-11 w-full items-center gap-3 py-3 text-left"
+            className="flex min-h-11 w-full items-center gap-3 py-3 text-left bg-surface"
           >
             <span
               className={clsx(
                 "flex h-5 w-5 shrink-0 items-center justify-center rounded border-2 transition-colors",
-                item.done
-                  ? "border-primary bg-primary text-primary-foreground"
-                  : "border-border text-transparent"
+                item.done ? "border-primary bg-primary text-primary-foreground" : "border-border text-transparent"
               )}
             >
               <IconCheck size={13} stroke={3} />
             </span>
             <span className="min-w-0 flex-1">
-              <span
-                className={clsx(
-                  "block truncate text-base",
-                  item.done ? "text-muted-foreground line-through" : "text-foreground"
-                )}
-              >
+              <span className={clsx("block truncate text-base", item.done ? "text-muted-foreground line-through" : "text-foreground")}>
                 {item.title}
               </span>
               <span className="block text-xs text-muted-foreground">
@@ -318,7 +345,38 @@ function ItemRows({
               </span>
             </span>
           </button>
-        </li>
+        </div>
+        {/* Swipe Action (Delete) */}
+        {onDelete && (
+          <div className="w-20 shrink-0 snap-center bg-danger/10 text-danger flex items-center justify-center font-bold text-sm">
+            <button type="button" className="w-full h-full flex items-center justify-center" onClick={() => onDelete(item.id)}>
+              삭제
+            </button>
+          </div>
+        )}
+      </div>
+    </li>
+  );
+}
+
+function ItemRows({
+  items,
+  members,
+  onToggle,
+  onDelete,
+}: {
+  items: Item[];
+  members: Member[];
+  onToggle: (id: string) => void;
+  onDelete?: (id: string) => void;
+}) {
+  if (items.length === 0) {
+    return <p className="py-4 text-center text-sm text-muted-foreground">모두 담아뒀어요</p>;
+  }
+  return (
+    <ul className="divide-y divide-border/60">
+      {items.map((item) => (
+        <SwipeableItem key={item.id} item={item} members={members} onToggle={onToggle} onDelete={onDelete} />
       ))}
     </ul>
   );

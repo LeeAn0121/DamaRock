@@ -98,6 +98,7 @@ export default function App() {
         onQuickAdd={data.quickAdd}
         onOpenAddSheet={() => setAddSheetOpen(true)}
         onOpenSettings={() => setScreen("settings")}
+        deleteItem={data.deleteItem}
       />
       <AddItemSheet
         open={addSheetOpen}
