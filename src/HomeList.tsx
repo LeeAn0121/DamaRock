@@ -174,84 +174,83 @@ export default function HomeList(props: {
 
         {/* Content */}
         <main className="flex-1 overflow-y-auto px-5 pb-36 pt-4">
-          {activeItems.length === 0 ? (
-            <EmptyState />
-          ) : (
-            <>
-              {currentTab === "grocery" ? (
-                <>
-                  {/* Dominant summary */}
-                  <section aria-label="오늘의 상태" className="mb-6 rounded-2xl bg-primary/5 p-5 border border-primary/10">
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-4xl font-extrabold leading-none tracking-tight text-foreground">
-                        {remaining}
+          {currentTab === "grocery" ? (
+            activeItems.filter(i => i.category === "grocery" || i.category === "inbox").length === 0 ? (
+              <EmptyState />
+            ) : (
+              <>
+                {/* Dominant summary */}
+                <section aria-label="오늘의 상태" className="mb-6 rounded-2xl bg-primary/5 p-5 border border-primary/10">
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-4xl font-extrabold leading-none tracking-tight text-foreground">
+                      {remaining}
+                    </span>
+                    <span className="text-base font-medium text-muted-foreground">개 남았어요</span>
+                  </div>
+                  <div className="mt-3 flex items-center gap-2 text-sm text-muted-foreground">
+                    <span className="font-medium">{summaryLine}</span>
+                    {doneToday > 0 && (
+                      <span className="flex items-center gap-1 font-medium text-success">
+                        <span className="text-border">·</span>
+                        <IconCheck size={14} stroke={3} />
+                        오늘 {doneToday}개 완료
                       </span>
-                      <span className="text-base font-medium text-muted-foreground">개 남았어요</span>
-                    </div>
-                    <div className="mt-3 flex items-center gap-2 text-sm text-muted-foreground">
-                      <span className="font-medium">{summaryLine}</span>
-                      {doneToday > 0 && (
-                        <span className="flex items-center gap-1 font-medium text-success">
-                          <span className="text-border">·</span>
-                          <IconCheck size={14} stroke={3} />
-                          오늘 {doneToday}개 완료
-                        </span>
-                      )}
-                    </div>
+                    )}
+                  </div>
+                </section>
+
+                {/* Inbox: just captured, not sorted yet */}
+                {inbox.length > 0 && (
+                  <section className="mb-6 rounded-2xl bg-surface px-4 py-3 shadow-sm border border-border/40">
+                    <h3 className="mb-3 text-base font-extrabold flex items-center gap-2 text-foreground">새로 담은 것 <span className="text-muted-foreground font-normal text-sm">({inbox.length})</span></h3>
+                    <ul className="divide-y divide-border/60">
+                      {inbox.map((item) => (
+                        <li key={item.id} className="flex items-center gap-3 py-3">
+                          <span className="min-w-0 flex-1 truncate text-base text-foreground">{item.title}</span>
+                          <div className="flex shrink-0 gap-2">
+                            <button
+                              type="button"
+                              onClick={() => onAssignCategory(item.id, "grocery")}
+                              className="inline-flex min-h-11 items-center justify-center rounded border border-border px-3 text-xs text-muted-foreground transition-colors hover:border-primary hover:text-primary active:bg-chrome"
+                            >
+                              장보기
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => onAssignCategory(item.id, "todo")}
+                              className="inline-flex min-h-11 items-center justify-center rounded border border-border px-3 text-xs text-muted-foreground transition-colors hover:border-primary hover:text-primary active:bg-chrome"
+                            >
+                              할 일
+                            </button>
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
                   </section>
+                )}
 
-                  {/* Inbox: just captured, not sorted yet */}
-                  {inbox.length > 0 && (
-                    <SectionGroup label="새로 담은 것" count={inbox.length}>
-                      <ul className="divide-y divide-border/60">
-                        {inbox.map((item) => (
-                          <li key={item.id} className="flex items-center gap-3 py-3">
-                            <span className="min-w-0 flex-1 truncate text-base text-foreground">{item.title}</span>
-                            <div className="flex shrink-0 gap-2">
-                              <button
-                                type="button"
-                                onClick={() => onAssignCategory(item.id, "grocery")}
-                                className="inline-flex min-h-11 items-center justify-center rounded border border-border px-3 text-xs text-muted-foreground transition-colors hover:border-primary hover:text-primary active:bg-chrome"
-                              >
-                                장보기
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => onAssignCategory(item.id, "todo")}
-                                className="inline-flex min-h-11 items-center justify-center rounded border border-border px-3 text-xs text-muted-foreground transition-colors hover:border-primary hover:text-primary active:bg-chrome"
-                              >
-                                할 일
-                              </button>
-                            </div>
-                          </li>
-                        ))}
-                      </ul>
-                    </SectionGroup>
-                  )}
-
-                  {/* Lists */}
-                  <GroceryFolders
-                    items={items}
-                    members={members}
-                    onToggleDone={onToggleDone}
-                    onDelete={deleteItem}
-                    onEdit={handleEdit}
-                    onSelect={setSelectedItem}
-                    addItem={props.addItem}
-                    editItem={editItem}
-                  />
-                </>
-              ) : (
-                <CalendarView 
-                  items={items} 
-                  members={members} 
-                  onToggleDone={onToggleDone} 
+                {/* Lists */}
+                <GroceryFolders
+                  items={items}
+                  members={members}
+                  onToggleDone={onToggleDone}
                   onDelete={deleteItem}
-                  onEdit={handleEditTodo}
-                  onAddTodo={(title, dateStr) => props.addItem({ title, category: "todo", meta: dateStr })} 
+                  onEdit={handleEdit}
+                  onSelect={setSelectedItem}
+                  addItem={props.addItem}
+                  editItem={editItem}
                 />
-              )}
-            </>
+              </>
+            )
+          ) : (
+            <CalendarView 
+              items={items} 
+              members={members} 
+              onToggleDone={onToggleDone} 
+              onDelete={deleteItem}
+              onEdit={handleEditTodo}
+              onAddTodo={(title, dateStr) => props.addItem({ title, category: "todo", meta: dateStr })} 
+            />
           )}
         </main>
 
