@@ -5,6 +5,7 @@ import { memberName, type Category, type Item, type Member } from "./data";
 import ActivitySheet from "./ActivitySheet";
 import CalendarView from "./CalendarView";
 import ItemDetailSheet from "./ItemDetailSheet";
+import GroceryFolders from "./GroceryFolders";
 
 type ViewState = "normal" | "empty" | "loading" | "error";
 
@@ -143,36 +144,40 @@ export default function HomeList(props: {
           </div>
         </header>
 
+        {/* Tabs - Fixed below header */}
+        <div className="sticky top-0 z-20 flex gap-2 overflow-x-auto scrollbar-hide bg-background/95 backdrop-blur-md px-5 py-3 border-b border-border/40 shadow-sm">
+          <button
+            type="button"
+            onClick={() => setCurrentTab("grocery")}
+            className={clsx(
+              "flex-1 whitespace-nowrap rounded-xl py-2.5 text-[15px] font-bold shadow-sm transition-all active:scale-[0.98]",
+              currentTab === "grocery" 
+                ? "bg-foreground text-background" 
+                : "bg-surface text-muted-foreground border border-border/60 hover:bg-chrome"
+            )}
+          >
+            장보기
+          </button>
+          <button
+            type="button"
+            onClick={() => setCurrentTab("todo")}
+            className={clsx(
+              "flex-1 whitespace-nowrap rounded-xl py-2.5 text-[15px] font-bold shadow-sm transition-all active:scale-[0.98]",
+              currentTab === "todo" 
+                ? "bg-foreground text-background" 
+                : "bg-surface text-muted-foreground border border-border/60 hover:bg-chrome"
+            )}
+          >
+            할 일
+          </button>
+        </div>
+
         {/* Content */}
-        <main className="flex-1 overflow-y-auto px-5 pb-36 pt-2">
+        <main className="flex-1 overflow-y-auto px-5 pb-36 pt-4">
           {activeItems.length === 0 ? (
             <EmptyState />
           ) : (
             <>
-              {/* Tabs */}
-              <div className="mb-4 flex gap-2 overflow-x-auto scrollbar-hide py-1 px-1 -mx-1">
-                <button
-                  type="button"
-                  onClick={() => setCurrentTab("grocery")}
-                  className={clsx(
-                    "whitespace-nowrap rounded-full px-5 py-1.5 text-sm font-bold shadow-sm transition-colors",
-                    currentTab === "grocery" ? "bg-primary text-primary-foreground" : "border border-border/50 bg-surface text-muted-foreground"
-                  )}
-                >
-                  장보기
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setCurrentTab("todo")}
-                  className={clsx(
-                    "whitespace-nowrap rounded-full px-5 py-1.5 text-sm font-bold shadow-sm transition-colors",
-                    currentTab === "todo" ? "bg-primary text-primary-foreground" : "border border-border/50 bg-surface text-muted-foreground"
-                  )}
-                >
-                  할 일
-                </button>
-              </div>
-
               {currentTab === "grocery" ? (
                 <>
                   {/* Dominant summary */}
@@ -225,20 +230,16 @@ export default function HomeList(props: {
                   )}
 
                   {/* Lists */}
-                  <div className="flex flex-col gap-6">
-                    <SectionGroup label="장보기" count={grocery.filter((i) => !i.done).length}>
-                      <ItemRows items={grocery.filter((i) => !i.done)} onToggle={onToggleDone} onDelete={deleteItem} onEdit={handleEdit} onSelect={setSelectedItem} members={members} />
-                      {grocery.some((i) => i.done) && (
-                        <DoneDisclosure
-                          open={showDoneGrocery}
-                          onToggle={() => setShowDoneGrocery((v) => !v)}
-                          count={grocery.filter((i) => i.done).length}
-                        >
-                          <ItemRows items={grocery.filter((i) => i.done)} onToggle={onToggleDone} onDelete={deleteItem} onEdit={handleEdit} onSelect={setSelectedItem} members={members} />
-                        </DoneDisclosure>
-                      )}
-                    </SectionGroup>
-                  </div>
+                  <GroceryFolders
+                    items={items}
+                    members={members}
+                    onToggleDone={onToggleDone}
+                    onDelete={deleteItem}
+                    onEdit={handleEdit}
+                    onSelect={setSelectedItem}
+                    addItem={props.addItem}
+                    editItem={editItem}
+                  />
                 </>
               ) : (
                 <CalendarView 
@@ -334,6 +335,7 @@ function SwipeableItem({
   onToggle,
   onDelete,
   onEdit,
+  onMove,
   onSelect,
 }: {
   item: Item;
@@ -341,6 +343,7 @@ function SwipeableItem({
   onToggle: (id: string) => void;
   onDelete?: (id: string) => void;
   onEdit?: (item: Item) => void;
+  onMove?: (item: Item) => void;
   onSelect?: (item: Item) => void;
 }) {
   return (
@@ -369,12 +372,21 @@ function SwipeableItem({
           </div>
         </div>
         {/* Swipe Actions */}
-        {(onEdit || onDelete) && (
+        {(onEdit || onDelete || onMove) && (
           <div className="flex h-full shrink-0 snap-end">
+            {onMove && (
+              <button
+                type="button"
+                className="flex w-[72px] items-center justify-center bg-chrome/60 text-foreground font-bold text-sm"
+                onClick={() => onMove(item)}
+              >
+                이동
+              </button>
+            )}
             {onEdit && (
               <button
                 type="button"
-                className="flex w-20 items-center justify-center bg-primary/10 text-primary font-bold text-sm"
+                className="flex w-[72px] items-center justify-center bg-primary/10 text-primary font-bold text-sm"
                 onClick={() => onEdit(item)}
               >
                 수정
@@ -383,7 +395,7 @@ function SwipeableItem({
             {onDelete && (
               <button
                 type="button"
-                className="flex w-20 items-center justify-center bg-danger/10 text-danger font-bold text-sm"
+                className="flex w-[72px] items-center justify-center bg-danger/10 text-danger font-bold text-sm"
                 onClick={() => onDelete(item.id)}
               >
                 삭제
@@ -396,12 +408,13 @@ function SwipeableItem({
   );
 }
 
-function ItemRows({
+export function ItemRows({
   items,
   members,
   onToggle,
   onDelete,
   onEdit,
+  onMove,
   onSelect,
 }: {
   items: Item[];
@@ -409,6 +422,7 @@ function ItemRows({
   onToggle: (id: string) => void;
   onDelete?: (id: string) => void;
   onEdit?: (item: Item) => void;
+  onMove?: (item: Item) => void;
   onSelect?: (item: Item) => void;
 }) {
   if (items.length === 0) {
@@ -424,6 +438,7 @@ function ItemRows({
           onToggle={onToggle} 
           onDelete={onDelete} 
           onEdit={onEdit} 
+          onMove={onMove}
           onSelect={onSelect}
         />
       ))}
@@ -431,32 +446,29 @@ function ItemRows({
   );
 }
 
-function DoneDisclosure({
-  open,
-  onToggle,
+export function DoneDisclosure({
   count,
   children,
 }: {
-  open: boolean;
-  onToggle: () => void;
   count: number;
   children: React.ReactNode;
 }) {
+  const [open, setOpen] = useState(false);
   return (
-    <div className="border-t border-border/60">
+    <div className="mt-4 border-t border-border/40 pt-4">
       <button
         type="button"
-        onClick={onToggle}
-        className="flex min-h-11 w-full items-center gap-1 py-3 text-xs text-muted-foreground"
+        onClick={() => setOpen((prev) => !prev)}
+        className="mb-2 flex w-full items-center justify-between text-sm font-bold text-muted-foreground"
       >
+        <span>담음 ({count})</span>
         <IconChevronDown
-          size={14}
-          stroke={2}
+          size={16}
+          stroke={2.5}
           className={clsx("transition-transform duration-200", open && "rotate-180")}
         />
-        완료 {count}개 {open ? "숨기기" : "보기"}
       </button>
-      {open && <div className="pb-1">{children}</div>}
+      {open && children}
     </div>
   );
 }

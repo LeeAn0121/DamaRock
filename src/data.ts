@@ -1,4 +1,4 @@
-export type Category = "inbox" | "grocery" | "todo";
+export type Category = "inbox" | "grocery" | "todo" | "system";
 
 export type Member = {
   id: string;
