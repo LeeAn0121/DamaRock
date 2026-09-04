@@ -11,7 +11,7 @@ import {
   ShoppingCart,
   WifiOff,
 } from "lucide-react";
-import { MEMBERS, memberName, type Category, type Item } from "./data";
+import { memberName, type Category, type Item, type Member } from "./data";
 
 type ViewState = "normal" | "empty" | "loading" | "error";
 
@@ -24,6 +24,7 @@ function useUrlState(): ViewState {
 
 export default function HomeList({
   items,
+  members,
   onToggleDone,
   onAssignCategory,
   onQuickAdd,
@@ -31,6 +32,7 @@ export default function HomeList({
   onOpenSettings,
 }: {
   items: Item[];
+  members: Member[];
   onToggleDone: (id: string) => void;
   onAssignCategory: (id: string, category: Category) => void;
   onQuickAdd: (title: string) => void;
@@ -79,14 +81,14 @@ export default function HomeList({
           <span className="text-base font-bold tracking-tight text-primary">담아락</span>
           <div className="flex items-center gap-3">
             <div className="flex -space-x-2">
-              {MEMBERS.map((m, idx) => (
+              {members.map((m, idx) => (
                 <div
                   key={m.id}
                   className="relative flex h-7 w-7 items-center justify-center rounded-full border-2 border-background bg-chrome text-xs font-semibold text-chrome-foreground"
-                  style={{ zIndex: MEMBERS.length - idx }}
+                  style={{ zIndex: members.length - idx }}
                 >
                   {m.initial}
-                  {idx === 0 && (
+                  {m.online && (
                     <span className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full border-2 border-background bg-success" />
                   )}
                 </div>
@@ -165,28 +167,28 @@ export default function HomeList({
 
               {/* Grocery */}
               <SectionGroup icon={<ShoppingCart size={16} strokeWidth={1.75} />} label="장보기" count={grocery.filter((i) => !i.done).length}>
-                <ItemRows items={grocery.filter((i) => !i.done)} onToggle={onToggleDone} />
+                <ItemRows items={grocery.filter((i) => !i.done)} onToggle={onToggleDone} members={members} />
                 {grocery.some((i) => i.done) && (
                   <DoneDisclosure
                     open={showDoneGrocery}
                     onToggle={() => setShowDoneGrocery((v) => !v)}
                     count={grocery.filter((i) => i.done).length}
                   >
-                    <ItemRows items={grocery.filter((i) => i.done)} onToggle={onToggleDone} />
+                    <ItemRows items={grocery.filter((i) => i.done)} onToggle={onToggleDone} members={members} />
                   </DoneDisclosure>
                 )}
               </SectionGroup>
 
               {/* Todo */}
               <SectionGroup icon={<ListChecks size={16} strokeWidth={1.75} />} label="할 일" count={todo.filter((i) => !i.done).length}>
-                <ItemRows items={todo.filter((i) => !i.done)} onToggle={onToggleDone} />
+                <ItemRows items={todo.filter((i) => !i.done)} onToggle={onToggleDone} members={members} />
                 {todo.some((i) => i.done) && (
                   <DoneDisclosure
                     open={showDoneTodo}
                     onToggle={() => setShowDoneTodo((v) => !v)}
                     count={todo.filter((i) => i.done).length}
                   >
-                    <ItemRows items={todo.filter((i) => i.done)} onToggle={onToggleDone} />
+                    <ItemRows items={todo.filter((i) => i.done)} onToggle={onToggleDone} members={members} />
                   </DoneDisclosure>
                 )}
               </SectionGroup>
@@ -260,7 +262,15 @@ function SectionGroup({
   );
 }
 
-function ItemRows({ items, onToggle }: { items: Item[]; onToggle: (id: string) => void }) {
+function ItemRows({
+  items,
+  members,
+  onToggle,
+}: {
+  items: Item[];
+  members: Member[];
+  onToggle: (id: string) => void;
+}) {
   if (items.length === 0) {
     return <p className="py-4 text-center text-sm text-muted-foreground">모두 담아뒀어요</p>;
   }
@@ -291,7 +301,7 @@ function ItemRows({ items, onToggle }: { items: Item[]; onToggle: (id: string) =
                 {item.title}
               </span>
               <span className="block text-xs text-muted-foreground">
-                {memberName(item.addedBy)} 추가{item.meta ? ` · ${item.meta}` : ""}
+                {memberName(members, item.addedBy)} 추가{item.meta ? ` · ${item.meta}` : ""}
               </span>
             </span>
           </button>

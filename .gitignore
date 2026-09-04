@@ -1,3 +1,5 @@
 node_modules
 dist
 .styleseed/evidence
+.env
+.env.local

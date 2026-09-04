@@ -1,16 +1,22 @@
 import { useState } from "react";
 import { ChevronLeft, ChevronRight, LogOut, Users } from "lucide-react";
-import { MEMBERS } from "./data";
+import type { Member } from "./data";
 
 export default function SettingsPage({
+  familyName,
+  members,
   onBack,
   onOpenInvite,
+  onSignOut,
 }: {
+  familyName: string;
+  members: Member[];
   onBack: () => void;
   onOpenInvite: () => void;
+  onSignOut: () => void;
 }) {
   const [newItemAlerts, setNewItemAlerts] = useState(true);
-  const [doneAlerts, setDoneAlerts] = useState(false);
+  const [doneAlerts, setDoneAlerts] = useState(true);
 
   return (
     <div className="min-h-dvh bg-background font-sans text-foreground">
@@ -29,16 +35,16 @@ export default function SettingsPage({
 
         <main className="flex-1 overflow-y-auto px-4 pb-10 pt-4">
           <SettingsGroup label="우리집">
-            <SettingsRow label="가족 이름" trailing={<span className="text-sm text-muted-foreground">담아락</span>} />
+            <SettingsRow label="가족 이름" trailing={<span className="text-sm text-muted-foreground">{familyName}</span>} />
             <SettingsRow
               label="가족 구성원"
               icon={<Users size={17} strokeWidth={1.75} />}
               onClick={onOpenInvite}
               trailing={
                 <span className="flex items-center gap-2 text-sm text-muted-foreground">
-                  {MEMBERS.length}명
+                  {members.length}명
                   <span className="flex -space-x-1.5">
-                    {MEMBERS.map((m) => (
+                    {members.map((m) => (
                       <span
                         key={m.id}
                         className="flex h-5 w-5 items-center justify-center rounded-full border border-surface bg-chrome text-xs font-semibold text-chrome-foreground"
@@ -64,7 +70,12 @@ export default function SettingsPage({
           </SettingsGroup>
 
           <SettingsGroup label="계정">
-            <SettingsRow label="로그아웃" icon={<LogOut size={17} strokeWidth={1.75} />} chevron={false} />
+            <SettingsRow
+              label="로그아웃"
+              icon={<LogOut size={17} strokeWidth={1.75} />}
+              onClick={onSignOut}
+              chevron={false}
+            />
           </SettingsGroup>
 
           <p className="mt-8 text-center text-xs text-muted-foreground">담아락 v0.1.0</p>

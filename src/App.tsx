@@ -3,7 +3,10 @@ import HomeList from "./HomeList";
 import AddItemSheet from "./AddItemSheet";
 import SettingsPage from "./SettingsPage";
 import FamilyInvite from "./FamilyInvite";
-import { INITIAL_ITEMS, type Category, type Item } from "./data";
+import AuthScreen from "./AuthScreen";
+import FamilyOnboarding from "./FamilyOnboarding";
+import { useAppData } from "./hooks/useAppData";
+import type { Category, Item } from "./data";
 
 type Screen = "home" | "settings" | "invite";
 
@@ -15,50 +18,92 @@ function useInitialScreen(): Screen {
 }
 
 export default function App() {
+  const data = useAppData();
   const [screen, setScreen] = useState<Screen>(useInitialScreen);
-  const [items, setItems] = useState<Item[]>(INITIAL_ITEMS);
   const [addSheetOpen, setAddSheetOpen] = useState(
     () => typeof window !== "undefined" && new URLSearchParams(window.location.search).get("modal") === "add"
   );
 
-  const toggleDone = (id: string) => {
-    setItems((prev) => prev.map((i) => (i.id === id ? { ...i, done: !i.done } : i)));
-  };
+  if (data.status === "loading") {
+    return <div className="min-h-dvh bg-background" />;
+  }
 
-  const assignCategory = (id: string, category: Category) => {
-    setItems((prev) => prev.map((i) => (i.id === id ? { ...i, category } : i)));
-  };
+  if (data.status === "signed-out") {
+    return <AuthScreen />;
+  }
 
-  const quickAdd = (title: string) => {
-    setItems((prev) => [
-      { id: `d-${Date.now()}`, title, category: "inbox", done: false, addedBy: "me" },
-      ...prev,
-    ]);
-  };
+  if (data.status === "needs-family") {
+    return (
+      <FamilyOnboarding
+        onCreate={data.createFamily}
+        onJoin={data.joinFamily}
+        onSignOut={data.signOut}
+        error={data.error}
+      />
+    );
+  }
+
+  if (data.status === "error") {
+    return (
+      <div className="flex min-h-dvh flex-col items-center justify-center gap-3 bg-background px-6 text-center font-sans">
+        <p className="text-base font-medium text-foreground">문제가 생겼어요</p>
+        <p className="text-sm text-muted-foreground">{data.error}</p>
+        <button
+          type="button"
+          onClick={() => window.location.reload()}
+          className="mt-2 inline-flex min-h-11 items-center justify-center rounded-full bg-primary px-5 text-sm font-semibold text-primary-foreground"
+        >
+          다시 시도
+        </button>
+      </div>
+    );
+  }
 
   const addFromSheet = (item: Omit<Item, "id" | "done">) => {
-    setItems((prev) => [{ ...item, id: `d-${Date.now()}`, done: false }, ...prev]);
+    data.addItem({ title: item.title, category: item.category, assignee: item.assignee, meta: item.meta });
   };
 
   if (screen === "settings") {
-    return <SettingsPage onBack={() => setScreen("home")} onOpenInvite={() => setScreen("invite")} />;
+    return (
+      <SettingsPage
+        familyName={data.family?.name ?? "담아락"}
+        members={data.members}
+        onBack={() => setScreen("home")}
+        onOpenInvite={() => setScreen("invite")}
+        onSignOut={data.signOut}
+      />
+    );
   }
 
   if (screen === "invite") {
-    return <FamilyInvite onBack={() => setScreen("settings")} />;
+    return (
+      <FamilyInvite
+        family={data.family}
+        members={data.members}
+        invites={data.invites}
+        onCancelInvite={data.cancelInvite}
+        onBack={() => setScreen("settings")}
+      />
+    );
   }
 
   return (
     <>
       <HomeList
-        items={items}
-        onToggleDone={toggleDone}
-        onAssignCategory={assignCategory}
-        onQuickAdd={quickAdd}
+        items={data.items}
+        members={data.members}
+        onToggleDone={data.toggleDone}
+        onAssignCategory={(id: string, category: Category) => data.assignCategory(id, category)}
+        onQuickAdd={data.quickAdd}
         onOpenAddSheet={() => setAddSheetOpen(true)}
         onOpenSettings={() => setScreen("settings")}
       />
-      <AddItemSheet open={addSheetOpen} onClose={() => setAddSheetOpen(false)} onSubmit={addFromSheet} />
+      <AddItemSheet
+        open={addSheetOpen}
+        members={data.members}
+        onClose={() => setAddSheetOpen(false)}
+        onSubmit={addFromSheet}
+      />
     </>
   );
 }

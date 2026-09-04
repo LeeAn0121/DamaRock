@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { X } from "lucide-react";
-import { MEMBERS, type Category, type Item } from "./data";
+import type { Category, Item, Member } from "./data";
 
 type Draft = {
   title: string;
@@ -14,10 +14,12 @@ const DUE_CHIPS = ["오늘", "이번 주말", "다음 주"];
 
 export default function AddItemSheet({
   open,
+  members,
   onClose,
   onSubmit,
 }: {
   open: boolean;
+  members: Member[];
   onClose: () => void;
   onSubmit: (item: Omit<Item, "id" | "done">) => void;
 }) {
@@ -159,7 +161,7 @@ export default function AddItemSheet({
               담당자<span className="text-muted-foreground"> (선택)</span>
             </span>
             <div className="flex gap-3">
-              {MEMBERS.map((m) => (
+              {members.map((m) => (
                 <button
                   key={m.id}
                   type="button"
