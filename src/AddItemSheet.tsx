@@ -22,7 +22,7 @@ export default function AddItemSheet({
   open: boolean;
   members: Member[];
   onClose: () => void;
-  onSubmit: (item: Omit<Item, "id" | "done">) => void;
+  onSubmit: (item: Omit<Item, "id" | "done" | "created_at">) => void;
 }) {
   const [draft, setDraft] = useState<Draft>({ title: "", category: "grocery", note: "" });
 

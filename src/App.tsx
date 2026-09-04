@@ -59,7 +59,7 @@ export default function App() {
     );
   }
 
-  const addFromSheet = (item: Omit<Item, "id" | "done">) => {
+  const addFromSheet = (item: Omit<Item, "id" | "done" | "created_at">) => {
     data.addItem({ title: item.title, category: item.category, assignee: item.assignee, meta: item.meta });
   };
 

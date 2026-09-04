@@ -24,6 +24,7 @@ type ItemRow = {
   added_by: string;
   assignee: string | null;
   meta: string | null;
+  created_at: string;
 };
 
 export function useAppData() {
@@ -71,7 +72,7 @@ export function useAppData() {
             .returns<MemberRow[]>(),
           supabase
             .from("items")
-            .select("id, title, category, done, added_by, assignee, meta")
+            .select("id, title, category, done, added_by, assignee, meta, created_at")
             .eq("family_id", familyId)
             .order("created_at", { ascending: false })
             .returns<ItemRow[]>(),
@@ -109,6 +110,7 @@ export function useAppData() {
           addedBy: r.added_by,
           assignee: r.assignee ?? undefined,
           meta: r.meta ?? undefined,
+          created_at: r.created_at,
         }))
       );
       setInvites(

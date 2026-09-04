@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import clsx from "clsx";
 import { IconCheck, IconChecklist, IconChevronDown, IconInbox, IconPackage, IconPlus, IconSettings, IconShoppingCart, IconWifiOff } from "@tabler/icons-react";
 import { memberName, type Category, type Item, type Member } from "./data";
+import ActivitySheet from "./ActivitySheet";
 
 type ViewState = "normal" | "empty" | "loading" | "error";
 
@@ -36,6 +37,7 @@ export default function HomeList(props: {
   const [currentTab, setCurrentTab] = useState<"all" | "grocery" | "todo">("all");
   const [showDoneGrocery, setShowDoneGrocery] = useState(false);
   const [showDoneTodo, setShowDoneTodo] = useState(false);
+  const [activityOpen, setActivityOpen] = useState(false);
   const [draft, setDraft] = useState("");
 
   const activeItems = viewState === "empty" ? [] : items;
@@ -98,7 +100,7 @@ export default function HomeList(props: {
             <button
               type="button"
               aria-label="소식"
-              onClick={() => alert("소식 기능이 새로 생겼어요. 곧 우체통이 열립니다!")}
+              onClick={() => setActivityOpen(true)}
               className="flex h-11 w-11 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-chrome/60 active:bg-chrome"
             >
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -249,6 +251,13 @@ export default function HomeList(props: {
             </>
           )}
         </main>
+
+        <ActivitySheet
+          open={activityOpen}
+          items={items}
+          members={members}
+          onClose={() => setActivityOpen(false)}
+        />
 
         {/* Quick capture — always reachable at the thumb */}
         <div className="fixed inset-x-0 bottom-0 mx-auto w-full max-w-md">

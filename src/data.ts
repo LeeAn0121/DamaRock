@@ -17,6 +17,7 @@ export type Item = {
   addedBy: string;
   assignee?: string;
   meta?: string;
+  created_at: string;
 };
 
 export const memberName = (members: Member[], id?: string) =>
