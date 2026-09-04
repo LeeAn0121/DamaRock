@@ -254,7 +254,7 @@ export function useAppData() {
 
   const editItem = useCallback(
     async (id: string, title: string, meta?: string | null) => {
-      setItems((prev) => prev.map((i) => (i.id === id ? { ...i, title, ...(meta !== undefined ? { meta } : {}) } : i)));
+      setItems((prev) => prev.map((i) => (i.id === id ? { ...i, title, ...(meta !== undefined ? { meta: meta || undefined } : {}) } : i)));
       const updatePayload: any = { title };
       if (meta !== undefined) updatePayload.meta = meta;
       const { error: updateError } = await supabase.from("items").update(updatePayload).eq("id", id);

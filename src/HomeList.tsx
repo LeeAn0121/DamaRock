@@ -52,10 +52,6 @@ export default function HomeList(props: {
   const [activityOpen, setActivityOpen] = useState(false);
   const [draft, setDraft] = useState("");
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
-  
-  // Edit mode state
-  const [editMode, setEditMode] = useState(false);
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   const handleEdit = (item: Item) => {
     const newTitle = window.prompt("수정할 내용을 입력하세요:", item.title);
@@ -75,15 +71,6 @@ export default function HomeList(props: {
     }
   };
 
-  const handleSelectToggle = (id: string) => {
-    setSelectedIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  };
-
   const activeItems = viewState === "empty" ? [] : items;
   const inbox = activeItems.filter((i) => i.category === "inbox");
   const grocery = activeItems.filter((i) => i.category === "grocery");
@@ -97,16 +84,6 @@ export default function HomeList(props: {
     const todoLeft = todo.filter((i) => !i.done).length;
     return `장보기 ${groceryLeft} · 할 일 ${todoLeft}`;
   }, [grocery, todo]);
-
-  const submitDraft = () => {
-    const text = draft.trim();
-    if (!text) {
-      onOpenAddSheet();
-      return;
-    }
-    onQuickAdd(text);
-    setDraft("");
-  };
 
   if (viewState === "loading") {
     return <LoadingState />;
@@ -126,19 +103,6 @@ export default function HomeList(props: {
             <span className="text-xl font-extrabold tracking-tight text-primary">담아락</span>
           </div>
           <div className="flex items-center gap-3">
-            <button
-              onClick={() => {
-                if (editMode) {
-                  setEditMode(false);
-                  setSelectedIds(new Set());
-                } else {
-                  setEditMode(true);
-                }
-              }}
-              className="text-sm font-bold text-muted-foreground transition-colors hover:text-foreground"
-            >
-              {editMode ? "완료" : "편집"}
-            </button>
             <div className="flex -space-x-2">
               {members.map((m, idx) => (
                 <div
@@ -263,14 +227,14 @@ export default function HomeList(props: {
                   {/* Lists */}
                   <div className="flex flex-col gap-6">
                     <SectionGroup label="장보기" count={grocery.filter((i) => !i.done).length}>
-                      <ItemRows items={grocery.filter((i) => !i.done)} onToggle={onToggleDone} onDelete={deleteItem} onEdit={handleEdit} onSelect={setSelectedItem} editMode={editMode} selectedIds={selectedIds} onSelectToggle={handleSelectToggle} members={members} />
+                      <ItemRows items={grocery.filter((i) => !i.done)} onToggle={onToggleDone} onDelete={deleteItem} onEdit={handleEdit} onSelect={setSelectedItem} members={members} />
                       {grocery.some((i) => i.done) && (
                         <DoneDisclosure
                           open={showDoneGrocery}
                           onToggle={() => setShowDoneGrocery((v) => !v)}
                           count={grocery.filter((i) => i.done).length}
                         >
-                          <ItemRows items={grocery.filter((i) => i.done)} onToggle={onToggleDone} onDelete={deleteItem} onEdit={handleEdit} onSelect={setSelectedItem} editMode={editMode} selectedIds={selectedIds} onSelectToggle={handleSelectToggle} members={members} />
+                          <ItemRows items={grocery.filter((i) => i.done)} onToggle={onToggleDone} onDelete={deleteItem} onEdit={handleEdit} onSelect={setSelectedItem} members={members} />
                         </DoneDisclosure>
                       )}
                     </SectionGroup>
@@ -309,83 +273,36 @@ export default function HomeList(props: {
         )}
 
         {/* Bottom bar */}
-        {editMode ? (
+        {currentTab === "grocery" && (
           <div className="fixed inset-x-0 bottom-0 mx-auto w-full max-w-md z-10">
-            <div className="bg-surface/80 px-5 pb-[calc(env(safe-area-inset-bottom)+16px)] pt-4 backdrop-blur-md border-t border-border/40 shadow-[0_-8px_16px_rgba(0,0,0,0.05)]">
-              <div className="flex gap-2">
+            <div className="bg-surface/80 px-5 pb-[calc(env(safe-area-inset-bottom)+16px)] pt-4 backdrop-blur-md">
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  if (draft.trim()) {
+                    props.addItem({ title: draft.trim(), category: "grocery" });
+                    setDraft("");
+                  }
+                }}
+                className="flex items-center gap-3 rounded-full border border-border/50 bg-background p-1.5 shadow-sm focus-within:border-primary/50 focus-within:ring-2 focus-within:ring-primary/20"
+              >
+                <input
+                  value={draft}
+                  onChange={(e) => setDraft(e.target.value)}
+                  type="text"
+                  placeholder="장보기 항목을 추가하세요..."
+                  className="h-11 min-w-0 flex-1 bg-transparent px-4 text-base text-foreground placeholder:text-muted-foreground focus:outline-none"
+                />
                 <button
-                  type="button"
-                  disabled={selectedIds.size === 0}
-                  onClick={() => {
-                    moveItems(Array.from(selectedIds), "grocery");
-                    setEditMode(false);
-                    setSelectedIds(new Set());
-                  }}
-                  className="flex-1 rounded-xl bg-surface border border-border/50 py-3 text-sm font-bold text-foreground disabled:opacity-50"
+                  type="submit"
+                  disabled={!draft.trim()}
+                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-sm transition-transform active:scale-95 disabled:opacity-50"
                 >
-                  장보기로
+                  <IconPlus size={22} stroke={2.5} />
                 </button>
-                <button
-                  type="button"
-                  disabled={selectedIds.size === 0}
-                  onClick={() => {
-                    moveItems(Array.from(selectedIds), "todo");
-                    setEditMode(false);
-                    setSelectedIds(new Set());
-                  }}
-                  className="flex-1 rounded-xl bg-surface border border-border/50 py-3 text-sm font-bold text-foreground disabled:opacity-50"
-                >
-                  할 일로
-                </button>
-                <button
-                  type="button"
-                  disabled={selectedIds.size === 0}
-                  onClick={() => {
-                    if (window.confirm(`${selectedIds.size}개의 항목을 삭제하시겠습니까?`)) {
-                      selectedIds.forEach((id) => deleteItem(id));
-                      setEditMode(false);
-                      setSelectedIds(new Set());
-                    }
-                  }}
-                  className="flex-1 rounded-xl bg-danger text-danger-foreground py-3 text-sm font-bold disabled:opacity-50"
-                >
-                  삭제
-                </button>
-              </div>
+              </form>
             </div>
           </div>
-        ) : (
-          currentTab === "grocery" && (
-            <div className="fixed inset-x-0 bottom-0 mx-auto w-full max-w-md z-10">
-              <div className="bg-surface/80 px-5 pb-[calc(env(safe-area-inset-bottom)+16px)] pt-4 backdrop-blur-md">
-                <form
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    if (draft.trim()) {
-                      props.addItem({ title: draft.trim(), category: "grocery", meta: null });
-                      setDraft("");
-                    }
-                  }}
-                  className="flex items-center gap-3 rounded-full border border-border/50 bg-background p-1.5 shadow-sm focus-within:border-primary/50 focus-within:ring-2 focus-within:ring-primary/20"
-                >
-                  <input
-                    value={draft}
-                    onChange={(e) => setDraft(e.target.value)}
-                    type="text"
-                    placeholder="장보기 항목을 추가하세요..."
-                    className="h-11 min-w-0 flex-1 bg-transparent px-4 text-base text-foreground placeholder:text-muted-foreground focus:outline-none"
-                  />
-                  <button
-                    type="submit"
-                    disabled={!draft.trim()}
-                    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-sm transition-transform active:scale-95 disabled:opacity-50"
-                  >
-                    <IconPlus size={22} stroke={2.5} />
-                  </button>
-                </form>
-              </div>
-            </div>
-          )
         )}
       </div>
     </div>
@@ -418,9 +335,6 @@ function SwipeableItem({
   onDelete,
   onEdit,
   onSelect,
-  editMode,
-  selected,
-  onSelectToggle,
 }: {
   item: Item;
   members: Member[];
@@ -428,29 +342,24 @@ function SwipeableItem({
   onDelete?: (id: string) => void;
   onEdit?: (item: Item) => void;
   onSelect?: (item: Item) => void;
-  editMode?: boolean;
-  selected?: boolean;
-  onSelectToggle?: (id: string) => void;
 }) {
   return (
     <li className="relative flex overflow-x-auto snap-x snap-mandatory scrollbar-hide">
       <div className="flex w-full min-w-full shrink-0 items-center snap-start">
         <div className="flex-1 pr-4">
-          <div className="flex min-h-11 w-full items-center gap-3 py-3 text-left bg-surface cursor-pointer" onClick={() => editMode ? onSelectToggle?.(item.id) : onSelect?.(item)}>
+          <div className="flex min-h-11 w-full items-center gap-3 py-3 text-left bg-surface cursor-pointer" onClick={() => onSelect?.(item)}>
             <button
               type="button"
-              onClick={(e) => { e.stopPropagation(); editMode ? onSelectToggle?.(item.id) : onToggle(item.id); }}
+              onClick={(e) => { e.stopPropagation(); onToggle(item.id); }}
               className={clsx(
                 "flex h-5 w-5 shrink-0 items-center justify-center rounded transition-colors",
-                editMode
-                  ? selected ? "bg-primary text-primary-foreground" : "border-2 border-border"
-                  : item.done ? "border-2 border-primary bg-primary text-primary-foreground" : "border-2 border-border text-transparent"
+                item.done ? "border-2 border-primary bg-primary text-primary-foreground" : "border-2 border-border text-transparent"
               )}
             >
-              {(editMode ? selected : item.done) && <IconCheck size={13} stroke={3} />}
+              {item.done && <IconCheck size={13} stroke={3} />}
             </button>
             <span className="min-w-0 flex-1">
-              <span className={clsx("block truncate text-base", !editMode && item.done ? "text-muted-foreground line-through" : "text-foreground")}>
+              <span className={clsx("block truncate text-base", item.done ? "text-muted-foreground line-through" : "text-foreground")}>
                 {item.title}
               </span>
               <span className="block text-xs text-muted-foreground">
@@ -460,7 +369,7 @@ function SwipeableItem({
           </div>
         </div>
         {/* Swipe Actions */}
-        {!editMode && (onEdit || onDelete) && (
+        {(onEdit || onDelete) && (
           <div className="flex h-full shrink-0 snap-end">
             {onEdit && (
               <button
@@ -494,9 +403,6 @@ function ItemRows({
   onDelete,
   onEdit,
   onSelect,
-  editMode,
-  selectedIds,
-  onSelectToggle,
 }: {
   items: Item[];
   members: Member[];
@@ -504,9 +410,6 @@ function ItemRows({
   onDelete?: (id: string) => void;
   onEdit?: (item: Item) => void;
   onSelect?: (item: Item) => void;
-  editMode?: boolean;
-  selectedIds?: Set<string>;
-  onSelectToggle?: (id: string) => void;
 }) {
   if (items.length === 0) {
     return <p className="py-4 text-center text-sm text-muted-foreground">모두 담아뒀어요</p>;
@@ -522,9 +425,6 @@ function ItemRows({
           onDelete={onDelete} 
           onEdit={onEdit} 
           onSelect={onSelect}
-          editMode={editMode}
-          selected={selectedIds?.has(item.id)}
-          onSelectToggle={onSelectToggle}
         />
       ))}
     </ul>
