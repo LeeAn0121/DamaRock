@@ -44,23 +44,23 @@ export default function FamilyInvite({
   };
 
   return (
-    <div className="min-h-dvh bg-background font-sans text-foreground">
+    <div className="flex min-h-dvh flex-col bg-gradient-to-b from-background via-background to-primary/5 font-sans text-foreground pb-10">
       <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col">
-        <header className="flex items-center gap-1 border-b border-border/60 px-2 py-3">
+        <header className="flex items-center gap-1 border-b border-border/40 px-2 py-3 bg-background/80 backdrop-blur-md sticky top-0 z-10">
           <button
             type="button"
             aria-label="뒤로"
             onClick={onBack}
-            className="flex h-11 w-11 items-center justify-center rounded-full text-muted-foreground hover:bg-chrome/60 active:bg-chrome"
+            className="flex h-11 w-11 items-center justify-center rounded-full text-muted-foreground hover:bg-chrome/60 active:bg-chrome transition-colors"
           >
-            <IconChevronLeft size={20} stroke={1.75} />
+            <IconChevronLeft size={20} stroke={2} />
           </button>
-          <h1 className="text-base font-bold text-foreground">가족 구성원</h1>
+          <h1 className="text-base font-extrabold text-foreground tracking-tight">가족 구성원</h1>
         </header>
 
-        <main className="flex-1 overflow-y-auto px-5 pb-10 pt-4">
+        <main className="flex-1 overflow-y-auto px-5 pb-10 pt-6">
           {/* Dominant invite block */}
-          <section className="rounded-3xl bg-surface p-6 text-center shadow-sm">
+          <section className="rounded-3xl bg-surface p-7 text-center shadow-sm border border-border/60">
             <p className="text-sm font-medium text-muted-foreground">이 코드로 우리집에 초대하세요</p>
             <p className="mt-3 text-5xl font-extrabold tracking-[0.1em] text-primary">{code}</p>
             <div className="mt-6 flex gap-3">

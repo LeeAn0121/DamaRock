@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "./lib/supabaseClient";
+import { IconCheck } from "@tabler/icons-react";
 
 function KakaoMark() {
   return (
@@ -60,55 +61,70 @@ export default function AuthScreen() {
     });
 
   return (
-    <div className="flex min-h-dvh flex-col items-center justify-center bg-background px-6 font-sans text-foreground pb-10">
-      <span className="text-xl font-extrabold tracking-tight text-primary">담아락</span>
-      <h1 className="mt-5 text-center text-3xl font-extrabold leading-snug text-foreground">
-        우리집 장보기와 할 일을
-        <br />
-        가족과 한곳에 모아요.
-      </h1>
-      <p className="mt-4 text-center text-sm font-medium leading-relaxed text-muted-foreground">
-        누가 적어도 그 순간 모두의 화면에 함께 채워져요.
-        <br />
-        초대 코드 하나면 가족과 바로 시작해요.
-      </p>
+    <div className="flex min-h-dvh flex-col items-center justify-center px-6 font-sans text-foreground pb-12 relative overflow-hidden bg-gradient-to-b from-background via-background to-primary/5">
+      {/* Background decoration */}
+      <div className="absolute top-0 left-0 w-full h-1/2 bg-gradient-to-b from-primary/10 to-transparent pointer-events-none" />
+      
+      <div className="z-10 flex flex-col items-center max-w-sm w-full">
+        <div className="flex items-center gap-2 mb-8">
+          <img src={`${import.meta.env.BASE_URL}icon-192.png`} alt="담아락" className="h-10 w-10 rounded-xl shadow-md border border-border/50" />
+          <span className="text-3xl font-extrabold tracking-tight text-primary">담아락</span>
+        </div>
 
-      <div className="mt-8 flex flex-col gap-4 text-sm font-medium text-foreground">
-        <ul className="flex flex-col gap-2 rounded-2xl bg-surface p-5 shadow-sm border border-primary/20 text-muted-foreground">
-          <li className="flex items-start gap-2"><span className="text-primary">•</span> 장보기 탭과 할일 탭, 따로 또 같이</li>
-          <li className="flex items-start gap-2"><span className="text-primary">•</span> 항목 안에서 메모와 댓글로 바로 상의해요</li>
-          <li className="flex items-start gap-2"><span className="text-primary">•</span> 폴더로 우리 방식대로 정리, 검색은 한 번에</li>
-          <li className="flex items-start gap-2"><span className="text-primary">•</span> 마감일 있는 할일은 캘린더로 한눈에</li>
-        </ul>
-      </div>
+        <h1 className="text-center text-3xl font-extrabold leading-tight text-foreground tracking-tight">
+          우리집 장보기와 할 일을<br />
+          <span className="text-primary">가족과 한곳에</span>
+        </h1>
+        <p className="mt-4 text-center text-[15px] font-medium leading-relaxed text-muted-foreground/90">
+          누가 적어도 실시간으로 함께 채워져요.<br />
+          초대 코드 하나면 가족과 바로 시작할 수 있어요.
+        </p>
 
-      <div className="mt-12 flex w-full max-w-xs flex-col gap-3">
-        <button
-          type="button"
-          onClick={() => signIn("kakao")}
-          className="relative flex min-h-14 items-center justify-center rounded-xl bg-[#FEE500] text-sm font-bold text-[#191600] shadow-sm transition-transform active:scale-[0.98]"
-        >
-          <span className="absolute left-5 flex items-center">
-            <KakaoMark />
-          </span>
-          카카오로 시작하기
-        </button>
-        <button
-          type="button"
-          onClick={() => signIn("google")}
-          className="relative flex min-h-14 items-center justify-center rounded-xl border border-border/50 bg-surface text-sm font-bold text-foreground shadow-sm transition-transform active:scale-[0.98]"
-        >
-          <span className="absolute left-5 flex items-center">
-            <GoogleMark />
-          </span>
-          Google로 시작하기
-        </button>
+        <div className="mt-10 w-full rounded-2xl bg-surface/80 p-5 shadow-sm border border-border/40 backdrop-blur-sm">
+          <ul className="flex flex-col gap-3.5 text-[14px] font-medium text-foreground">
+            <li className="flex items-center gap-3">
+              <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-primary"><IconCheck size={14} stroke={3} /></div>
+              장보기 항목과 할 일을 깔끔하게 관리
+            </li>
+            <li className="flex items-center gap-3">
+              <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-primary"><IconCheck size={14} stroke={3} /></div>
+              캘린더로 일정을 한눈에 파악
+            </li>
+            <li className="flex items-center gap-3">
+              <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-primary"><IconCheck size={14} stroke={3} /></div>
+              항목별 실시간 댓글로 쉽게 상의해요
+            </li>
+          </ul>
+        </div>
 
-        {authError && (
-          <div className="mt-4 rounded-xl bg-danger/10 p-4 text-center text-sm font-medium text-danger">
-            {authError}
-          </div>
-        )}
+        <div className="mt-12 flex w-full flex-col gap-3">
+          <button
+            type="button"
+            onClick={() => signIn("kakao")}
+            className="relative flex h-14 items-center justify-center rounded-2xl bg-[#FEE500] text-[15px] font-bold text-[#191600] shadow-sm transition-transform hover:bg-[#f4dc00] active:scale-[0.98]"
+          >
+            <span className="absolute left-5 flex items-center">
+              <KakaoMark />
+            </span>
+            카카오로 시작하기
+          </button>
+          <button
+            type="button"
+            onClick={() => signIn("google")}
+            className="relative flex h-14 items-center justify-center rounded-2xl border border-border bg-surface text-[15px] font-bold text-foreground shadow-sm transition-transform hover:bg-chrome/50 active:scale-[0.98]"
+          >
+            <span className="absolute left-5 flex items-center">
+              <GoogleMark />
+            </span>
+            Google로 시작하기
+          </button>
+
+          {authError && (
+            <div className="mt-4 rounded-xl bg-danger/10 p-4 text-center text-sm font-medium text-danger border border-danger/20">
+              {authError}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
