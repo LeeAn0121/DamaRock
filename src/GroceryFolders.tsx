@@ -24,8 +24,8 @@ export default function GroceryFolders({
   addItem: (item: Pick<Item, "title" | "category" | "meta">) => void;
   editItem: (id: string, title: string, meta?: string | null) => void;
 }) {
-  const groceryItems = items.filter((i) => i.category === "grocery");
-  const systemItem = items.find((i) => i.category === "system" && i.title === "folders");
+  const systemItem = items.find((i) => i.title === "__SYSTEM_FOLDERS__");
+  const groceryItems = items.filter((i) => i.category === "grocery" && i.title !== "__SYSTEM_FOLDERS__");
   
   const folders: Folder[] = useMemo(() => {
     if (!systemItem?.meta) return [];
@@ -39,9 +39,9 @@ export default function GroceryFolders({
   const saveFolders = (newFolders: Folder[]) => {
     const meta = JSON.stringify(newFolders);
     if (systemItem) {
-      editItem(systemItem.id, "folders", meta);
+      editItem(systemItem.id, "__SYSTEM_FOLDERS__", meta);
     } else {
-      addItem({ title: "folders", category: "system", meta });
+      addItem({ title: "__SYSTEM_FOLDERS__", category: "grocery", meta });
     }
   };
 
@@ -102,7 +102,7 @@ export default function GroceryFolders({
         </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="flex flex-col gap-6 mt-4">
         {folders.map(folder => {
           const folderItems = grouped.get(folder.id) || [];
           const active = folderItems.filter(i => !i.done);
