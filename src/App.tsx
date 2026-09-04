@@ -105,11 +105,14 @@ export default function App() {
       <HomeList
         items={data.items}
         members={data.members}
+        userId={data.userId}
+        familyId={data.family?.id ?? null}
         onToggleDone={data.toggleDone}
         onAssignCategory={(id: string, category: Category) => data.assignCategory(id, category)}
         onQuickAdd={data.quickAdd}
         addItem={data.addItem}
         editItem={data.editItem}
+        moveItems={data.moveItems}
         onOpenAddSheet={() => setAddSheetOpen(true)}
         onOpenSettings={() => setScreen("settings")}
         deleteItem={data.deleteItem}
