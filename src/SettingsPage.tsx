@@ -26,24 +26,21 @@ export default function SettingsPage({
   return (
     <div className="min-h-dvh bg-background font-sans text-foreground">
       <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col">
-        {/* Hero band */}
-        <div className="rounded-b-[32px] bg-primary px-2 pt-6 pb-16">
-          <header className="flex items-center gap-1">
-            <button
-              type="button"
-              aria-label="뒤로"
-              onClick={onBack}
-              className="flex h-11 w-11 items-center justify-center rounded-full text-primary-foreground/80 hover:bg-primary-foreground/10 active:bg-primary-foreground/15"
-            >
-              <IconChevronLeft size={20} stroke={1.75} />
-            </button>
-            <h1 className="text-base font-bold text-primary-foreground">설정</h1>
-          </header>
-        </div>
+        <header className="flex items-center gap-1 border-b border-border/60 px-2 py-3">
+          <button
+            type="button"
+            aria-label="뒤로"
+            onClick={onBack}
+            className="flex h-11 w-11 items-center justify-center rounded-full text-muted-foreground hover:bg-chrome/60 active:bg-chrome"
+          >
+            <IconChevronLeft size={20} stroke={1.75} />
+          </button>
+          <h1 className="text-base font-bold text-foreground">설정</h1>
+        </header>
 
-        <main className="flex-1 overflow-y-auto px-4 pb-10">
-          {/* Floating profile card */}
-          <section className="relative -mt-4 flex items-center gap-4 rounded-2xl bg-surface p-5 shadow-[0_12px_32px_-10px_rgba(20,40,30,0.35)]">
+        <main className="flex-1 overflow-y-auto px-4 pb-10 pt-4">
+          {/* Profile */}
+          <section className="flex items-center gap-4 rounded-lg border border-border bg-surface p-4">
             <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-chrome text-xl font-bold text-chrome-foreground">
               {me?.initial ?? "나"}
             </span>
@@ -110,7 +107,7 @@ function SettingsGroup({ label, children }: { label: string; children: React.Rea
   return (
     <section className="mt-6">
       <h2 className="mb-2 px-1 text-sm font-bold text-muted-foreground">{label}</h2>
-      <div className="divide-y divide-border/60 rounded-2xl border border-border/60 bg-surface">
+      <div className="divide-y divide-border/60 rounded-lg border border-border bg-surface">
         {children}
       </div>
     </section>

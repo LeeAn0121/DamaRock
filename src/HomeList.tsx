@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import clsx from "clsx";
-import { IconCheck, IconChecklist, IconChevronDown, IconInbox, IconPackage, IconPlaylistAdd, IconPlus, IconSettings, IconShoppingCart, IconWifiOff } from "@tabler/icons-react";
+import { IconCheck, IconChecklist, IconChevronDown, IconInbox, IconPackage, IconPlus, IconSettings, IconShoppingCart, IconWifiOff } from "@tabler/icons-react";
 import { memberName, type Category, type Item, type Member } from "./data";
 
 type ViewState = "normal" | "empty" | "loading" | "error";
@@ -50,7 +50,10 @@ export default function HomeList({
 
   const submitDraft = () => {
     const text = draft.trim();
-    if (!text) return;
+    if (!text) {
+      onOpenAddSheet();
+      return;
+    }
     onQuickAdd(text);
     setDraft("");
   };
@@ -66,58 +69,52 @@ export default function HomeList({
   return (
     <div className="min-h-dvh bg-background font-sans text-foreground">
       <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col">
-        {/* Hero band */}
-        <div className="rounded-b-[32px] bg-primary px-4 pt-6 pb-16">
-          <header className="flex items-center justify-between">
-            <span className="text-base font-bold tracking-tight text-primary-foreground">담아락</span>
-            <div className="flex items-center gap-3">
-              <div className="flex -space-x-2">
-                {members.map((m, idx) => (
-                  <div
-                    key={m.id}
-                    className="relative flex h-7 w-7 items-center justify-center rounded-full border-2 border-primary bg-primary-foreground/90 text-xs font-bold text-primary"
-                    style={{ zIndex: members.length - idx }}
-                  >
-                    {m.initial}
-                    {m.online && (
-                      <span className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full border-2 border-primary bg-success" />
-                    )}
-                  </div>
-                ))}
-              </div>
-              <button
-                type="button"
-                aria-label="설정"
-                onClick={onOpenSettings}
-                className="flex h-11 w-11 items-center justify-center rounded-full text-primary-foreground/80 transition-colors hover:bg-primary-foreground/10 active:bg-primary-foreground/15"
-              >
-                <IconSettings size={19} stroke={1.75} />
-              </button>
+        {/* Standard nav bar */}
+        <header className="flex items-center justify-between border-b border-border/60 px-4 py-3">
+          <span className="text-base font-bold tracking-tight text-primary">담아락</span>
+          <div className="flex items-center gap-3">
+            <div className="flex -space-x-2">
+              {members.map((m, idx) => (
+                <div
+                  key={m.id}
+                  className="relative flex h-7 w-7 items-center justify-center rounded-full border-2 border-background bg-chrome text-xs font-bold text-chrome-foreground"
+                  style={{ zIndex: members.length - idx }}
+                >
+                  {m.initial}
+                  {m.online && (
+                    <span className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full border-2 border-background bg-success" />
+                  )}
+                </div>
+              ))}
             </div>
-          </header>
-          <p className="mt-5 text-sm text-primary-foreground/85">우리집 공유 리스트</p>
-        </div>
+            <button
+              type="button"
+              aria-label="설정"
+              onClick={onOpenSettings}
+              className="flex h-11 w-11 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-chrome/60 active:bg-chrome"
+            >
+              <IconSettings size={19} stroke={1.75} />
+            </button>
+          </div>
+        </header>
 
         {/* Content */}
-        <main className="flex-1 overflow-y-auto px-4 pb-36">
+        <main className="flex-1 overflow-y-auto px-4 pb-36 pt-4">
+          <h1 className="text-sm text-muted-foreground">우리집 공유 리스트</h1>
+
           {activeItems.length === 0 ? (
-            <div className="-mt-4">
-              <EmptyState />
-            </div>
+            <EmptyState />
           ) : (
             <>
-              {/* Floating dominant summary */}
-              <section
-                aria-label="오늘의 상태"
-                className="relative -mt-4 rounded-2xl bg-surface p-5 shadow-[0_12px_32px_-10px_rgba(20,40,30,0.35)]"
-              >
+              {/* Dominant summary */}
+              <section aria-label="오늘의 상태" className="mt-3 rounded-lg border border-border bg-surface p-4">
                 <div className="flex items-baseline gap-2">
-                  <span className="text-5xl font-bold leading-none tracking-tight text-foreground">
+                  <span className="text-4xl font-bold leading-none tracking-tight text-foreground">
                     {remaining}
                   </span>
                   <span className="text-base text-muted-foreground">개 남았어요</span>
                 </div>
-                <div className="mt-3 flex items-center gap-2 text-sm text-muted-foreground">
+                <div className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
                   <span>{summaryLine}</span>
                   {doneToday > 0 && (
                     <span className="flex items-center gap-1 text-success">
@@ -140,14 +137,14 @@ export default function HomeList({
                           <button
                             type="button"
                             onClick={() => onAssignCategory(item.id, "grocery")}
-                            className="inline-flex min-h-11 items-center justify-center rounded-full border border-border px-3 text-xs text-muted-foreground transition-colors hover:border-primary hover:text-primary active:bg-chrome"
+                            className="inline-flex min-h-11 items-center justify-center rounded border border-border px-3 text-xs text-muted-foreground transition-colors hover:border-primary hover:text-primary active:bg-chrome"
                           >
                             장보기
                           </button>
                           <button
                             type="button"
                             onClick={() => onAssignCategory(item.id, "todo")}
-                            className="inline-flex min-h-11 items-center justify-center rounded-full border border-border px-3 text-xs text-muted-foreground transition-colors hover:border-primary hover:text-primary active:bg-chrome"
+                            className="inline-flex min-h-11 items-center justify-center rounded border border-border px-3 text-xs text-muted-foreground transition-colors hover:border-primary hover:text-primary active:bg-chrome"
                           >
                             할 일
                           </button>
@@ -191,7 +188,7 @@ export default function HomeList({
 
         {/* Quick capture — always reachable at the thumb */}
         <div className="fixed inset-x-0 bottom-0 mx-auto w-full max-w-md">
-          <div className="border-t border-border/70 bg-surface/95 px-4 pb-[calc(env(safe-area-inset-bottom)+12px)] pt-3 backdrop-blur">
+          <div className="border-t border-border bg-surface px-4 pb-[calc(env(safe-area-inset-bottom)+12px)] pt-3">
             <form
               onSubmit={(e) => {
                 e.preventDefault();
@@ -199,27 +196,18 @@ export default function HomeList({
               }}
               className="flex items-center gap-2"
             >
-              <button
-                type="button"
-                aria-label="자세히 담기"
-                onClick={onOpenAddSheet}
-                className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:border-primary hover:text-primary active:bg-chrome"
-              >
-                <IconPlaylistAdd size={20} stroke={1.75} />
-              </button>
               <input
                 value={draft}
                 onChange={(e) => setDraft(e.target.value)}
                 type="text"
                 placeholder="다 떨어진 것이나 할 일을 적어보세요"
                 aria-label="새 항목 담기"
-                className="h-12 min-w-0 flex-1 rounded-full border border-border bg-chrome/40 px-4 text-base text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-focus/40"
+                className="h-11 min-w-0 flex-1 rounded border border-border bg-background px-3 text-base text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-focus/40"
               />
               <button
                 type="submit"
-                disabled={!draft.trim()}
-                aria-label="담기"
-                className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground transition-transform disabled:bg-chrome disabled:text-muted-foreground active:scale-95"
+                aria-label={draft.trim() ? "담기" : "자세히 담기"}
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded bg-primary text-primary-foreground transition-transform active:scale-95"
               >
                 <IconPlus size={22} stroke={2} />
               </button>
@@ -250,7 +238,7 @@ function SectionGroup({
         <span className="text-sm text-border">·</span>
         <span className="text-sm">{count}</span>
       </div>
-      <div className="rounded-2xl bg-chrome/40 px-3 py-1">{children}</div>
+      <div className="rounded-lg border border-border bg-surface px-3">{children}</div>
     </section>
   );
 }
@@ -278,13 +266,13 @@ function ItemRows({
           >
             <span
               className={clsx(
-                "flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 transition-colors",
+                "flex h-5 w-5 shrink-0 items-center justify-center rounded border-2 transition-colors",
                 item.done
                   ? "border-primary bg-primary text-primary-foreground"
                   : "border-border text-transparent"
               )}
             >
-              <IconCheck size={14} stroke={2.5} />
+              <IconCheck size={13} stroke={3} />
             </span>
             <span className="min-w-0 flex-1">
               <span
@@ -338,8 +326,8 @@ function DoneDisclosure({
 
 function EmptyState() {
   return (
-    <div className="relative rounded-2xl bg-surface px-6 py-14 text-center shadow-[0_12px_32px_-10px_rgba(20,40,30,0.35)]">
-      <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-chrome/60 text-muted-foreground">
+    <div className="mt-16 flex flex-col items-center px-6 text-center">
+      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-chrome/60 text-muted-foreground">
         <IconPackage size={26} stroke={1.5} />
       </div>
       <p className="mt-4 text-base font-bold text-foreground">아직 담긴 게 없어요</p>
@@ -356,19 +344,17 @@ function LoadingState() {
   return (
     <div className="min-h-dvh bg-background font-sans">
       <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col">
-        <div className="rounded-b-[32px] bg-primary px-4 pt-6 pb-16">
-          <div className="flex items-center justify-between">
-            <span className="text-base font-bold text-primary-foreground">담아락</span>
-            <div className="h-9 w-9 animate-pulse rounded-full bg-primary-foreground/20" />
-          </div>
-          <div className="mt-5 h-4 w-32 animate-pulse rounded-full bg-primary-foreground/20" />
+        <div className="flex items-center justify-between border-b border-border/60 px-4 py-3">
+          <span className="text-base font-bold text-primary">담아락</span>
+          <div className="h-9 w-9 animate-pulse rounded-full bg-chrome" />
         </div>
-        <div className="px-4">
-          <div className="-mt-4 h-28 animate-pulse rounded-2xl bg-surface shadow-[0_12px_32px_-10px_rgba(20,40,30,0.2)]" />
-          <div className="mt-6 h-4 w-20 animate-pulse rounded-full bg-chrome" />
-          <div className="mt-2 h-40 animate-pulse rounded-2xl bg-chrome/50" />
-          <div className="mt-6 h-4 w-16 animate-pulse rounded-full bg-chrome" />
-          <div className="mt-2 h-32 animate-pulse rounded-2xl bg-chrome/50" />
+        <div className="px-4 pt-4">
+          <div className="h-4 w-32 animate-pulse rounded bg-chrome" />
+          <div className="mt-3 h-24 animate-pulse rounded-lg bg-chrome/70" />
+          <div className="mt-6 h-4 w-20 animate-pulse rounded bg-chrome" />
+          <div className="mt-2 h-40 animate-pulse rounded-lg bg-chrome/50" />
+          <div className="mt-6 h-4 w-16 animate-pulse rounded bg-chrome" />
+          <div className="mt-2 h-32 animate-pulse rounded-lg bg-chrome/50" />
         </div>
       </div>
     </div>
@@ -378,9 +364,9 @@ function LoadingState() {
 function ErrorState() {
   return (
     <div className="flex min-h-dvh flex-col bg-background font-sans">
-      <div className="rounded-b-[32px] bg-primary px-4 pt-6 pb-8">
-        <span className="text-base font-bold tracking-tight text-primary-foreground">담아락</span>
-      </div>
+      <header className="border-b border-border/60 px-4 py-3">
+        <span className="text-base font-bold tracking-tight text-primary">담아락</span>
+      </header>
       <div className="flex flex-1 flex-col items-center justify-center px-6 text-center">
         <div className="flex h-14 w-14 items-center justify-center rounded-full bg-chrome/60 text-danger">
           <IconWifiOff size={24} stroke={1.5} />
@@ -396,7 +382,7 @@ function ErrorState() {
           onClick={() => {
             window.location.href = window.location.pathname;
           }}
-          className="mt-5 inline-flex min-h-11 items-center justify-center rounded-full bg-primary px-5 text-sm font-bold text-primary-foreground active:scale-95"
+          className="mt-5 inline-flex min-h-11 items-center justify-center rounded bg-primary px-5 text-sm font-bold text-primary-foreground active:scale-95"
         >
           다시 시도
         </button>

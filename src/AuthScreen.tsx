@@ -59,7 +59,7 @@ export default function AuthScreen() {
         <button
           type="button"
           onClick={() => signIn("kakao")}
-          className="relative flex min-h-12 items-center justify-center rounded-full bg-[#FEE500] text-sm font-bold text-[#191600] transition-transform active:scale-[0.98]"
+          className="relative flex min-h-12 items-center justify-center rounded-lg bg-[#FEE500] text-sm font-bold text-[#191600] transition-transform active:scale-[0.98]"
         >
           <span className="absolute left-4 flex items-center">
             <KakaoMark />
@@ -69,7 +69,7 @@ export default function AuthScreen() {
         <button
           type="button"
           onClick={() => signIn("google")}
-          className="relative flex min-h-12 items-center justify-center rounded-full border border-border bg-surface text-sm font-bold text-foreground transition-transform active:scale-[0.98]"
+          className="relative flex min-h-12 items-center justify-center rounded-lg border border-border bg-surface text-sm font-bold text-foreground transition-transform active:scale-[0.98]"
         >
           <span className="absolute left-4 flex items-center">
             <GoogleMark />

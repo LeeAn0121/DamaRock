@@ -46,30 +46,28 @@ export default function FamilyInvite({
   return (
     <div className="min-h-dvh bg-background font-sans text-foreground">
       <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col">
-        <div className="rounded-b-[32px] bg-primary px-2 pt-6 pb-16">
-          <header className="flex items-center gap-1">
-            <button
-              type="button"
-              aria-label="뒤로"
-              onClick={onBack}
-              className="flex h-11 w-11 items-center justify-center rounded-full text-primary-foreground/80 hover:bg-primary-foreground/10 active:bg-primary-foreground/15"
-            >
-              <IconChevronLeft size={20} stroke={1.75} />
-            </button>
-            <h1 className="text-base font-bold text-primary-foreground">가족 구성원</h1>
-          </header>
-        </div>
+        <header className="flex items-center gap-1 border-b border-border/60 px-2 py-3">
+          <button
+            type="button"
+            aria-label="뒤로"
+            onClick={onBack}
+            className="flex h-11 w-11 items-center justify-center rounded-full text-muted-foreground hover:bg-chrome/60 active:bg-chrome"
+          >
+            <IconChevronLeft size={20} stroke={1.75} />
+          </button>
+          <h1 className="text-base font-bold text-foreground">가족 구성원</h1>
+        </header>
 
-        <main className="flex-1 overflow-y-auto px-4 pb-10">
+        <main className="flex-1 overflow-y-auto px-4 pb-10 pt-4">
           {/* Dominant invite block */}
-          <section className="relative -mt-4 rounded-2xl bg-surface p-5 text-center shadow-[0_12px_32px_-10px_rgba(20,40,30,0.35)]">
+          <section className="rounded-lg border border-border bg-surface p-4 text-center">
             <p className="text-sm text-muted-foreground">이 코드로 우리집에 초대하세요</p>
             <p className="mt-2 text-4xl font-bold tracking-[0.08em] text-primary">{code}</p>
             <div className="mt-4 flex gap-2">
               <button
                 type="button"
                 onClick={copyCode}
-                className="flex min-h-12 flex-1 items-center justify-center gap-1.5 rounded-full border border-border text-sm font-bold text-foreground transition-colors active:bg-chrome"
+                className="flex min-h-12 flex-1 items-center justify-center gap-1.5 rounded-lg border border-border text-sm font-bold text-foreground transition-colors active:bg-chrome"
               >
                 {copied ? (
                   <>
@@ -86,7 +84,7 @@ export default function FamilyInvite({
               <button
                 type="button"
                 onClick={shareCode}
-                className="flex min-h-12 flex-1 items-center justify-center gap-1.5 rounded-full bg-primary text-sm font-bold text-primary-foreground transition-transform active:scale-[0.98]"
+                className="flex min-h-12 flex-1 items-center justify-center gap-1.5 rounded-lg bg-primary text-sm font-bold text-primary-foreground transition-transform active:scale-[0.98]"
               >
                 <IconShare2 size={16} stroke={1.75} />
                 공유하기
@@ -101,7 +99,7 @@ export default function FamilyInvite({
               <span className="text-sm text-border">·</span>
               <span className="text-sm">{members.length}</span>
             </div>
-            <div className="rounded-2xl border border-border/60 bg-surface">
+            <div className="rounded-lg border border-border bg-surface">
               <ul className="divide-y divide-border/60">
                 {members.map((m) => (
                   <li key={m.id} className="flex items-center gap-3 px-4 py-3">
@@ -126,7 +124,7 @@ export default function FamilyInvite({
                 <span className="text-sm text-border">·</span>
                 <span className="text-sm">{invites.length}</span>
               </div>
-              <div className="rounded-2xl border border-border/60 bg-surface">
+              <div className="rounded-lg border border-border bg-surface">
                 <ul className="divide-y divide-border/60">
                   {invites.map((invite) => (
                     <li key={invite.id} className="flex items-center gap-3 px-4 py-3">
@@ -140,7 +138,7 @@ export default function FamilyInvite({
                       <button
                         type="button"
                         onClick={() => onCancelInvite(invite.id)}
-                        className="inline-flex min-h-11 items-center justify-center rounded-full px-3 text-xs text-muted-foreground hover:text-danger active:bg-chrome/60"
+                        className="inline-flex min-h-11 items-center justify-center rounded px-3 text-xs text-muted-foreground hover:text-danger active:bg-chrome/60"
                       >
                         취소
                       </button>

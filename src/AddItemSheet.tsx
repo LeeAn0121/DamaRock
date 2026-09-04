@@ -65,7 +65,7 @@ export default function AddItemSheet({
         role="dialog"
         aria-modal="true"
         aria-labelledby="add-sheet-title"
-        className="relative w-full max-w-md rounded-t-2xl bg-surface pb-[calc(env(safe-area-inset-bottom)+20px)] shadow-[0_-8px_30px_-12px_rgba(20,20,10,0.25)]"
+        className="relative w-full max-w-md rounded-t-lg bg-surface pb-[calc(env(safe-area-inset-bottom)+20px)] shadow-[0_-8px_30px_-12px_rgba(20,20,10,0.25)]"
       >
         <div className="mx-auto mt-3 h-1.5 w-10 rounded-full bg-border" />
 
@@ -85,7 +85,7 @@ export default function AddItemSheet({
 
         <div className="mt-4 flex flex-col gap-5 px-5">
           {/* Category segmented control */}
-          <div className="flex rounded-full bg-chrome/50 p-1">
+          <div className="flex rounded-lg bg-chrome/50 p-1">
             {(["grocery", "todo"] as Category[]).map((c) => (
               <button
                 key={c}
@@ -93,7 +93,7 @@ export default function AddItemSheet({
                 onClick={() => setDraft((d) => ({ ...d, category: c }))}
                 aria-pressed={draft.category === c}
                 className={clsx(
-                  "min-h-11 flex-1 rounded-full text-sm font-bold transition-colors",
+                  "min-h-11 flex-1 rounded text-sm font-bold transition-colors",
                   draft.category === c ? "bg-primary text-primary-foreground" : "text-muted-foreground"
                 )}
               >
@@ -112,7 +112,7 @@ export default function AddItemSheet({
               value={draft.title}
               onChange={(e) => setDraft((d) => ({ ...d, title: e.target.value }))}
               placeholder={draft.category === "grocery" ? "예: 우유" : "예: 지우 학원비 입금"}
-              className="h-12 rounded-2xl border border-border bg-background px-4 text-base text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-focus/40"
+              className="h-12 rounded-lg border border-border bg-background px-4 text-base text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-focus/40"
             />
           </label>
 
@@ -125,7 +125,7 @@ export default function AddItemSheet({
                 value={draft.note}
                 onChange={(e) => setDraft((d) => ({ ...d, note: e.target.value }))}
                 placeholder="예: 2개"
-                className="h-12 rounded-2xl border border-border bg-background px-4 text-base text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-focus/40"
+                className="h-12 rounded-lg border border-border bg-background px-4 text-base text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-focus/40"
               />
             </label>
           ) : (
@@ -143,7 +143,7 @@ export default function AddItemSheet({
                     }
                     aria-pressed={draft.due === chip}
                     className={clsx(
-                      "inline-flex min-h-11 items-center justify-center rounded-full border px-4 text-sm transition-colors",
+                      "inline-flex min-h-11 items-center justify-center rounded-lg border px-4 text-sm transition-colors",
                       draft.due === chip
                         ? "border-primary bg-primary text-primary-foreground"
                         : "border-border text-muted-foreground hover:border-primary hover:text-primary"
@@ -194,7 +194,7 @@ export default function AddItemSheet({
             type="button"
             onClick={submit}
             disabled={!canSubmit}
-            className="flex min-h-12 w-full items-center justify-center rounded-full bg-primary text-base font-bold text-primary-foreground transition-transform disabled:bg-chrome disabled:text-muted-foreground active:scale-[0.98]"
+            className="flex min-h-12 w-full items-center justify-center rounded-lg bg-primary text-base font-bold text-primary-foreground transition-transform disabled:bg-chrome disabled:text-muted-foreground active:scale-[0.98]"
           >
             담기
           </button>

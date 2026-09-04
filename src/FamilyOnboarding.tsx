@@ -23,7 +23,7 @@ export default function FamilyOnboarding({
         <button
           type="button"
           onClick={onSignOut}
-          className="flex min-h-11 items-center gap-1.5 rounded-full px-3 text-sm text-muted-foreground active:bg-chrome/60"
+          className="flex min-h-11 items-center gap-1.5 rounded px-3 text-sm text-muted-foreground active:bg-chrome/60"
         >
           <IconLogout size={16} stroke={1.75} />
           로그아웃
@@ -44,7 +44,7 @@ export default function FamilyOnboarding({
               <button
                 type="button"
                 onClick={() => setMode("create")}
-                className="flex min-h-14 items-center gap-3 rounded-2xl border border-border bg-surface px-4 text-left transition-colors active:bg-chrome/40"
+                className="flex min-h-14 items-center gap-3 rounded-lg border border-border bg-surface px-4 text-left transition-colors active:bg-chrome/40"
               >
                 <span className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
                   <IconUsers size={19} stroke={1.75} />
@@ -58,7 +58,7 @@ export default function FamilyOnboarding({
               <button
                 type="button"
                 onClick={() => setMode("join")}
-                className="flex min-h-14 items-center gap-3 rounded-2xl border border-border bg-surface px-4 text-left transition-colors active:bg-chrome/40"
+                className="flex min-h-14 items-center gap-3 rounded-lg border border-border bg-surface px-4 text-left transition-colors active:bg-chrome/40"
               >
                 <span className="flex h-10 w-10 items-center justify-center rounded-full bg-chrome text-chrome-foreground">
                   <IconUserPlus size={19} stroke={1.75} />
@@ -88,7 +88,7 @@ export default function FamilyOnboarding({
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="예: 우리집"
-                className="h-12 rounded-2xl border border-border bg-surface px-4 text-base text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-focus/40"
+                className="h-12 rounded-lg border border-border bg-surface px-4 text-base text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-focus/40"
               />
             </label>
             {error && <p className="text-sm text-danger">{error}</p>}
@@ -96,13 +96,13 @@ export default function FamilyOnboarding({
               <button
                 type="button"
                 onClick={() => setMode("choose")}
-                className="flex min-h-12 flex-1 items-center justify-center rounded-full border border-border text-sm font-bold text-foreground active:bg-chrome"
+                className="flex min-h-12 flex-1 items-center justify-center rounded-lg border border-border text-sm font-bold text-foreground active:bg-chrome"
               >
                 뒤로
               </button>
               <button
                 type="submit"
-                className="flex min-h-12 flex-[2] items-center justify-center rounded-full bg-primary text-base font-bold text-primary-foreground transition-transform active:scale-[0.98]"
+                className="flex min-h-12 flex-[2] items-center justify-center rounded-lg bg-primary text-base font-bold text-primary-foreground transition-transform active:scale-[0.98]"
               >
                 만들기
               </button>
@@ -126,7 +126,7 @@ export default function FamilyOnboarding({
                 value={code}
                 onChange={(e) => setCode(e.target.value)}
                 placeholder="예: 742-819"
-                className="h-12 rounded-2xl border border-border bg-surface px-4 text-center text-lg font-bold tracking-widest text-foreground placeholder:text-muted-foreground placeholder:tracking-normal placeholder:font-normal focus:border-primary focus:outline-none focus:ring-2 focus:ring-focus/40"
+                className="h-12 rounded-lg border border-border bg-surface px-4 text-center text-lg font-bold tracking-widest text-foreground placeholder:text-muted-foreground placeholder:tracking-normal placeholder:font-normal focus:border-primary focus:outline-none focus:ring-2 focus:ring-focus/40"
               />
             </label>
             {error && <p className="text-sm text-danger">{error}</p>}
@@ -134,14 +134,14 @@ export default function FamilyOnboarding({
               <button
                 type="button"
                 onClick={() => setMode("choose")}
-                className="flex min-h-12 flex-1 items-center justify-center rounded-full border border-border text-sm font-bold text-foreground active:bg-chrome"
+                className="flex min-h-12 flex-1 items-center justify-center rounded-lg border border-border text-sm font-bold text-foreground active:bg-chrome"
               >
                 뒤로
               </button>
               <button
                 type="submit"
                 disabled={!code.trim()}
-                className="flex min-h-12 flex-[2] items-center justify-center rounded-full bg-primary text-base font-bold text-primary-foreground transition-transform disabled:bg-chrome disabled:text-muted-foreground active:scale-[0.98]"
+                className="flex min-h-12 flex-[2] items-center justify-center rounded-lg bg-primary text-base font-bold text-primary-foreground transition-transform disabled:bg-chrome disabled:text-muted-foreground active:scale-[0.98]"
               >
                 참여하기
               </button>
