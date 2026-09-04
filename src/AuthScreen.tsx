@@ -4,7 +4,12 @@ export default function AuthScreen() {
   const signIn = (provider: "google" | "kakao") =>
     supabase.auth.signInWithOAuth({
       provider,
-      options: { redirectTo: window.location.origin + import.meta.env.BASE_URL },
+      options: {
+        redirectTo: window.location.origin + import.meta.env.BASE_URL,
+        // profiles only ever reads nickname + profile image — skip the email
+        // scope so login works without Kakao business-app email verification.
+        ...(provider === "kakao" ? { scopes: "profile_nickname profile_image" } : {}),
+      },
     });
 
   return (
