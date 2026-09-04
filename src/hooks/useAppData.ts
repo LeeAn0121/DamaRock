@@ -253,9 +253,11 @@ export function useAppData() {
   );
 
   const editItem = useCallback(
-    async (id: string, title: string) => {
-      setItems((prev) => prev.map((i) => (i.id === id ? { ...i, title } : i)));
-      const { error: updateError } = await supabase.from("items").update({ title }).eq("id", id);
+    async (id: string, title: string, meta?: string | null) => {
+      setItems((prev) => prev.map((i) => (i.id === id ? { ...i, title, ...(meta !== undefined ? { meta } : {}) } : i)));
+      const updatePayload: any = { title };
+      if (meta !== undefined) updatePayload.meta = meta;
+      const { error: updateError } = await supabase.from("items").update(updatePayload).eq("id", id);
       if (updateError && userId) loadFamilyData(userId);
     },
     [userId, loadFamilyData]

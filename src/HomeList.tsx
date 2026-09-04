@@ -24,7 +24,7 @@ export default function HomeList(props: {
   onAssignCategory: (id: string, category: Category) => void;
   onQuickAdd: (title: string) => void;
   addItem: (item: Pick<Item, "title" | "category" | "meta">) => void;
-  editItem: (id: string, title: string) => void;
+  editItem: (id: string, title: string, meta?: string | null) => void;
   moveItems: (ids: string[], target: Category) => void;
   onOpenAddSheet: () => void;
   onOpenSettings: () => void;
@@ -61,6 +61,17 @@ export default function HomeList(props: {
     const newTitle = window.prompt("수정할 내용을 입력하세요:", item.title);
     if (newTitle && newTitle.trim() !== item.title) {
       editItem(item.id, newTitle.trim());
+    }
+  };
+
+  const handleEditTodo = (item: Item) => {
+    const newTitle = window.prompt("할 일을 수정하세요:", item.title);
+    if (newTitle === null) return;
+    const newDate = window.prompt("날짜를 수정하세요 (YYYY-MM-DD):", item.meta || "");
+    if (newDate === null) return;
+    
+    if (newTitle.trim() !== item.title || newDate.trim() !== item.meta) {
+      editItem(item.id, newTitle.trim(), newDate.trim());
     }
   };
 
@@ -194,7 +205,7 @@ export default function HomeList(props: {
                     currentTab === "todo" ? "bg-primary text-primary-foreground" : "border border-border/50 bg-surface text-muted-foreground"
                   )}
                 >
-                  일
+                  할 일
                 </button>
               </div>
 
@@ -263,23 +274,17 @@ export default function HomeList(props: {
                         </DoneDisclosure>
                       )}
                     </SectionGroup>
-
-                    <SectionGroup label="일" count={todo.filter((i) => !i.done).length}>
-                      <ItemRows items={todo.filter((i) => !i.done)} onToggle={onToggleDone} onDelete={deleteItem} onEdit={handleEdit} onSelect={setSelectedItem} editMode={editMode} selectedIds={selectedIds} onSelectToggle={handleSelectToggle} members={members} />
-                      {todo.some((i) => i.done) && (
-                        <DoneDisclosure
-                          open={showDoneTodo}
-                          onToggle={() => setShowDoneTodo((v) => !v)}
-                          count={todo.filter((i) => i.done).length}
-                        >
-                          <ItemRows items={todo.filter((i) => i.done)} onToggle={onToggleDone} onDelete={deleteItem} onEdit={handleEdit} onSelect={setSelectedItem} editMode={editMode} selectedIds={selectedIds} onSelectToggle={handleSelectToggle} members={members} />
-                        </DoneDisclosure>
-                      )}
-                    </SectionGroup>
                   </div>
                 </>
               ) : (
-                <CalendarView items={items} members={members} onToggleDone={onToggleDone} onAddTodo={(title, dateStr) => props.addItem?.({ title, category: "todo", meta: dateStr })} />
+                <CalendarView 
+                  items={items} 
+                  members={members} 
+                  onToggleDone={onToggleDone} 
+                  onDelete={deleteItem}
+                  onEdit={handleEditTodo}
+                  onAddTodo={(title, dateStr) => props.addItem({ title, category: "todo", meta: dateStr })} 
+                />
               )}
             </>
           )}
@@ -303,9 +308,9 @@ export default function HomeList(props: {
           />
         )}
 
-        {/* Quick capture / Edit mode bar */}
+        {/* Bottom bar */}
         {editMode ? (
-          <div className="fixed inset-x-0 bottom-0 mx-auto w-full max-w-md">
+          <div className="fixed inset-x-0 bottom-0 mx-auto w-full max-w-md z-10">
             <div className="bg-surface/80 px-5 pb-[calc(env(safe-area-inset-bottom)+16px)] pt-4 backdrop-blur-md border-t border-border/40 shadow-[0_-8px_16px_rgba(0,0,0,0.05)]">
               <div className="flex gap-2">
                 <button
@@ -330,7 +335,7 @@ export default function HomeList(props: {
                   }}
                   className="flex-1 rounded-xl bg-surface border border-border/50 py-3 text-sm font-bold text-foreground disabled:opacity-50"
                 >
-                  일로
+                  할 일로
                 </button>
                 <button
                   type="button"
@@ -350,38 +355,37 @@ export default function HomeList(props: {
             </div>
           </div>
         ) : (
-          <div className="fixed inset-x-0 bottom-0 mx-auto w-full max-w-md">
-            <div className="bg-surface/80 px-5 pb-[calc(env(safe-area-inset-bottom)+16px)] pt-4 backdrop-blur-md">
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  if (draft.trim()) {
-                    onQuickAdd(draft.trim());
-                    setDraft("");
-                  } else {
-                    onOpenAddSheet();
-                  }
-                }}
-                className="flex items-center gap-3 rounded-full border border-border/50 bg-background p-1.5 shadow-sm focus-within:border-primary/50 focus-within:ring-2 focus-within:ring-primary/20"
-              >
-                <input
-                  value={draft}
-                  onChange={(e) => setDraft(e.target.value)}
-                  type="text"
-                  placeholder="다 떨어진 것이나 할 일을 적어보세요"
-                  aria-label="새 항목 담기"
-                  className="h-11 min-w-0 flex-1 bg-transparent px-4 text-base text-foreground placeholder:text-muted-foreground focus:outline-none"
-                />
-                <button
-                  type="submit"
-                  aria-label={draft.trim() ? "담기" : "자세히 담기"}
-                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-sm transition-transform active:scale-95"
+          currentTab === "grocery" && (
+            <div className="fixed inset-x-0 bottom-0 mx-auto w-full max-w-md z-10">
+              <div className="bg-surface/80 px-5 pb-[calc(env(safe-area-inset-bottom)+16px)] pt-4 backdrop-blur-md">
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    if (draft.trim()) {
+                      props.addItem({ title: draft.trim(), category: "grocery", meta: null });
+                      setDraft("");
+                    }
+                  }}
+                  className="flex items-center gap-3 rounded-full border border-border/50 bg-background p-1.5 shadow-sm focus-within:border-primary/50 focus-within:ring-2 focus-within:ring-primary/20"
                 >
-                  <IconPlus size={22} stroke={2.5} />
-                </button>
-              </form>
+                  <input
+                    value={draft}
+                    onChange={(e) => setDraft(e.target.value)}
+                    type="text"
+                    placeholder="장보기 항목을 추가하세요..."
+                    className="h-11 min-w-0 flex-1 bg-transparent px-4 text-base text-foreground placeholder:text-muted-foreground focus:outline-none"
+                  />
+                  <button
+                    type="submit"
+                    disabled={!draft.trim()}
+                    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-sm transition-transform active:scale-95 disabled:opacity-50"
+                  >
+                    <IconPlus size={22} stroke={2.5} />
+                  </button>
+                </form>
+              </div>
             </div>
-          </div>
+          )
         )}
       </div>
     </div>
