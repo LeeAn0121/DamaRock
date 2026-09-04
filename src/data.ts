@@ -5,6 +5,7 @@ export type Member = {
   name: string;
   initial: string;
   role: "어른" | "아이";
+  avatar_url?: string | null;
   online?: boolean;
 };
 

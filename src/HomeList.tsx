@@ -77,12 +77,16 @@ export default function HomeList({
               {members.map((m, idx) => (
                 <div
                   key={m.id}
-                  className="relative flex h-7 w-7 items-center justify-center rounded-full border-2 border-background bg-chrome text-xs font-bold text-chrome-foreground"
+                  className="relative flex h-8 w-8 items-center justify-center rounded-full border-2 border-background bg-chrome text-xs font-bold text-chrome-foreground overflow-hidden"
                   style={{ zIndex: members.length - idx }}
                 >
-                  {m.initial}
+                  {m.avatar_url ? (
+                    <img src={m.avatar_url} alt={m.name} className="h-full w-full object-cover" />
+                  ) : (
+                    m.initial
+                  )}
                   {m.online && (
-                    <span className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full border-2 border-background bg-success" />
+                    <span className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full border-2 border-background bg-success z-10" />
                   )}
                 </div>
               ))}

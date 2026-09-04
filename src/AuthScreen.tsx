@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { supabase } from "./lib/supabaseClient";
 
 function KakaoMark() {
@@ -35,6 +36,23 @@ function GoogleMark() {
 }
 
 export default function AuthScreen() {
+  const [authError, setAuthError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const hash = new URLSearchParams(window.location.hash.slice(1));
+    const errDesc = params.get("error_description") || hash.get("error_description");
+    if (errDesc) {
+      if (errDesc.includes("already registered") || errDesc.includes("different credential")) {
+        setAuthError("이미 다른 소셜 계정(카카오 또는 구글)으로 가입된 이메일입니다. 기존 계정으로 로그인해주세요.");
+      } else {
+        setAuthError(errDesc);
+      }
+      // clear error from url
+      window.history.replaceState({}, "", window.location.pathname);
+    }
+  }, []);
+
   const signIn = (provider: "google" | "kakao") =>
     supabase.auth.signInWithOAuth({
       provider,
@@ -42,18 +60,33 @@ export default function AuthScreen() {
     });
 
   return (
-    <div className="flex min-h-dvh flex-col items-center justify-center bg-background px-6 font-sans text-foreground">
-      <span className="text-xl font-extrabold tracking-tight text-primary">담아락</span>
+    <div className="flex min-h-dvh flex-col items-center justify-center bg-background px-6 font-sans text-foreground pb-10">
+      <span className="text-xl font-extrabold tracking-tight text-primary">투게더리</span>
       <h1 className="mt-5 text-center text-3xl font-extrabold leading-snug text-foreground">
-        가족과 함께
+        함께 쓰고,
         <br />
-        담아보세요
+        함께 기억해요
       </h1>
       <p className="mt-4 text-center text-sm font-medium leading-relaxed text-muted-foreground">
-        장보기 목록과 할 일을 가족 모두가
+        카톡 메시지에, 냉장고 포스트잇에, 각자의 머릿속에
         <br />
-        실시간으로 함께 확인해요
+        흩어지던 것들을 하나로.
       </p>
+
+      <div className="mt-8 flex flex-col gap-5 text-sm font-medium text-foreground">
+        <div className="flex flex-col gap-1 rounded-2xl bg-surface p-4 shadow-sm">
+          <span className="font-bold text-primary">지금까지는</span>
+          <span className="text-muted-foreground">카톡에 적어두면 다른 대화에 금방 묻혀요.</span>
+          <span className="text-muted-foreground">포스트잇은 집에 있어야만 보여요.</span>
+          <span className="text-muted-foreground">“그거 샀어?” 매번 다시 물어봐야 해요.</span>
+        </div>
+        <div className="flex flex-col gap-1 rounded-2xl bg-surface p-4 shadow-sm border border-primary/20">
+          <span className="font-bold text-primary">투게더리에서는</span>
+          <span>떠오르면 한 줄, 가족 모두의 화면에 바로 보여요.</span>
+          <span>장 보는 중에도 손안에 그대로 있어요.</span>
+          <span>무엇이 남았는지 리스트에 다 보여요.</span>
+        </div>
+      </div>
 
       <div className="mt-12 flex w-full max-w-xs flex-col gap-3">
         <button
@@ -76,6 +109,12 @@ export default function AuthScreen() {
           </span>
           Google로 시작하기
         </button>
+
+        {authError && (
+          <div className="mt-4 rounded-xl bg-danger/10 p-4 text-center text-sm font-medium text-danger">
+            {authError}
+          </div>
+        )}
       </div>
     </div>
   );

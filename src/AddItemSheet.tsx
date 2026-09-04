@@ -174,13 +174,17 @@ export default function AddItemSheet({
                 >
                   <span
                     className={clsx(
-                      "flex h-12 w-12 items-center justify-center rounded-full text-base font-bold transition-all",
+                      "flex h-12 w-12 items-center justify-center rounded-full text-base font-bold transition-all overflow-hidden",
                       draft.assignee === m.id
                         ? "bg-primary text-primary-foreground ring-2 ring-primary ring-offset-2 ring-offset-surface shadow-md"
                         : "bg-chrome text-chrome-foreground shadow-sm"
                     )}
                   >
-                    {m.initial}
+                    {m.avatar_url ? (
+                      <img src={m.avatar_url} alt={m.name} className="h-full w-full object-cover" />
+                    ) : (
+                      m.initial
+                    )}
                   </span>
                   <span className="text-xs font-medium text-muted-foreground">{m.name}</span>
                 </button>

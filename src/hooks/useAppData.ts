@@ -13,7 +13,7 @@ const PENDING_JOIN_KEY = "damarock_pending_join";
 type MemberRow = {
   user_id: string;
   role: "어른" | "아이";
-  profiles: { display_name: string; initial: string } | null;
+  profiles: { display_name: string; initial: string; avatar_url: string | null } | null;
 };
 
 type ItemRow = {
@@ -66,7 +66,7 @@ export function useAppData() {
           supabase.from("families").select("id, name, invite_code").eq("id", familyId).single(),
           supabase
             .from("family_members")
-            .select("user_id, role, profiles(display_name, initial)")
+            .select("user_id, role, profiles(display_name, initial, avatar_url)")
             .eq("family_id", familyId)
             .returns<MemberRow[]>(),
           supabase
@@ -95,6 +95,7 @@ export function useAppData() {
             id: r.user_id,
             name: r.profiles?.display_name ?? "가족",
             initial: r.profiles?.initial ?? "가",
+            avatar_url: r.profiles?.avatar_url,
             role: r.role,
           }))
         )

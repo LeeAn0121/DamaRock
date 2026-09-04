@@ -41,8 +41,12 @@ export default function SettingsPage({
         <main className="flex-1 overflow-y-auto px-5 pb-10 pt-4">
           {/* Profile */}
           <section className="flex items-center gap-4 rounded-2xl bg-surface p-5">
-            <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-chrome text-2xl font-bold text-chrome-foreground shadow-sm">
-              {me?.initial ?? "나"}
+            <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-chrome text-2xl font-bold text-chrome-foreground shadow-sm overflow-hidden">
+              {me?.avatar_url ? (
+                <img src={me.avatar_url} alt={me.name} className="h-full w-full object-cover" />
+              ) : (
+                me?.initial ?? "나"
+              )}
             </span>
             <span className="min-w-0">
               <span className="block truncate text-lg font-bold text-foreground">
@@ -65,9 +69,13 @@ export default function SettingsPage({
                     {members.map((m) => (
                       <span
                         key={m.id}
-                        className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-surface bg-chrome text-xs font-bold text-chrome-foreground"
+                        className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-surface bg-chrome text-xs font-bold text-chrome-foreground overflow-hidden"
                       >
-                        {m.initial}
+                        {m.avatar_url ? (
+                          <img src={m.avatar_url} alt={m.name} className="h-full w-full object-cover" />
+                        ) : (
+                          m.initial
+                        )}
                       </span>
                     ))}
                   </span>

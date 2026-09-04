@@ -103,10 +103,14 @@ export default function FamilyInvite({
               <ul className="divide-y divide-border/40">
                 {members.map((m) => (
                   <li key={m.id} className="flex items-center gap-4 px-3 py-3.5">
-                    <span className="relative flex h-12 w-12 items-center justify-center rounded-full bg-chrome text-base font-bold text-chrome-foreground shadow-sm">
-                      {m.initial}
+                    <span className="relative flex h-12 w-12 items-center justify-center rounded-full bg-chrome text-base font-bold text-chrome-foreground shadow-sm overflow-hidden">
+                      {m.avatar_url ? (
+                        <img src={m.avatar_url} alt={m.name} className="h-full w-full object-cover" />
+                      ) : (
+                        m.initial
+                      )}
                       {m.online && (
-                        <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-surface bg-success" />
+                        <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-surface bg-success z-10" />
                       )}
                     </span>
                     <span className="flex-1 text-base font-medium text-foreground">{m.name}</span>
