@@ -1,16 +1,6 @@
 import { useMemo, useState } from "react";
-import {
-  Check,
-  ChevronDown,
-  Inbox,
-  ListChecks,
-  ListPlus,
-  PackageOpen,
-  Plus,
-  Settings2,
-  ShoppingCart,
-  WifiOff,
-} from "lucide-react";
+import clsx from "clsx";
+import { IconCheck, IconChecklist, IconChevronDown, IconInbox, IconPackage, IconPlaylistAdd, IconPlus, IconSettings, IconShoppingCart, IconWifiOff } from "@tabler/icons-react";
 import { memberName, type Category, type Item, type Member } from "./data";
 
 type ViewState = "normal" | "empty" | "loading" | "error";
@@ -76,50 +66,53 @@ export default function HomeList({
   return (
     <div className="min-h-dvh bg-background font-sans text-foreground">
       <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col">
-        {/* Top bar */}
-        <header className="flex items-center justify-between px-4 pt-6">
-          <span className="text-base font-bold tracking-tight text-primary">담아락</span>
-          <div className="flex items-center gap-3">
-            <div className="flex -space-x-2">
-              {members.map((m, idx) => (
-                <div
-                  key={m.id}
-                  className="relative flex h-7 w-7 items-center justify-center rounded-full border-2 border-background bg-chrome text-xs font-bold text-chrome-foreground"
-                  style={{ zIndex: members.length - idx }}
-                >
-                  {m.initial}
-                  {m.online && (
-                    <span className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full border-2 border-background bg-success" />
-                  )}
-                </div>
-              ))}
+        {/* Hero band */}
+        <div className="rounded-b-[32px] bg-primary px-4 pt-6 pb-16">
+          <header className="flex items-center justify-between">
+            <span className="text-base font-bold tracking-tight text-primary-foreground">담아락</span>
+            <div className="flex items-center gap-3">
+              <div className="flex -space-x-2">
+                {members.map((m, idx) => (
+                  <div
+                    key={m.id}
+                    className="relative flex h-7 w-7 items-center justify-center rounded-full border-2 border-primary bg-primary-foreground/90 text-xs font-bold text-primary"
+                    style={{ zIndex: members.length - idx }}
+                  >
+                    {m.initial}
+                    {m.online && (
+                      <span className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full border-2 border-primary bg-success" />
+                    )}
+                  </div>
+                ))}
+              </div>
+              <button
+                type="button"
+                aria-label="설정"
+                onClick={onOpenSettings}
+                className="flex h-11 w-11 items-center justify-center rounded-full text-primary-foreground/80 transition-colors hover:bg-primary-foreground/10 active:bg-primary-foreground/15"
+              >
+                <IconSettings size={19} stroke={1.75} />
+              </button>
             </div>
-            <button
-              type="button"
-              aria-label="설정"
-              onClick={onOpenSettings}
-              className="flex h-11 w-11 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-chrome/60 active:bg-chrome"
-            >
-              <Settings2 size={19} strokeWidth={1.75} />
-            </button>
-          </div>
-        </header>
+          </header>
+          <p className="mt-5 text-sm text-primary-foreground/85">우리집 공유 리스트</p>
+        </div>
 
         {/* Content */}
-        <main className="flex-1 overflow-y-auto px-4 pb-36 pt-5">
-          <h1 className="text-sm text-muted-foreground">우리집 공유 리스트</h1>
-
+        <main className="flex-1 overflow-y-auto px-4 pb-36">
           {activeItems.length === 0 ? (
-            <EmptyState />
+            <div className="-mt-4">
+              <EmptyState />
+            </div>
           ) : (
             <>
-              {/* Dominant summary */}
+              {/* Floating dominant summary */}
               <section
                 aria-label="오늘의 상태"
-                className="mt-3 rounded-2xl bg-surface p-5 shadow-[0_1px_2px_rgba(20,20,10,0.04),0_10px_28px_-14px_rgba(20,20,10,0.18)]"
+                className="relative -mt-4 rounded-2xl bg-surface p-5 shadow-[0_12px_32px_-10px_rgba(20,40,30,0.35)]"
               >
                 <div className="flex items-baseline gap-2">
-                  <span className="text-4xl font-bold leading-none tracking-tight text-foreground">
+                  <span className="text-5xl font-bold leading-none tracking-tight text-foreground">
                     {remaining}
                   </span>
                   <span className="text-base text-muted-foreground">개 남았어요</span>
@@ -129,7 +122,7 @@ export default function HomeList({
                   {doneToday > 0 && (
                     <span className="flex items-center gap-1 text-success">
                       <span className="text-border">·</span>
-                      <Check size={13} strokeWidth={2.5} />
+                      <IconCheck size={13} stroke={2.5} />
                       오늘 {doneToday}개 완료
                     </span>
                   )}
@@ -138,7 +131,7 @@ export default function HomeList({
 
               {/* Inbox: just captured, not sorted yet */}
               {inbox.length > 0 && (
-                <SectionGroup icon={<Inbox size={16} strokeWidth={1.75} />} label="새로 담은 것" count={inbox.length}>
+                <SectionGroup icon={<IconInbox size={16} stroke={1.75} />} label="새로 담은 것" count={inbox.length}>
                   <ul className="divide-y divide-border/60">
                     {inbox.map((item) => (
                       <li key={item.id} className="flex items-center gap-3 py-3">
@@ -166,7 +159,7 @@ export default function HomeList({
               )}
 
               {/* Grocery */}
-              <SectionGroup icon={<ShoppingCart size={16} strokeWidth={1.75} />} label="장보기" count={grocery.filter((i) => !i.done).length}>
+              <SectionGroup icon={<IconShoppingCart size={16} stroke={1.75} />} label="장보기" count={grocery.filter((i) => !i.done).length}>
                 <ItemRows items={grocery.filter((i) => !i.done)} onToggle={onToggleDone} members={members} />
                 {grocery.some((i) => i.done) && (
                   <DoneDisclosure
@@ -180,7 +173,7 @@ export default function HomeList({
               </SectionGroup>
 
               {/* Todo */}
-              <SectionGroup icon={<ListChecks size={16} strokeWidth={1.75} />} label="할 일" count={todo.filter((i) => !i.done).length}>
+              <SectionGroup icon={<IconChecklist size={16} stroke={1.75} />} label="할 일" count={todo.filter((i) => !i.done).length}>
                 <ItemRows items={todo.filter((i) => !i.done)} onToggle={onToggleDone} members={members} />
                 {todo.some((i) => i.done) && (
                   <DoneDisclosure
@@ -212,7 +205,7 @@ export default function HomeList({
                 onClick={onOpenAddSheet}
                 className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:border-primary hover:text-primary active:bg-chrome"
               >
-                <ListPlus size={20} strokeWidth={1.75} />
+                <IconPlaylistAdd size={20} stroke={1.75} />
               </button>
               <input
                 value={draft}
@@ -228,7 +221,7 @@ export default function HomeList({
                 aria-label="담기"
                 className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground transition-transform disabled:bg-chrome disabled:text-muted-foreground active:scale-95"
               >
-                <Plus size={22} strokeWidth={2} />
+                <IconPlus size={22} stroke={2} />
               </button>
             </form>
           </div>
@@ -284,19 +277,21 @@ function ItemRows({
             className="flex min-h-11 w-full items-center gap-3 py-3 text-left"
           >
             <span
-              className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
+              className={clsx(
+                "flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 transition-colors",
                 item.done
                   ? "border-primary bg-primary text-primary-foreground"
                   : "border-border text-transparent"
-              }`}
+              )}
             >
-              <Check size={14} strokeWidth={2.5} />
+              <IconCheck size={14} stroke={2.5} />
             </span>
             <span className="min-w-0 flex-1">
               <span
-                className={`block truncate text-base ${
+                className={clsx(
+                  "block truncate text-base",
                   item.done ? "text-muted-foreground line-through" : "text-foreground"
-                }`}
+                )}
               >
                 {item.title}
               </span>
@@ -329,10 +324,10 @@ function DoneDisclosure({
         onClick={onToggle}
         className="flex min-h-11 w-full items-center gap-1 py-3 text-xs text-muted-foreground"
       >
-        <ChevronDown
+        <IconChevronDown
           size={14}
-          strokeWidth={2}
-          className={`transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+          stroke={2}
+          className={clsx("transition-transform duration-200", open && "rotate-180")}
         />
         완료 {count}개 {open ? "숨기기" : "보기"}
       </button>
@@ -343,9 +338,9 @@ function DoneDisclosure({
 
 function EmptyState() {
   return (
-    <div className="mt-16 flex flex-col items-center px-6 text-center">
-      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-chrome/60 text-muted-foreground">
-        <PackageOpen size={26} strokeWidth={1.5} />
+    <div className="relative rounded-2xl bg-surface px-6 py-14 text-center shadow-[0_12px_32px_-10px_rgba(20,40,30,0.35)]">
+      <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-chrome/60 text-muted-foreground">
+        <IconPackage size={26} stroke={1.5} />
       </div>
       <p className="mt-4 text-base font-bold text-foreground">아직 담긴 게 없어요</p>
       <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
@@ -360,17 +355,21 @@ function EmptyState() {
 function LoadingState() {
   return (
     <div className="min-h-dvh bg-background font-sans">
-      <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col px-4 pt-6">
-        <div className="flex items-center justify-between">
-          <span className="text-base font-bold text-primary">담아락</span>
-          <div className="h-9 w-9 animate-pulse rounded-full bg-chrome" />
+      <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col">
+        <div className="rounded-b-[32px] bg-primary px-4 pt-6 pb-16">
+          <div className="flex items-center justify-between">
+            <span className="text-base font-bold text-primary-foreground">담아락</span>
+            <div className="h-9 w-9 animate-pulse rounded-full bg-primary-foreground/20" />
+          </div>
+          <div className="mt-5 h-4 w-32 animate-pulse rounded-full bg-primary-foreground/20" />
         </div>
-        <div className="mt-5 h-4 w-32 animate-pulse rounded-full bg-chrome" />
-        <div className="mt-3 h-28 animate-pulse rounded-2xl bg-chrome/70" />
-        <div className="mt-6 h-4 w-20 animate-pulse rounded-full bg-chrome" />
-        <div className="mt-2 h-40 animate-pulse rounded-2xl bg-chrome/50" />
-        <div className="mt-6 h-4 w-16 animate-pulse rounded-full bg-chrome" />
-        <div className="mt-2 h-32 animate-pulse rounded-2xl bg-chrome/50" />
+        <div className="px-4">
+          <div className="-mt-4 h-28 animate-pulse rounded-2xl bg-surface shadow-[0_12px_32px_-10px_rgba(20,40,30,0.2)]" />
+          <div className="mt-6 h-4 w-20 animate-pulse rounded-full bg-chrome" />
+          <div className="mt-2 h-40 animate-pulse rounded-2xl bg-chrome/50" />
+          <div className="mt-6 h-4 w-16 animate-pulse rounded-full bg-chrome" />
+          <div className="mt-2 h-32 animate-pulse rounded-2xl bg-chrome/50" />
+        </div>
       </div>
     </div>
   );
@@ -379,12 +378,12 @@ function LoadingState() {
 function ErrorState() {
   return (
     <div className="flex min-h-dvh flex-col bg-background font-sans">
-      <header className="px-4 pt-6">
-        <span className="text-base font-bold tracking-tight text-primary">담아락</span>
-      </header>
+      <div className="rounded-b-[32px] bg-primary px-4 pt-6 pb-8">
+        <span className="text-base font-bold tracking-tight text-primary-foreground">담아락</span>
+      </div>
       <div className="flex flex-1 flex-col items-center justify-center px-6 text-center">
         <div className="flex h-14 w-14 items-center justify-center rounded-full bg-chrome/60 text-danger">
-          <WifiOff size={24} strokeWidth={1.5} />
+          <IconWifiOff size={24} stroke={1.5} />
         </div>
         <p className="mt-4 text-base font-bold text-foreground">목록을 불러오지 못했어요</p>
         <p className="mt-1 text-sm leading-relaxed text-muted-foreground">

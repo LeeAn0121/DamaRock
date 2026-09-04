@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Check, ChevronLeft, Copy, Mail, Share2 } from "lucide-react";
+import { IconCheck, IconChevronLeft, IconCopy, IconMail, IconShare2 } from "@tabler/icons-react";
 import type { Family, Invite } from "./hooks/useAppData";
 import type { Member } from "./data";
 
@@ -18,19 +18,20 @@ export default function FamilyInvite({
 }) {
   const [copied, setCopied] = useState(false);
   const code = family?.inviteCode ?? "";
+  const inviteUrl = `${window.location.origin}${import.meta.env.BASE_URL}?join=${encodeURIComponent(code)}`;
 
   const copyCode = async () => {
     try {
-      await navigator.clipboard.writeText(code);
+      await navigator.clipboard.writeText(inviteUrl);
       setCopied(true);
       window.setTimeout(() => setCopied(false), 1600);
     } catch {
-      // clipboard permission unavailable — the code is still visible on screen to copy manually
+      // clipboard permission unavailable — the link is still visible on screen to copy manually
     }
   };
 
   const shareCode = async () => {
-    const text = `담아락 "${family?.name ?? "우리집"}"에 초대할게요! 코드: ${code}`;
+    const text = `담아락 "${family?.name ?? "우리집"}"에 초대할게요! 아래 링크를 열면 바로 들어올 수 있어요.\n${inviteUrl}`;
     if (navigator.share) {
       try {
         await navigator.share({ text });
@@ -45,21 +46,23 @@ export default function FamilyInvite({
   return (
     <div className="min-h-dvh bg-background font-sans text-foreground">
       <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col">
-        <header className="flex items-center gap-1 px-2 pt-6">
-          <button
-            type="button"
-            aria-label="뒤로"
-            onClick={onBack}
-            className="flex h-11 w-11 items-center justify-center rounded-full text-muted-foreground hover:bg-chrome/60 active:bg-chrome"
-          >
-            <ChevronLeft size={20} strokeWidth={1.75} />
-          </button>
-          <h1 className="text-base font-bold text-foreground">가족 구성원</h1>
-        </header>
+        <div className="rounded-b-[32px] bg-primary px-2 pt-6 pb-16">
+          <header className="flex items-center gap-1">
+            <button
+              type="button"
+              aria-label="뒤로"
+              onClick={onBack}
+              className="flex h-11 w-11 items-center justify-center rounded-full text-primary-foreground/80 hover:bg-primary-foreground/10 active:bg-primary-foreground/15"
+            >
+              <IconChevronLeft size={20} stroke={1.75} />
+            </button>
+            <h1 className="text-base font-bold text-primary-foreground">가족 구성원</h1>
+          </header>
+        </div>
 
-        <main className="flex-1 overflow-y-auto px-4 pb-10 pt-3">
+        <main className="flex-1 overflow-y-auto px-4 pb-10">
           {/* Dominant invite block */}
-          <section className="rounded-2xl bg-surface p-5 text-center shadow-[0_1px_2px_rgba(20,20,10,0.04),0_10px_28px_-14px_rgba(20,20,10,0.18)]">
+          <section className="relative -mt-4 rounded-2xl bg-surface p-5 text-center shadow-[0_12px_32px_-10px_rgba(20,40,30,0.35)]">
             <p className="text-sm text-muted-foreground">이 코드로 우리집에 초대하세요</p>
             <p className="mt-2 text-4xl font-bold tracking-[0.08em] text-primary">{code}</p>
             <div className="mt-4 flex gap-2">
@@ -70,12 +73,12 @@ export default function FamilyInvite({
               >
                 {copied ? (
                   <>
-                    <Check size={16} strokeWidth={2.5} className="text-success" />
+                    <IconCheck size={16} stroke={2.5} className="text-success" />
                     복사됨
                   </>
                 ) : (
                   <>
-                    <Copy size={16} strokeWidth={1.75} />
+                    <IconCopy size={16} stroke={1.75} />
                     코드 복사
                   </>
                 )}
@@ -85,7 +88,7 @@ export default function FamilyInvite({
                 onClick={shareCode}
                 className="flex min-h-12 flex-1 items-center justify-center gap-1.5 rounded-full bg-primary text-sm font-bold text-primary-foreground transition-transform active:scale-[0.98]"
               >
-                <Share2 size={16} strokeWidth={1.75} />
+                <IconShare2 size={16} stroke={1.75} />
                 공유하기
               </button>
             </div>
@@ -108,13 +111,7 @@ export default function FamilyInvite({
                         <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-surface bg-success" />
                       )}
                     </span>
-                    <span className="flex-1">
-                      <span className="block text-base text-foreground">{m.name}</span>
-                      <span className="block text-xs text-muted-foreground">
-                        {m.role}
-                        {m.online ? " · 지금 보는 중" : ""}
-                      </span>
-                    </span>
+                    <span className="flex-1 text-base text-foreground">{m.name}</span>
                   </li>
                 ))}
               </ul>
@@ -134,7 +131,7 @@ export default function FamilyInvite({
                   {invites.map((invite) => (
                     <li key={invite.id} className="flex items-center gap-3 px-4 py-3">
                       <span className="flex h-10 w-10 items-center justify-center rounded-full bg-chrome/60 text-muted-foreground">
-                        <Mail size={17} strokeWidth={1.75} />
+                        <IconMail size={17} stroke={1.75} />
                       </span>
                       <span className="flex-1">
                         <span className="block text-base text-foreground">{invite.invitedName}</span>

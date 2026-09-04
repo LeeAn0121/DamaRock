@@ -1,16 +1,19 @@
 import { useState } from "react";
-import { ChevronLeft, ChevronRight, LogOut, Users } from "lucide-react";
-import type { Member } from "./data";
+import clsx from "clsx";
+import { IconChevronLeft, IconChevronRight, IconLogout, IconUsers } from "@tabler/icons-react";
+import { memberName, type Member } from "./data";
 
 export default function SettingsPage({
   familyName,
   members,
+  userId,
   onBack,
   onOpenInvite,
   onSignOut,
 }: {
   familyName: string;
   members: Member[];
+  userId: string | null;
   onBack: () => void;
   onOpenInvite: () => void;
   onSignOut: () => void;
@@ -18,27 +21,45 @@ export default function SettingsPage({
   const [newItemAlerts, setNewItemAlerts] = useState(true);
   const [doneAlerts, setDoneAlerts] = useState(true);
 
+  const me = members.find((m) => m.id === userId);
+
   return (
     <div className="min-h-dvh bg-background font-sans text-foreground">
       <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col">
-        <header className="flex items-center gap-1 px-2 pt-6">
-          <button
-            type="button"
-            aria-label="뒤로"
-            onClick={onBack}
-            className="flex h-11 w-11 items-center justify-center rounded-full text-muted-foreground hover:bg-chrome/60 active:bg-chrome"
-          >
-            <ChevronLeft size={20} strokeWidth={1.75} />
-          </button>
-          <h1 className="text-base font-bold text-foreground">설정</h1>
-        </header>
+        {/* Hero band */}
+        <div className="rounded-b-[32px] bg-primary px-2 pt-6 pb-16">
+          <header className="flex items-center gap-1">
+            <button
+              type="button"
+              aria-label="뒤로"
+              onClick={onBack}
+              className="flex h-11 w-11 items-center justify-center rounded-full text-primary-foreground/80 hover:bg-primary-foreground/10 active:bg-primary-foreground/15"
+            >
+              <IconChevronLeft size={20} stroke={1.75} />
+            </button>
+            <h1 className="text-base font-bold text-primary-foreground">설정</h1>
+          </header>
+        </div>
 
-        <main className="flex-1 overflow-y-auto px-4 pb-10 pt-4">
+        <main className="flex-1 overflow-y-auto px-4 pb-10">
+          {/* Floating profile card */}
+          <section className="relative -mt-4 flex items-center gap-4 rounded-2xl bg-surface p-5 shadow-[0_12px_32px_-10px_rgba(20,40,30,0.35)]">
+            <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-chrome text-xl font-bold text-chrome-foreground">
+              {me?.initial ?? "나"}
+            </span>
+            <span className="min-w-0">
+              <span className="block truncate text-lg font-bold text-foreground">
+                {memberName(members, userId ?? undefined)}
+              </span>
+              <span className="block text-sm text-muted-foreground">{me?.role ?? "가족 구성원"}</span>
+            </span>
+          </section>
+
           <SettingsGroup label="우리집">
             <SettingsRow label="가족 이름" trailing={<span className="text-sm text-muted-foreground">{familyName}</span>} />
             <SettingsRow
               label="가족 구성원"
-              icon={<Users size={17} strokeWidth={1.75} />}
+              icon={<IconUsers size={17} stroke={1.75} />}
               onClick={onOpenInvite}
               trailing={
                 <span className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -72,7 +93,7 @@ export default function SettingsPage({
           <SettingsGroup label="계정">
             <SettingsRow
               label="로그아웃"
-              icon={<LogOut size={17} strokeWidth={1.75} />}
+              icon={<IconLogout size={17} stroke={1.75} />}
               onClick={onSignOut}
               chevron={false}
             />
@@ -87,7 +108,7 @@ export default function SettingsPage({
 
 function SettingsGroup({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <section className="mt-6 first:mt-2">
+    <section className="mt-6">
       <h2 className="mb-2 px-1 text-sm font-bold text-muted-foreground">{label}</h2>
       <div className="divide-y divide-border/60 rounded-2xl border border-border/60 bg-surface">
         {children}
@@ -115,15 +136,13 @@ function SettingsRow({
     <Comp
       type={interactive ? "button" : undefined}
       onClick={onClick}
-      className={`flex min-h-11 w-full items-center gap-3 px-4 py-3 text-left ${
-        interactive ? "active:bg-chrome/40" : ""
-      }`}
+      className={clsx("flex min-h-11 w-full items-center gap-3 px-4 py-3 text-left", interactive && "active:bg-chrome/40")}
     >
       {icon && <span className="text-muted-foreground">{icon}</span>}
       <span className="flex-1 text-base text-foreground">{label}</span>
       {trailing}
       {interactive && chevron && (
-        <ChevronRight size={16} strokeWidth={1.75} className="text-muted-foreground" />
+        <IconChevronRight size={16} stroke={1.75} className="text-muted-foreground" />
       )}
     </Comp>
   );
@@ -147,15 +166,12 @@ function Switch({
       onClick={() => onChange(!checked)}
       className="flex h-11 w-14 shrink-0 items-center justify-center"
     >
-      <span
-        className={`relative h-7 w-12 rounded-full transition-colors ${
-          checked ? "bg-primary" : "bg-chrome"
-        }`}
-      >
+      <span className={clsx("relative h-7 w-12 rounded-full transition-colors", checked ? "bg-primary" : "bg-chrome")}>
         <span
-          className={`absolute left-0.5 top-0.5 h-6 w-6 rounded-full bg-surface shadow-sm transition-transform ${
+          className={clsx(
+            "absolute left-0.5 top-0.5 h-6 w-6 rounded-full bg-surface shadow-sm transition-transform",
             checked ? "translate-x-5" : "translate-x-0"
-          }`}
+          )}
         />
       </span>
     </button>

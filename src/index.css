@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css";
 @import "../.styleseed/palette.css";
 
 :root {
@@ -29,7 +30,7 @@
   --color-danger: var(--ss-danger);
   --color-danger-foreground: var(--ss-danger-foreground);
 
-  --font-sans: "Pretendard", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --font-sans: "Pretendard Variable", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
 }
 
 @layer base {

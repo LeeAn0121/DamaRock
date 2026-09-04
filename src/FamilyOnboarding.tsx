@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { LogOut, Users, UserPlus } from "lucide-react";
+import { IconLogout, IconUserPlus, IconUsers } from "@tabler/icons-react";
 
 export default function FamilyOnboarding({
   onCreate,
@@ -25,7 +25,7 @@ export default function FamilyOnboarding({
           onClick={onSignOut}
           className="flex min-h-11 items-center gap-1.5 rounded-full px-3 text-sm text-muted-foreground active:bg-chrome/60"
         >
-          <LogOut size={16} strokeWidth={1.75} />
+          <IconLogout size={16} stroke={1.75} />
           로그아웃
         </button>
       </header>
@@ -47,7 +47,7 @@ export default function FamilyOnboarding({
                 className="flex min-h-14 items-center gap-3 rounded-2xl border border-border bg-surface px-4 text-left transition-colors active:bg-chrome/40"
               >
                 <span className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
-                  <Users size={19} strokeWidth={1.75} />
+                  <IconUsers size={19} stroke={1.75} />
                 </span>
                 <span>
                   <span className="block text-base font-bold text-foreground">가족 공간 만들기</span>
@@ -61,7 +61,7 @@ export default function FamilyOnboarding({
                 className="flex min-h-14 items-center gap-3 rounded-2xl border border-border bg-surface px-4 text-left transition-colors active:bg-chrome/40"
               >
                 <span className="flex h-10 w-10 items-center justify-center rounded-full bg-chrome text-chrome-foreground">
-                  <UserPlus size={19} strokeWidth={1.75} />
+                  <IconUserPlus size={19} stroke={1.75} />
                 </span>
                 <span>
                   <span className="block text-base font-bold text-foreground">초대 코드로 참여하기</span>

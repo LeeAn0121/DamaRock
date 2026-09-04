@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { X } from "lucide-react";
+import clsx from "clsx";
+import { IconX } from "@tabler/icons-react";
 import type { Category, Item, Member } from "./data";
 
 type Draft = {
@@ -78,7 +79,7 @@ export default function AddItemSheet({
             onClick={onClose}
             className="flex h-11 w-11 items-center justify-center rounded-full text-muted-foreground hover:bg-chrome/60 active:bg-chrome"
           >
-            <X size={18} strokeWidth={1.75} />
+            <IconX size={18} stroke={1.75} />
           </button>
         </div>
 
@@ -91,11 +92,10 @@ export default function AddItemSheet({
                 type="button"
                 onClick={() => setDraft((d) => ({ ...d, category: c }))}
                 aria-pressed={draft.category === c}
-                className={`min-h-11 flex-1 rounded-full text-sm font-bold transition-colors ${
-                  draft.category === c
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground"
-                }`}
+                className={clsx(
+                  "min-h-11 flex-1 rounded-full text-sm font-bold transition-colors",
+                  draft.category === c ? "bg-primary text-primary-foreground" : "text-muted-foreground"
+                )}
               >
                 {c === "grocery" ? "장보기" : "할 일"}
               </button>
@@ -142,11 +142,12 @@ export default function AddItemSheet({
                       setDraft((d) => ({ ...d, due: d.due === chip ? undefined : chip }))
                     }
                     aria-pressed={draft.due === chip}
-                    className={`inline-flex min-h-11 items-center justify-center rounded-full border px-4 text-sm transition-colors ${
+                    className={clsx(
+                      "inline-flex min-h-11 items-center justify-center rounded-full border px-4 text-sm transition-colors",
                       draft.due === chip
                         ? "border-primary bg-primary text-primary-foreground"
                         : "border-border text-muted-foreground hover:border-primary hover:text-primary"
-                    }`}
+                    )}
                   >
                     {chip}
                   </button>
@@ -172,11 +173,12 @@ export default function AddItemSheet({
                   className="flex flex-col items-center gap-1"
                 >
                   <span
-                    className={`flex h-11 w-11 items-center justify-center rounded-full text-sm font-bold transition-colors ${
+                    className={clsx(
+                      "flex h-11 w-11 items-center justify-center rounded-full text-sm font-bold transition-colors",
                       draft.assignee === m.id
                         ? "bg-primary text-primary-foreground ring-2 ring-primary ring-offset-2 ring-offset-surface"
                         : "bg-chrome text-chrome-foreground"
-                    }`}
+                    )}
                   >
                     {m.initial}
                   </span>

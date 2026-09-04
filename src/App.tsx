@@ -68,6 +68,7 @@ export default function App() {
       <SettingsPage
         familyName={data.family?.name ?? "담아락"}
         members={data.members}
+        userId={data.userId}
         onBack={() => setScreen("home")}
         onOpenInvite={() => setScreen("invite")}
         onSignOut={data.signOut}

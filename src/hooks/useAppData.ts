@@ -8,6 +8,8 @@ export type Invite = { id: string; invitedName: string; invitedEmail: string | n
 
 type Status = "loading" | "signed-out" | "needs-family" | "ready" | "error";
 
+const PENDING_JOIN_KEY = "damarock_pending_join";
+
 type MemberRow = {
   user_id: string;
   role: "어른" | "아이";
@@ -115,6 +117,18 @@ export function useAppData() {
     },
     [applyOnline]
   );
+
+  // Capture ?join=<code> from an invite link before it's lost — persisted across
+  // the OAuth redirect so a not-yet-logged-in visitor still auto-joins after login.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get("join");
+    if (!code) return;
+    sessionStorage.setItem(PENDING_JOIN_KEY, code);
+    params.delete("join");
+    const rest = params.toString();
+    window.history.replaceState({}, "", window.location.pathname + (rest ? `?${rest}` : ""));
+  }, []);
 
   // Auth bootstrap
   useEffect(() => {
@@ -251,6 +265,15 @@ export function useAppData() {
     },
     [userId, loadFamilyData]
   );
+
+  // Auto-join once we know the visitor has no family yet and an invite link was opened.
+  useEffect(() => {
+    if (status !== "needs-family") return;
+    const pending = sessionStorage.getItem(PENDING_JOIN_KEY);
+    if (!pending) return;
+    sessionStorage.removeItem(PENDING_JOIN_KEY);
+    joinFamily(pending);
+  }, [status, joinFamily]);
 
   const cancelInvite = useCallback(async (id: string) => {
     setInvites((prev) => prev.filter((i) => i.id !== id));
