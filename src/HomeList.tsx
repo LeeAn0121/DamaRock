@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import clsx from "clsx";
-import { IconCheck, IconChecklist, IconChevronDown, IconInbox, IconPackage, IconPlus, IconSettings, IconShoppingCart, IconWifiOff } from "@tabler/icons-react";
+import { IconCheck, IconChecklist, IconChevronDown, IconInbox, IconPackage, IconPlus, IconSettings, IconShoppingCart, IconWifiOff, IconFolder, IconEdit, IconTrash } from "@tabler/icons-react";
 import { memberName, type Category, type Item, type Member } from "./data";
 import ActivitySheet from "./ActivitySheet";
 import CalendarView from "./CalendarView";
@@ -211,15 +211,17 @@ export default function HomeList(props: {
                             <button
                               type="button"
                               onClick={() => onAssignCategory(item.id, "grocery")}
-                              className="inline-flex min-h-11 items-center justify-center rounded border border-border px-3 text-xs text-muted-foreground transition-colors hover:border-primary hover:text-primary active:bg-chrome"
+                              className="inline-flex min-h-10 items-center justify-center gap-1.5 rounded-full border border-border/80 px-4 text-xs font-bold text-muted-foreground transition-all hover:border-primary/50 hover:bg-primary/5 hover:text-primary active:scale-95"
                             >
+                              <IconShoppingCart size={14} stroke={2.5} />
                               장보기
                             </button>
                             <button
                               type="button"
                               onClick={() => onAssignCategory(item.id, "todo")}
-                              className="inline-flex min-h-11 items-center justify-center rounded border border-border px-3 text-xs text-muted-foreground transition-colors hover:border-primary hover:text-primary active:bg-chrome"
+                              className="inline-flex min-h-10 items-center justify-center gap-1.5 rounded-full border border-border/80 px-4 text-xs font-bold text-muted-foreground transition-all hover:border-primary/50 hover:bg-primary/5 hover:text-primary active:scale-95"
                             >
+                              <IconChecklist size={14} stroke={2.5} />
                               할 일
                             </button>
                           </div>
@@ -376,28 +378,31 @@ function SwipeableItem({
             {onMove && (
               <button
                 type="button"
-                className="flex w-[72px] items-center justify-center bg-chrome/60 text-foreground font-bold text-sm"
+                className="flex flex-col w-[72px] items-center justify-center bg-chrome/40 text-foreground transition-colors hover:bg-chrome/60 active:bg-chrome/80"
                 onClick={() => onMove(item)}
               >
-                이동
+                <IconFolder size={20} stroke={2} className="mb-1" />
+                <span className="text-[11px] font-extrabold tracking-tight">폴더</span>
               </button>
             )}
             {onEdit && (
               <button
                 type="button"
-                className="flex w-[72px] items-center justify-center bg-primary/10 text-primary font-bold text-sm"
+                className="flex flex-col w-[72px] items-center justify-center bg-primary/10 text-primary transition-colors hover:bg-primary/20 active:bg-primary/30"
                 onClick={() => onEdit(item)}
               >
-                수정
+                <IconEdit size={20} stroke={2} className="mb-1" />
+                <span className="text-[11px] font-extrabold tracking-tight">수정</span>
               </button>
             )}
             {onDelete && (
               <button
                 type="button"
-                className="flex w-[72px] items-center justify-center bg-danger/10 text-danger font-bold text-sm"
+                className="flex flex-col w-[72px] items-center justify-center bg-danger/10 text-danger transition-colors hover:bg-danger/20 active:bg-danger/30"
                 onClick={() => onDelete(item.id)}
               >
-                삭제
+                <IconTrash size={20} stroke={2} className="mb-1" />
+                <span className="text-[11px] font-extrabold tracking-tight">삭제</span>
               </button>
             )}
           </div>
