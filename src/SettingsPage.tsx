@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import clsx from "clsx";
 import { IconChevronLeft, IconChevronRight, IconLogout, IconUsers } from "@tabler/icons-react";
 import { memberName, type Member } from "./data";
@@ -20,6 +20,18 @@ export default function SettingsPage({
 }) {
   const [newItemAlerts, setNewItemAlerts] = useState(true);
   const [doneAlerts, setDoneAlerts] = useState(true);
+  const [appVersion, setAppVersion] = useState("v1.0.1");
+
+  useEffect(() => {
+    fetch("https://api.github.com/repos/LeeAn0121/DamaRock/releases/latest")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && data.tag_name) {
+          setAppVersion(data.tag_name);
+        }
+      })
+      .catch((err) => console.error("Failed to fetch latest release version:", err));
+  }, []);
 
   const me = members.find((m) => m.id === userId);
 
@@ -104,7 +116,7 @@ export default function SettingsPage({
             />
           </SettingsGroup>
 
-          <p className="mt-10 text-center text-xs font-medium text-muted-foreground/60">담아락 v0.1.0</p>
+          <p className="mt-10 text-center text-xs font-medium text-muted-foreground/60">담아락 {appVersion}</p>
         </main>
       </div>
     </div>
