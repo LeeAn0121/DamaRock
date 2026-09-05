@@ -82,8 +82,20 @@ export default function FamilyInvite({
                 type="button"
                 onClick={() => {
                   const text = `[담아락] 우리집 그룹에 초대합니다.\n아래 링크를 누르면 바로 참여할 수 있어요!\n\n${inviteUrl}`;
-                  if(navigator.share) navigator.share({ text });
-                  else copyCode();
+                  
+                  if (window.Kakao && window.Kakao.isInitialized()) {
+                    window.Kakao.Share.sendDefault({
+                      objectType: 'text',
+                      text: text,
+                      link: {
+                        mobileWebUrl: window.location.href,
+                        webUrl: window.location.href,
+                      },
+                    });
+                  } else {
+                    alert("카카오톡 공유가 초기화되지 않았습니다. 관리자에게 문의하세요.");
+                  }
+
                 }}
                 className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#FEE500] text-sm font-bold text-[#191919] shadow-sm transition-transform active:scale-[0.98]"
               >

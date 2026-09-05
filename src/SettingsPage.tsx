@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useInstallPrompt } from "./hooks/useInstallPrompt";
+import { useAppData } from "./hooks/useAppData";
 import clsx from "clsx";
 import { 
   IconChevronLeft, IconChevronRight, IconLogout, IconUsers, 
@@ -107,6 +108,10 @@ export default function SettingsPage({
   onOpenInvite: () => void;
   onSignOut: () => void;
 }) {
+  
+  const me = members.find(m => m.id === userId);
+  const { updateLanguage, updateFamilyName } = useAppData();
+
   // Push Notifications Settings
   const [notifyNewItem, setNotifyNewItem] = useState(() => localStorage.getItem("notifyNewItem") !== "false");
   const [notifyComments, setNotifyComments] = useState(() => localStorage.getItem("notifyComments") !== "false");
