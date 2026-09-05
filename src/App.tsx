@@ -1,20 +1,19 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import HomeList from "./HomeList";
 import AddItemSheet from "./AddItemSheet";
 import SettingsPage from "./SettingsPage";
 import FamilyInvite from "./FamilyInvite";
 import AuthScreen from "./AuthScreen";
-import AnnouncementPage from "./AnnouncementPage";
 import FamilyOnboarding from "./FamilyOnboarding";
 import { useAppData } from "./hooks/useAppData";
 import type { Category, Item } from "./data";
 
-type Screen = "home" | "settings" | "invite" | "announcement";
+type Screen = "home" | "settings" | "invite";
 
 function useInitialScreen(): Screen {
   if (typeof window === "undefined") return "home";
   const v = new URLSearchParams(window.location.search).get("screen");
-  if (v === "settings" || v === "invite" || v === "announcement") return v;
+  if (v === "settings" || v === "invite") return v as Screen;
   return "home";
 }
 
@@ -24,6 +23,16 @@ export default function App() {
   const [addSheetOpen, setAddSheetOpen] = useState(
     () => typeof window !== "undefined" && new URLSearchParams(window.location.search).get("modal") === "add"
   );
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "default") {
+      const request = () => {
+        Notification.requestPermission();
+        document.removeEventListener("click", request);
+      };
+      document.addEventListener("click", request);
+    }
+  }, []);
 
   if (data.status === "loading") {
     return <div className="min-h-dvh bg-background" />;
@@ -72,18 +81,7 @@ export default function App() {
         userId={data.userId}
         onBack={() => setScreen("home")}
         onOpenInvite={() => setScreen("invite")}
-        onOpenAnnouncements={() => setScreen("announcement")}
         onSignOut={data.signOut}
-      />
-    );
-  }
-
-  if (screen === "announcement") {
-    return (
-      <AnnouncementPage
-        familyId={data.family?.id ?? ""}
-        userId={data.userId ?? ""}
-        onBack={() => setScreen("settings")}
       />
     );
   }

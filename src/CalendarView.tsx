@@ -41,6 +41,7 @@ export default function CalendarView({
   const itemsByDate = useMemo(() => {
     const map = new Map<number, Item[]>();
     items.forEach(item => {
+      if (item.category !== "todo") return;
       // Use created_at as the primary date for display purposes
       const date = new Date(item.created_at);
       if (date.getFullYear() === year && date.getMonth() === month) {
@@ -56,7 +57,7 @@ export default function CalendarView({
 
   const selectedItems = selectedDay ? itemsByDate.get(selectedDay) || [] : [];
   const todos = selectedItems.filter(i => i.category === "todo");
-  const groceries = selectedItems.filter(i => i.category === "grocery");
+
 
   return (
     <div className="flex-1 pb-10">
@@ -191,25 +192,7 @@ export default function CalendarView({
                     </ul>
                   </div>
                 )}
-                {groceries.length > 0 && (
-                  <div className="rounded-2xl bg-surface p-4 shadow-sm">
-                    <h4 className="text-xs font-bold text-[#FF8A00] mb-3 flex items-center gap-1">
-                      <span className="w-1 h-3 bg-[#FF8A00] rounded-full" /> 장보기
-                    </h4>
-                    <ul className="flex flex-col gap-3">
-                      {groceries.map(item => (
-                        <li key={item.id} className="flex items-start gap-3">
-                          <button onClick={() => onToggleDone(item.id)} className={clsx("mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded border-2 transition-colors", item.done ? "border-primary bg-primary text-primary-foreground" : "border-border text-transparent")}>
-                            <IconCheck size={13} stroke={3} />
-                          </button>
-                          <div className="flex flex-col">
-                            <span className={clsx("text-sm font-bold", item.done ? "text-muted-foreground line-through" : "text-foreground")}>{item.title}</span>
-                          </div>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
+
               </div>
             )}
       </div>

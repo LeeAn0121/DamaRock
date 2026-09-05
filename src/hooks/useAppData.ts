@@ -12,7 +12,7 @@ const PENDING_JOIN_KEY = "damarock_pending_join";
 
 type MemberRow = {
   user_id: string;
-  role: "어른" | "아이";
+  role: "가족대표" | "구성원";
   profiles: { display_name: string; initial: string; avatar_url: string | null } | null;
 };
 
@@ -183,7 +183,41 @@ export function useAppData() {
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "items", filter: `family_id=eq.${family.id}` },
-        () => loadFamilyData(userId)
+        (payload) => {
+          loadFamilyData(userId);
+          
+          const isSystem = (payload.new && payload.new.title === '__SYSTEM_FOLDERS__') || (payload.old && payload.old.title === '__SYSTEM_FOLDERS__');
+          if (isSystem) return;
+
+          if (typeof window !== "undefined" && "Notification" in window) {
+            if (Notification.permission === "default") {
+              Notification.requestPermission();
+            }
+            if (Notification.permission === "granted") {
+              const eventType = payload.eventType;
+              const itemData = payload.new || payload.old;
+              const title = "담아락 가족 활동";
+              let body = "";
+              
+              if (itemData) {
+                const categoryStr = itemData.category === "todo" ? "할 일" : (itemData.category === "grocery" ? "장보기 항목" : "항목");
+                const itemTitle = itemData.title;
+                
+                if (eventType === "INSERT") {
+                  body = `새로운 ${categoryStr} '${itemTitle}'(이)가 등록되었습니다.`;
+                } else if (eventType === "UPDATE") {
+                  body = `${categoryStr} '${itemTitle}'(이)가 수정/완료되었습니다.`;
+                } else if (eventType === "DELETE") {
+                  body = `${categoryStr} '${itemTitle}'(이)가 삭제되었습니다.`;
+                }
+                
+                if (body) {
+                  new Notification(title, { body, icon: `${import.meta.env.BASE_URL}icon-192.png` });
+                }
+              }
+            }
+          }
+        }
       )
       .on(
         "postgres_changes",

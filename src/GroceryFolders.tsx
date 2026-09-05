@@ -1,9 +1,17 @@
 import { useState, useMemo } from "react";
 import type { Item, Member } from "./data";
-import { IconFolder, IconPlus, IconTrash } from "@tabler/icons-react";
+import { IconFolder, IconPlus, IconTrash, IconChevronDown, IconChevronRight } from "@tabler/icons-react";
 import { ItemRows, DoneDisclosure } from "./HomeList";
+import { showToast } from "./components/Toast";
 
 export type Folder = { id: string; name: string; icon: string };
+
+type PopupState = 
+  | { type: 'NONE' }
+  | { type: 'CREATE_FOLDER' }
+  | { type: 'CHANGE_ICON', folderId: string }
+  | { type: 'CONFIRM_DELETE', folderId: string }
+  | { type: 'MOVE_ITEM', item: Item };
 
 export default function GroceryFolders({
   items,
@@ -24,6 +32,10 @@ export default function GroceryFolders({
   addItem: (item: Pick<Item, "title" | "category" | "meta">) => void;
   editItem: (id: string, title: string, meta?: string | null) => void;
 }) {
+  const [popup, setPopup] = useState<PopupState>({ type: 'NONE' });
+  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
+  const [inputValue, setInputValue] = useState("");
+
   const systemItem = items.find((i) => i.title === "__SYSTEM_FOLDERS__");
   const groceryItems = items.filter((i) => i.category === "grocery" && i.title !== "__SYSTEM_FOLDERS__");
   
@@ -41,21 +53,44 @@ export default function GroceryFolders({
     if (systemItem) {
       editItem(systemItem.id, "__SYSTEM_FOLDERS__", meta);
     } else {
-      addItem({ title: "__SYSTEM_FOLDERS__", category: "grocery", meta });
+      addItem({ title: "__SYSTEM_FOLDERS__", category: "system", meta });
     }
   };
 
-  const handleCreateFolder = () => {
-    const icon = window.prompt("폴더 아이콘(이모지)을 입력하세요:", "🛒");
-    if (!icon) return;
-    const name = window.prompt("폴더 이름을 입력하세요:", "새 폴더");
-    if (!name) return;
-    saveFolders([...folders, { id: Date.now().toString(), name, icon }]);
+  const handleCreateFolderClick = () => {
+    setInputValue("");
+    setPopup({ type: 'CREATE_FOLDER' });
   };
 
-  const handleDeleteFolder = (folderId: string) => {
-    if (!window.confirm("폴더를 삭제하시겠습니까? (안에 있는 항목은 '미분류'로 이동됩니다)")) return;
-    saveFolders(folders.filter(f => f.id !== folderId));
+  const handleConfirmPopup = () => {
+    if (popup.type === 'CREATE_FOLDER') {
+      if (!inputValue.trim()) {
+        showToast("폴더 이름을 입력해주세요.");
+        return;
+      }
+      saveFolders([...folders, { id: Date.now().toString(), name: inputValue.trim(), icon: "📁" }]);
+      showToast("새 폴더가 추가되었습니다.");
+      setPopup({ type: 'NONE' });
+      setInputValue("");
+    } else if (popup.type === 'CHANGE_ICON') {
+      if (!inputValue.trim()) {
+        showToast("아이콘(이모지)을 입력해주세요.");
+        return;
+      }
+      const newFolders = folders.map(f => f.id === popup.folderId ? { ...f, icon: inputValue.trim() } : f);
+      saveFolders(newFolders);
+      showToast("아이콘이 변경되었습니다.");
+      setPopup({ type: 'NONE' });
+      setInputValue("");
+    } else if (popup.type === 'CONFIRM_DELETE') {
+      saveFolders(folders.filter(f => f.id !== popup.folderId));
+      showToast("폴더가 삭제되었습니다.");
+      setPopup({ type: 'NONE' });
+    }
+  };
+
+  const toggleCollapse = (id: string) => {
+    setCollapsed(prev => ({ ...prev, [id]: !prev[id] }));
   };
 
   const grouped = useMemo(() => {
@@ -79,25 +114,17 @@ export default function GroceryFolders({
 
   const handleMove = (item: Item) => {
     if (folders.length === 0) {
-      window.alert("생성된 폴더가 없습니다. 먼저 폴더를 추가해주세요.");
+      showToast("생성된 폴더가 없습니다. 먼저 폴더를 추가해주세요.");
       return;
     }
-    const folderList = folders.map((f, i) => `${i + 1}. ${f.icon} ${f.name}`).join("\n");
-    const num = window.prompt(`이동할 폴더 번호를 선택하세요 (비워두면 미분류):\n${folderList}`);
-    if (num === null) return;
-    
-    const index = parseInt(num) - 1;
-    const targetFolder = folders[index];
-    const newMeta = targetFolder ? targetFolder.id : "";
-    
-    editItem(item.id, item.title, newMeta);
+    setPopup({ type: 'MOVE_ITEM', item });
   };
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-6 relative">
       <div className="flex justify-between items-center px-2 mt-4">
         <h2 className="text-sm font-bold text-muted-foreground">장보기 항목 ({groceryItems.filter(i => !i.done).length})</h2>
-        <button onClick={handleCreateFolder} className="flex items-center gap-1 text-xs font-bold text-primary bg-primary/10 px-3 py-1.5 rounded-full active:scale-95 transition-transform">
+        <button onClick={handleCreateFolderClick} className="flex items-center gap-1 text-xs font-bold text-primary bg-primary/10 px-3 py-1.5 rounded-full active:scale-95 transition-transform">
           <IconPlus size={14} stroke={2.5} /> 새 폴더
         </button>
       </div>
@@ -107,26 +134,50 @@ export default function GroceryFolders({
           const folderItems = grouped.get(folder.id) || [];
           const active = folderItems.filter(i => !i.done);
           const done = folderItems.filter(i => i.done);
+          const isCollapsed = collapsed[folder.id];
           
           return (
             <section key={folder.id} className="flex flex-col rounded-2xl bg-surface px-4 py-3 shadow-sm border border-border/40">
               <div className="flex items-center justify-between mb-3 border-b border-border/40 pb-2">
-                <h3 className="text-base font-extrabold flex items-center gap-2 text-foreground">
-                  <span className="text-xl">{folder.icon}</span> {folder.name} <span className="text-muted-foreground font-normal text-sm">({active.length})</span>
-                </h3>
-                <button onClick={() => handleDeleteFolder(folder.id)} className="text-muted-foreground hover:text-danger active:bg-chrome p-1.5 rounded-full transition-colors">
+                <div className="flex items-center gap-2 flex-1 overflow-hidden">
+                  <button onClick={() => toggleCollapse(folder.id)} className="text-muted-foreground hover:text-foreground active:scale-90 transition-transform p-1">
+                    {isCollapsed ? <IconChevronRight size={18}/> : <IconChevronDown size={18}/>}
+                  </button>
+                  <button 
+                    className="text-xl active:scale-90 transition-transform hover:opacity-80" 
+                    onClick={() => {
+                      setInputValue(folder.icon);
+                      setPopup({ type: 'CHANGE_ICON', folderId: folder.id });
+                    }}
+                    title="아이콘 변경"
+                  >
+                    {folder.icon}
+                  </button>
+                  <h3 
+                    className="text-base font-extrabold flex items-center gap-2 text-foreground cursor-pointer flex-1 truncate"
+                    onClick={() => toggleCollapse(folder.id)}
+                  >
+                    {folder.name} <span className="text-muted-foreground font-normal text-sm">({active.length})</span>
+                  </h3>
+                </div>
+                <button 
+                  onClick={() => setPopup({ type: 'CONFIRM_DELETE', folderId: folder.id })} 
+                  className="text-muted-foreground hover:text-danger active:bg-chrome p-1.5 rounded-full transition-colors ml-2"
+                >
                   <IconTrash size={16} stroke={2} />
                 </button>
               </div>
               
-              <div className="flex-1">
-                <ItemRows items={active} onToggle={onToggleDone} onDelete={onDelete} onEdit={onEdit} onMove={handleMove} onSelect={onSelect} members={members} />
-                {done.length > 0 && (
-                  <DoneDisclosure count={done.length}>
-                    <ItemRows items={done} onToggle={onToggleDone} onDelete={onDelete} onEdit={onEdit} onMove={handleMove} onSelect={onSelect} members={members} />
-                  </DoneDisclosure>
-                )}
-              </div>
+              {!isCollapsed && (
+                <div className="flex-1 animate-in fade-in slide-in-from-top-2 duration-200">
+                  <ItemRows items={active} onToggle={onToggleDone} onDelete={onDelete} onEdit={onEdit} onMove={handleMove} onSelect={onSelect} members={members} />
+                  {done.length > 0 && (
+                    <DoneDisclosure count={done.length}>
+                      <ItemRows items={done} onToggle={onToggleDone} onDelete={onDelete} onEdit={onEdit} onMove={handleMove} onSelect={onSelect} members={members} />
+                    </DoneDisclosure>
+                  )}
+                </div>
+              )}
             </section>
           );
         })}
@@ -134,21 +185,121 @@ export default function GroceryFolders({
         {(unassigned.length > 0 || folders.length === 0) && (
           <section className="flex flex-col rounded-2xl bg-surface px-4 py-3 shadow-sm border border-border/40">
             <div className="flex items-center justify-between mb-3 border-b border-border/40 pb-2">
-              <h3 className="text-base font-extrabold flex items-center gap-2 text-foreground">
-                <span className="text-muted-foreground"><IconFolder size={18} /></span> 미분류 <span className="text-muted-foreground font-normal text-sm">({unassigned.filter(i => !i.done).length})</span>
-              </h3>
+              <div className="flex items-center gap-2">
+                <button onClick={() => toggleCollapse("unassigned")} className="text-muted-foreground hover:text-foreground active:scale-90 transition-transform p-1">
+                  {collapsed["unassigned"] ? <IconChevronRight size={18}/> : <IconChevronDown size={18}/>}
+                </button>
+                <h3 
+                  className="text-base font-extrabold flex items-center gap-2 text-foreground cursor-pointer"
+                  onClick={() => toggleCollapse("unassigned")}
+                >
+                  <span className="text-muted-foreground"><IconFolder size={18} /></span> 미분류 <span className="text-muted-foreground font-normal text-sm">({unassigned.filter(i => !i.done).length})</span>
+                </h3>
+              </div>
             </div>
-            <div className="flex-1">
-              <ItemRows items={unassigned.filter(i => !i.done)} onToggle={onToggleDone} onDelete={onDelete} onEdit={onEdit} onMove={handleMove} onSelect={onSelect} members={members} />
-              {unassigned.some((i) => i.done) && (
-                <DoneDisclosure count={unassigned.filter(i => i.done).length}>
-                  <ItemRows items={unassigned.filter((i) => i.done)} onToggle={onToggleDone} onDelete={onDelete} onEdit={onEdit} onMove={handleMove} onSelect={onSelect} members={members} />
-                </DoneDisclosure>
-              )}
-            </div>
+            {!collapsed["unassigned"] && (
+              <div className="flex-1 animate-in fade-in slide-in-from-top-2 duration-200">
+                <ItemRows items={unassigned.filter(i => !i.done)} onToggle={onToggleDone} onDelete={onDelete} onEdit={onEdit} onMove={handleMove} onSelect={onSelect} members={members} />
+                {unassigned.some((i) => i.done) && (
+                  <DoneDisclosure count={unassigned.filter(i => i.done).length}>
+                    <ItemRows items={unassigned.filter((i) => i.done)} onToggle={onToggleDone} onDelete={onDelete} onEdit={onEdit} onMove={handleMove} onSelect={onSelect} members={members} />
+                  </DoneDisclosure>
+                )}
+              </div>
+            )}
           </section>
         )}
       </div>
+
+      {/* Popups */}
+      {popup.type !== 'NONE' && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 p-4 animate-in fade-in duration-200">
+          <div className="bg-surface rounded-2xl w-full max-w-sm shadow-xl p-5 flex flex-col gap-4 animate-in zoom-in-95 duration-200">
+            
+            {popup.type === 'CREATE_FOLDER' && (
+              <>
+                <h3 className="font-bold text-lg">새 폴더</h3>
+                <input 
+                  autoFocus
+                  className="w-full bg-chrome rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-primary/50" 
+                  placeholder="폴더 이름"
+                  value={inputValue}
+                  onChange={e => setInputValue(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && handleConfirmPopup()}
+                />
+                <div className="flex gap-2 mt-2">
+                  <button className="flex-1 py-3 rounded-xl font-bold bg-chrome text-foreground/70" onClick={() => setPopup({ type: 'NONE' })}>취소</button>
+                  <button className="flex-1 py-3 rounded-xl font-bold bg-primary text-primary-foreground" onClick={handleConfirmPopup}>추가</button>
+                </div>
+              </>
+            )}
+
+            {popup.type === 'CHANGE_ICON' && (
+              <>
+                <h3 className="font-bold text-lg">아이콘 변경</h3>
+                <input 
+                  autoFocus
+                  className="w-full bg-chrome rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-primary/50 text-2xl text-center" 
+                  placeholder="이모지 입력"
+                  maxLength={5}
+                  value={inputValue}
+                  onChange={e => setInputValue(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && handleConfirmPopup()}
+                />
+                <div className="flex gap-2 mt-2">
+                  <button className="flex-1 py-3 rounded-xl font-bold bg-chrome text-foreground/70" onClick={() => setPopup({ type: 'NONE' })}>취소</button>
+                  <button className="flex-1 py-3 rounded-xl font-bold bg-primary text-primary-foreground" onClick={handleConfirmPopup}>변경</button>
+                </div>
+              </>
+            )}
+
+            {popup.type === 'CONFIRM_DELETE' && (
+              <>
+                <h3 className="font-bold text-lg text-danger">폴더 삭제</h3>
+                <p className="text-muted-foreground text-sm leading-relaxed">
+                  폴더를 삭제하시겠습니까?<br/>안에 있는 항목은 '미분류'로 이동됩니다.
+                </p>
+                <div className="flex gap-2 mt-2">
+                  <button className="flex-1 py-3 rounded-xl font-bold bg-chrome text-foreground/70" onClick={() => setPopup({ type: 'NONE' })}>취소</button>
+                  <button className="flex-1 py-3 rounded-xl font-bold bg-danger text-danger-foreground" onClick={handleConfirmPopup}>삭제</button>
+                </div>
+              </>
+            )}
+
+            {popup.type === 'MOVE_ITEM' && (
+              <div className="flex flex-col gap-3">
+                <h3 className="font-bold text-lg mb-1">이동할 폴더 선택</h3>
+                <div className="flex flex-col gap-2 max-h-[50vh] overflow-y-auto pr-1">
+                  <button 
+                    className="flex items-center gap-3 text-left px-4 py-3 rounded-xl bg-chrome hover:bg-border/50 font-medium transition-colors"
+                    onClick={() => {
+                      editItem(popup.item.id, popup.item.title, "");
+                      showToast("미분류로 이동되었습니다.");
+                      setPopup({ type: 'NONE' });
+                    }}
+                  >
+                    <span className="text-xl">📁</span> 미분류
+                  </button>
+                  {folders.map(f => (
+                    <button 
+                      key={f.id}
+                      className="flex items-center gap-3 text-left px-4 py-3 rounded-xl bg-chrome hover:bg-border/50 font-medium transition-colors"
+                      onClick={() => {
+                        editItem(popup.item.id, popup.item.title, f.id);
+                        showToast(`'${f.name}' 폴더로 이동되었습니다.`);
+                        setPopup({ type: 'NONE' });
+                      }}
+                    >
+                      <span className="text-xl">{f.icon}</span> {f.name}
+                    </button>
+                  ))}
+                </div>
+                <button className="mt-2 py-3 rounded-xl font-bold bg-chrome text-foreground/70" onClick={() => setPopup({ type: 'NONE' })}>취소</button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

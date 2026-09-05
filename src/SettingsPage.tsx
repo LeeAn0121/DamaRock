@@ -17,7 +17,6 @@ export default function SettingsPage({
   userId: string | null;
   onBack: () => void;
   onOpenInvite: () => void;
-  onOpenAnnouncements: () => void;
   onSignOut: () => void;
 }) {
   const [newItemAlerts, setNewItemAlerts] = useState(true);
@@ -109,12 +108,7 @@ export default function SettingsPage({
             />
           </SettingsGroup>
 
-          <SettingsGroup label="관리">
-            <SettingsRow
-              label="우체통 소식 관리"
-              onClick={onOpenAnnouncements}
-            />
-          </SettingsGroup>
+
 
           <SettingsGroup label="계정">
             <SettingsRow

@@ -75,7 +75,7 @@ export default function HomeList(props: {
     }
   };
 
-  const activeItems = viewState === "empty" ? [] : items;
+  const activeItems = viewState === "empty" ? [] : items.filter(i => i.title !== "__SYSTEM_FOLDERS__");
   const inbox = activeItems.filter((i) => i.category === "inbox");
   const grocery = activeItems.filter((i) => i.category === "grocery");
   const todo = activeItems.filter((i) => i.category === "todo");

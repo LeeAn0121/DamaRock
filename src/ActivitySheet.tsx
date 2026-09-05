@@ -27,6 +27,7 @@ export default function ActivitySheet({
 
   // Recent 30 items
   const recentItems = [...items]
+    .filter(i => i.title !== "__SYSTEM_FOLDERS__" && i.category !== "system")
     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
     .slice(0, 30);
 
@@ -43,7 +44,7 @@ export default function ActivitySheet({
         </div>
 
         <header className="flex items-center justify-between px-6 pb-2">
-          <h2 className="text-xl font-extrabold text-foreground">소식</h2>
+          <h2 className="text-xl font-extrabold text-foreground">활동 내역</h2>
           <button
             type="button"
             onClick={onClose}
@@ -54,18 +55,7 @@ export default function ActivitySheet({
         </header>
 
         <main className="flex-1 overflow-y-auto px-6 pb-12 pt-2">
-          {/* Postbox */}
-          <section className="mb-8 rounded-2xl bg-primary/5 p-5 border border-primary/20">
-            <div className="flex items-center gap-3 mb-2">
-              <span className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/20 text-primary shadow-sm">
-                <IconMail size={20} stroke={2} />
-              </span>
-              <span className="font-extrabold text-primary text-base">담아락 우체통</span>
-            </div>
-            <p className="text-sm font-medium text-foreground leading-relaxed pl-1">
-              담아락이 새롭게 단장했어요! 탭으로 편하게 나누고, 언제 어디서든 실시간으로 가족과 함께 챙겨보세요. 달력 기능도 준비 중이니 기대해주세요! 💌
-            </p>
-          </section>
+
 
           <h3 className="text-sm font-bold text-muted-foreground mb-4">최근 가족 활동</h3>
           <ul className="flex flex-col gap-5">
