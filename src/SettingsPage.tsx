@@ -1,11 +1,10 @@
 import { useState, useEffect } from "react";
 import { useInstallPrompt } from "./hooks/useInstallPrompt";
-import { useAppData } from "./hooks/useAppData";
 import clsx from "clsx";
-import { 
-  IconChevronLeft, IconChevronRight, IconLogout, IconUsers, 
+import {
+  IconChevronLeft, IconChevronRight, IconLogout, IconUsers,
   IconPalette, IconBell, IconLanguage, IconCalendar, IconHandMove,
-  IconTrash, IconUserEdit, IconMoon, IconSun, IconEdit
+  IconTrash, IconUserEdit, IconMoon, IconSun, IconEdit, IconDownload
 } from "@tabler/icons-react";
 import { memberName, type Member } from "./data";
 import { supabase } from "./lib/supabaseClient";
@@ -100,6 +99,8 @@ export default function SettingsPage({
   onBack,
   onOpenInvite,
   onSignOut,
+  updateLanguage,
+  updateFamilyName,
 }: {
   familyName: string;
   members: Member[];
@@ -107,10 +108,11 @@ export default function SettingsPage({
   onBack: () => void;
   onOpenInvite: () => void;
   onSignOut: () => void;
+  updateLanguage: (lang: string) => void;
+  updateFamilyName: (name: string) => void;
 }) {
-  
+
   const me = members.find(m => m.id === userId);
-  const { updateLanguage, updateFamilyName } = useAppData();
 
   // Push Notifications Settings
   const [notifyNewItem, setNotifyNewItem] = useState(() => localStorage.getItem("notifyNewItem") !== "false");

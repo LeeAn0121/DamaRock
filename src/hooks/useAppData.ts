@@ -238,8 +238,10 @@ export function useAppData() {
         { event: "*", schema: "public", table: "items", filter: `family_id=eq.${family.id}` },
         (payload) => {
           loadFamilyData(userId);
-          
-          const isSystem = (payload.new && payload.new.title === '__SYSTEM_FOLDERS__') || (payload.old && payload.old.title === '__SYSTEM_FOLDERS__');
+
+          const newRow = payload.new as Partial<ItemRow> | null;
+          const oldRow = payload.old as Partial<ItemRow> | null;
+          const isSystem = newRow?.title === '__SYSTEM_FOLDERS__' || oldRow?.title === '__SYSTEM_FOLDERS__';
           if (isSystem) return;
 
           const notify = localStorage.getItem("notifyItemChanges") !== "false";
@@ -251,7 +253,7 @@ export function useAppData() {
             }
             if (Notification.permission === "granted") {
               const eventType = payload.eventType;
-              const itemData = payload.new || payload.old;
+              const itemData = newRow || oldRow;
               const title = "담아락 가족 활동";
               let body = "";
               
@@ -482,5 +484,7 @@ export function useAppData() {
     hasUnreadActivity,
     clearUnreadActivity,
     refreshInviteCode,
+    updateLanguage,
+    updateFamilyName,
   };
 }

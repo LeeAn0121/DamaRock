@@ -83,6 +83,8 @@ export default function App() {
         onBack={() => setScreen("home")}
         onOpenInvite={() => setScreen("invite")}
         onSignOut={data.signOut}
+        updateLanguage={data.updateLanguage}
+        updateFamilyName={data.updateFamilyName}
       />
     );
   }
