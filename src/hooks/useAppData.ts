@@ -25,6 +25,7 @@ type ItemRow = {
   assignee: string | null;
   meta: string | null;
   created_at: string;
+  deleted_at: string | null;
 };
 
 export function useAppData() {
@@ -90,13 +91,13 @@ export function useAppData() {
             .returns<MemberRow[]>(),
           supabase
             .from("items")
-            .select("id, title, category, done, added_by, assignee, meta, created_at")
+            .select("id, title, category, done, added_by, assignee, meta, created_at, deleted_at")
             .eq("family_id", familyId)
             .order("created_at", { ascending: false })
             .returns<ItemRow[]>(),
           supabase
             .from("family_invites")
-            .select("id, invited_name, invited_email")
+            .select("id, invited_name, invited_email, created_at")
             .eq("family_id", familyId)
             .eq("status", "pending"),
           supabase
@@ -135,10 +136,14 @@ export function useAppData() {
           assignee: r.assignee ?? undefined,
           meta: r.meta ?? undefined,
           created_at: r.created_at,
+          deleted_at: r.deleted_at,
         }))
       );
+      const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
       setInvites(
-        (inviteRows ?? []).map((r) => ({ id: r.id, invitedName: r.invited_name, invitedEmail: r.invited_email }))
+        (inviteRows ?? [])
+          .filter(r => r.created_at > oneDayAgo)
+          .map((r) => ({ id: r.id, invitedName: r.invited_name, invitedEmail: r.invited_email }))
       );
       setComments(commentRows ?? []);
       setStatus("ready");

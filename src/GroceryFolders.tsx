@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import type { Item, Member } from "./data";
 import { IconFolder, IconPlus, IconTrash, IconChevronDown, IconChevronRight, IconCheck } from "@tabler/icons-react";
-import { ItemRows, DoneDisclosure } from "./HomeList";
+import { ItemRows, DoneDisclosure } from "./ItemRows";
 import { showToast } from "./components/Toast";
 import clsx from "clsx";
 
@@ -105,7 +105,7 @@ export default function GroceryFolders({
       map.set(f.id, []);
     }
     for (const item of groceryItems) {
-      const folderId = item.meta;
+      const folderId = item.meta?.split("::MEMO::")[0];
       if (folderId && map.has(folderId)) {
         map.get(folderId)!.push(item);
       } else {

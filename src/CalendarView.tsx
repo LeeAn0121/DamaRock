@@ -47,7 +47,7 @@ export default function CalendarView({
     items.forEach(item => {
       if (item.category !== "todo") return;
       // Use created_at as the primary date for display purposes
-      const date = new Date(item.created_at);
+      const date = (item.meta && item.meta.match(/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/)) ? new Date(item.meta) : new Date(item.created_at);
       if (date.getFullYear() === year && date.getMonth() === month) {
         const d = date.getDate();
         if (!map.has(d)) map.set(d, []);
