@@ -365,11 +365,44 @@ function SwipeableItem({
   onMove?: (item: Item) => void;
   onSelect?: (item: Item) => void;
 }) {
+  const [swiped, setSwiped] = useState(false);
+  const [startX, setStartX] = useState(0);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setStartX(e.touches[0].clientX);
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    const endX = e.changedTouches[0].clientX;
+    const diff = startX - endX;
+
+    if (diff > 40) { // Swiped left
+      setSwiped(true);
+    } else if (diff < -40) { // Swiped right
+      setSwiped(false);
+    }
+  };
+
+  const handleClick = (e: React.MouseEvent) => {
+    if (swiped) {
+      setSwiped(false);
+      e.stopPropagation();
+      return;
+    }
+    onSelect?.(item);
+  };
+
   return (
-    <li className="group flex flex-nowrap overflow-x-auto sm:overflow-x-visible snap-x snap-mandatory scrollbar-hide">
+    <li className="group relative flex overflow-hidden border-b border-border/40 last:border-0 bg-surface">
+      {/* Foreground Main Content */}
       <div 
-        className="flex-1 min-w-full sm:min-w-0 flex items-center snap-start py-3 cursor-pointer bg-surface transition-colors active:bg-chrome/40 sm:active:bg-surface" 
-        onClick={() => onSelect?.(item)}
+        className={clsx(
+          "relative z-10 flex-1 min-w-0 flex items-center py-3 bg-surface transition-transform duration-300 ease-out cursor-pointer active:bg-chrome/40 sm:active:bg-surface",
+          swiped ? "-translate-x-[132px] sm:translate-x-0" : "translate-x-0"
+        )}
+        onClick={handleClick}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
       >
         <button
           type="button"
@@ -391,14 +424,17 @@ function SwipeableItem({
         </span>
       </div>
 
-      {/* Swipe Actions (Mobile) & Always Visible (PC) */}
+      {/* Swipe Actions (Mobile Underneath, PC Right Side) */}
       {(onEdit || onDelete || onMove) && (
-        <div className="flex shrink-0 items-center snap-end bg-surface gap-1 pr-2 sm:pr-0 pl-2">
+        <div className={clsx(
+          "absolute inset-y-0 right-0 z-0 flex items-center bg-surface gap-1 pr-2 pl-2 transition-opacity",
+          "sm:relative sm:flex sm:shrink-0 sm:opacity-0 sm:group-hover:opacity-100 sm:pr-0 sm:z-auto"
+        )}>
           {onMove && (
             <button
               type="button"
               className="p-2 text-muted-foreground hover:text-foreground active:scale-90 transition-all"
-              onClick={() => onMove(item)}
+              onClick={() => { setSwiped(false); onMove(item); }}
               title="폴더 이동"
             >
               <IconFolder size={20} stroke={2} />
@@ -408,7 +444,7 @@ function SwipeableItem({
             <button
               type="button"
               className="p-2 text-muted-foreground hover:text-primary active:scale-90 transition-all"
-              onClick={() => onEdit(item)}
+              onClick={() => { setSwiped(false); onEdit(item); }}
               title="수정"
             >
               <IconEdit size={20} stroke={2} />
@@ -418,7 +454,7 @@ function SwipeableItem({
             <button
               type="button"
               className="p-2 text-muted-foreground hover:text-danger active:scale-90 transition-all"
-              onClick={() => onDelete(item.id)}
+              onClick={() => { setSwiped(false); onDelete(item.id); }}
               title="삭제"
             >
               <IconTrash size={20} stroke={2} />
