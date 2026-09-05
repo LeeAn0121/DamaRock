@@ -75,6 +75,12 @@ export default function HomeList(props: {
     }
   };
 
+  const handleDelete = (id: string) => {
+    if (window.confirm("항목 삭제 시, 달린 댓글도 모두 삭제됩니다. 그래도 삭제하시겠습니까?")) {
+      deleteItem(id);
+    }
+  };
+
   const activeItems = viewState === "empty" ? [] : items.filter(i => i.title !== "__SYSTEM_FOLDERS__");
   const inbox = activeItems.filter((i) => i.category === "inbox");
   const grocery = activeItems.filter((i) => i.category === "grocery");
@@ -254,7 +260,7 @@ export default function HomeList(props: {
                   items={items}
                   members={members}
                   onToggleDone={onToggleDone}
-                  onDelete={deleteItem}
+                  onDelete={handleDelete}
                   onEdit={handleEdit}
                   onSelect={setSelectedItem}
                   addItem={props.addItem}
@@ -267,7 +273,7 @@ export default function HomeList(props: {
               items={items} 
               members={members} 
               onToggleDone={onToggleDone} 
-              onDelete={deleteItem}
+              onDelete={handleDelete}
               onEdit={handleEditTodo}
               onAddTodo={(title, dateStr) => props.addItem({ title, category: "todo", meta: dateStr })} 
             />
