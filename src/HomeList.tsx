@@ -354,65 +354,67 @@ function SectionGroup({
   );
 }
 
-function SwipeableItem({
+export function ActionableItem({
   item,
   members,
   onToggle,
-  onDelete,
-  onEdit,
-  onMove,
+  onLongPress,
   onSelect,
 }: {
   item: Item;
   members: Member[];
   onToggle: (id: string) => void;
-  onDelete?: (id: string) => void;
-  onEdit?: (item: Item) => void;
-  onMove?: (item: Item) => void;
+  onLongPress?: (item: Item) => void;
   onSelect?: (item: Item) => void;
 }) {
-  const [swiped, setSwiped] = useState(false);
-  const [startX, setStartX] = useState(0);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const [isActive, setIsActive] = useState(false);
 
-  const handleTouchStart = (e: React.TouchEvent) => {
-    setStartX(e.touches[0].clientX);
+  const startPress = () => {
+    setIsActive(true);
+    timerRef.current = setTimeout(() => {
+      setIsActive(false);
+      onLongPress?.(item);
+    }, 500);
   };
 
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    const endX = e.changedTouches[0].clientX;
-    const diff = startX - endX;
-
-    if (diff > 40) { // Swiped left
-      setSwiped(true);
-    } else if (diff < -40) { // Swiped right
-      setSwiped(false);
-    }
+  const cancelPress = () => {
+    setIsActive(false);
+    if (timerRef.current) clearTimeout(timerRef.current);
   };
 
   const handleClick = (e: React.MouseEvent) => {
-    if (swiped) {
-      setSwiped(false);
-      e.stopPropagation();
-      return;
-    }
+    cancelPress();
     onSelect?.(item);
   };
 
+  const handleContextMenu = (e: React.MouseEvent) => {
+    e.preventDefault();
+    cancelPress();
+    onLongPress?.(item);
+  };
+
   return (
-    <li className="group relative flex overflow-hidden border-b border-border/40 last:border-0 bg-surface">
-      {/* Foreground Main Content */}
+    <li 
+      className="group relative flex overflow-hidden border-b border-border/40 last:border-0 bg-surface select-none"
+      onContextMenu={handleContextMenu}
+    >
       <div 
         className={clsx(
-          "relative z-10 flex-1 min-w-0 flex items-center py-3 bg-surface transition-transform duration-300 ease-out cursor-pointer active:bg-chrome/40 sm:active:bg-surface",
-          swiped ? "-translate-x-[132px] sm:translate-x-0" : "translate-x-0"
+          "relative z-10 flex-1 min-w-0 flex items-center py-3 bg-surface transition-colors duration-200 cursor-pointer sm:hover:bg-chrome/40",
+          isActive ? "bg-chrome/60" : ""
         )}
         onClick={handleClick}
-        onTouchStart={handleTouchStart}
-        onTouchEnd={handleTouchEnd}
+        onTouchStart={startPress}
+        onTouchEnd={cancelPress}
+        onTouchMove={cancelPress}
+        onMouseDown={startPress}
+        onMouseUp={cancelPress}
+        onMouseLeave={cancelPress}
       >
         <button
           type="button"
-          onClick={(e) => { e.stopPropagation(); onToggle(item.id); }}
+          onClick={(e) => { e.stopPropagation(); cancelPress(); onToggle(item.id); }}
           className={clsx(
             "flex h-5 w-5 shrink-0 items-center justify-center rounded transition-colors mr-3",
             item.done ? "border-2 border-primary bg-primary text-primary-foreground" : "border-2 border-border text-transparent"
@@ -429,45 +431,6 @@ function SwipeableItem({
           </span>
         </span>
       </div>
-
-      {/* Swipe Actions (Mobile Underneath, PC Right Side) */}
-      {(onEdit || onDelete || onMove) && (
-        <div className={clsx(
-          "absolute inset-y-0 right-0 z-0 flex items-center bg-surface gap-1 pr-2 pl-2 transition-opacity",
-          "sm:relative sm:flex sm:shrink-0 sm:opacity-0 sm:group-hover:opacity-100 sm:pr-0 sm:z-auto"
-        )}>
-          {onMove && (
-            <button
-              type="button"
-              className="p-2 text-muted-foreground hover:text-foreground active:scale-90 transition-all"
-              onClick={() => { setSwiped(false); onMove(item); }}
-              title="폴더 이동"
-            >
-              <IconFolder size={20} stroke={2} />
-            </button>
-          )}
-          {onEdit && (
-            <button
-              type="button"
-              className="p-2 text-muted-foreground hover:text-primary active:scale-90 transition-all"
-              onClick={() => { setSwiped(false); onEdit(item); }}
-              title="수정"
-            >
-              <IconEdit size={20} stroke={2} />
-            </button>
-          )}
-          {onDelete && (
-            <button
-              type="button"
-              className="p-2 text-muted-foreground hover:text-danger active:scale-90 transition-all"
-              onClick={() => { setSwiped(false); onDelete(item.id); }}
-              title="삭제"
-            >
-              <IconTrash size={20} stroke={2} />
-            </button>
-          )}
-        </div>
-      )}
     </li>
   );
 }
@@ -489,24 +452,77 @@ export function ItemRows({
   onMove?: (item: Item) => void;
   onSelect?: (item: Item) => void;
 }) {
+  const [actionItem, setActionItem] = useState<Item | null>(null);
+
   if (items.length === 0) {
     return <p className="py-4 text-center text-sm text-muted-foreground">모두 담아뒀어요</p>;
   }
   return (
-    <ul className="divide-y divide-border/60">
-      {items.map((item) => (
-        <SwipeableItem 
-          key={item.id} 
-          item={item} 
-          members={members} 
-          onToggle={onToggle} 
-          onDelete={onDelete} 
-          onEdit={onEdit} 
-          onMove={onMove}
-          onSelect={onSelect}
-        />
-      ))}
-    </ul>
+    <>
+      <ul className="divide-y divide-border/60">
+        {items.map((item) => (
+          <ActionableItem 
+            key={item.id} 
+            item={item} 
+            members={members} 
+            onToggle={onToggle} 
+            onLongPress={setActionItem}
+            onSelect={onSelect}
+          />
+        ))}
+      </ul>
+      
+      {/* Action Popup */}
+      <div
+        className={clsx(
+          "fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm transition-opacity duration-300",
+          actionItem ? "opacity-100" : "pointer-events-none opacity-0"
+        )}
+        onClick={() => setActionItem(null)}
+      />
+      <div
+        className={clsx(
+          "fixed inset-x-0 bottom-0 z-[70] flex max-h-[85dvh] flex-col rounded-t-3xl bg-background shadow-2xl transition-transform duration-300 ease-out sm:mx-auto sm:max-w-md pb-safe",
+          actionItem ? "translate-y-0" : "translate-y-full"
+        )}
+      >
+        <div className="flex h-1.5 w-full items-center justify-center pt-3 pb-4">
+          <div className="h-1.5 w-10 rounded-full bg-border/60" />
+        </div>
+        <div className="px-6 pb-4">
+          <h3 className="text-lg font-bold text-foreground mb-4 truncate">{actionItem?.title}</h3>
+          <div className="flex flex-col gap-2">
+            {onMove && (
+              <button
+                className="flex items-center gap-3 w-full p-4 rounded-xl bg-surface hover:bg-chrome active:scale-95 transition-all text-left font-medium"
+                onClick={() => { if(actionItem) onMove(actionItem); setActionItem(null); }}
+              >
+                <IconFolder size={20} className="text-muted-foreground" />
+                폴더 이동
+              </button>
+            )}
+            {onEdit && (
+              <button
+                className="flex items-center gap-3 w-full p-4 rounded-xl bg-surface hover:bg-chrome active:scale-95 transition-all text-left font-medium"
+                onClick={() => { if(actionItem) onEdit(actionItem); setActionItem(null); }}
+              >
+                <IconEdit size={20} className="text-primary" />
+                항목 수정
+              </button>
+            )}
+            {onDelete && (
+              <button
+                className="flex items-center gap-3 w-full p-4 rounded-xl bg-danger/10 hover:bg-danger/20 active:scale-95 transition-all text-left font-medium text-danger"
+                onClick={() => { if(actionItem) onDelete(actionItem.id); setActionItem(null); }}
+              >
+                <IconTrash size={20} />
+                항목 삭제
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    </>
   );
 }
 
