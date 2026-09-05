@@ -43,6 +43,8 @@ export default function GroceryFolders({
 
   const systemItem = items.find((i) => i.title === "__SYSTEM_FOLDERS__");
   const groceryItems = items.filter((i) => i.category === "grocery" && i.title !== "__SYSTEM_FOLDERS__");
+  const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+  const deletedItems = items.filter(i => i.deleted_at && i.deleted_at > thirtyDaysAgo);
   
   const folders: Folder[] = useMemo(() => {
     if (!systemItem?.meta) return [];
