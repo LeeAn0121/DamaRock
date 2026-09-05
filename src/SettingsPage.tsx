@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useInstallPrompt } from "./hooks/useInstallPrompt";
 import clsx from "clsx";
 import { 
   IconChevronLeft, IconChevronRight, IconLogout, IconUsers, 
@@ -110,6 +111,7 @@ export default function SettingsPage({
   const [notifyNewItem, setNotifyNewItem] = useState(() => localStorage.getItem("notifyNewItem") !== "false");
   const [notifyComments, setNotifyComments] = useState(() => localStorage.getItem("notifyComments") !== "false");
   const [notifyBriefing, setNotifyBriefing] = useState(() => localStorage.getItem("notifyBriefing") !== "false");
+    const { isInstallable, promptInstall } = useInstallPrompt();
   const [briefingTime, setBriefingTime] = useState(() => localStorage.getItem("briefingTime") || "08:00");
   const [notifySummary, setNotifySummary] = useState(() => localStorage.getItem("notifySummary") !== "false");
   const [quietMode, setQuietMode] = useState(() => localStorage.getItem("quietMode") === "true");
@@ -197,6 +199,16 @@ export default function SettingsPage({
           </section>
 
           {/* Group Management */}
+          {isInstallable && (
+            <SettingsGroup label="앱 설치">
+              <SettingsRow
+                label="홈 화면에 앱 설치하기"
+                icon={<IconDownload size={18} stroke={2} />}
+                onClick={promptInstall}
+              />
+            </SettingsGroup>
+          )}
+
           <SettingsGroup label="그룹 관리">
             <SettingsRow 
               label="가족 이름" 

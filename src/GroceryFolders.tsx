@@ -38,7 +38,7 @@ export default function GroceryFolders({
   editItem: (id: string, title: string, meta?: string | null) => void;
 }) {
   const [popup, setPopup] = useState<PopupState>({ type: 'NONE' });
-  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
+  const [collapsed, setCollapsed] = useState<Record<string, boolean>>({ "done_folder": true });
   const [inputValue, setInputValue] = useState("");
 
   const systemItem = items.find((i) => i.title === "__SYSTEM_FOLDERS__");

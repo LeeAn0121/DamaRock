@@ -8,7 +8,7 @@ import AddGrocerySheet from "./AddGrocerySheet";
 import ItemDetailSheet from "./ItemDetailSheet";
 import GroceryFolders from "./GroceryFolders";
 import { ItemRows, DoneDisclosure, ActionableItem } from "./ItemRows";
-import { useInstallPrompt } from "./hooks/useInstallPrompt";
+
 
 type ViewState = "normal" | "empty" | "loading" | "error";
 
@@ -65,7 +65,7 @@ export default function HomeList(props: {
     refreshData?.();
   }, [currentTab, refreshData]);
 
-  const { isInstallable, promptInstall } = useInstallPrompt();
+  
   const [showDoneGrocery, setShowDoneGrocery] = useState(false);
   const [showDoneTodo, setShowDoneTodo] = useState(false);
   const [activityOpen, setActivityOpen] = useState(false);
@@ -268,21 +268,6 @@ export default function HomeList(props: {
           </div>
         )}
 
-
-        {isInstallable && (
-          <div className="bg-primary/10 px-5 py-3 flex items-center justify-between border-b border-primary/20">
-            <div className="flex flex-col">
-              <span className="text-sm font-bold text-primary">담아락 앱 설치하기</span>
-              <span className="text-xs text-primary/80 font-medium mt-0.5">홈 화면에 추가하고 더 빠르게 사용하세요!</span>
-            </div>
-            <button
-              onClick={promptInstall}
-              className="bg-primary text-primary-foreground text-xs font-bold px-3 py-1.5 rounded-full active:scale-95 transition-transform"
-            >
-              설치
-            </button>
-          </div>
-        )}
 
         {/* Tabs - Fixed below header */}
         <div className="sticky top-0 z-20 flex gap-2 overflow-x-auto scrollbar-hide bg-background/95 backdrop-blur-md px-5 py-3 border-b border-border/40 shadow-sm">
