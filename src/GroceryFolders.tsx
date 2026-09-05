@@ -129,9 +129,6 @@ export default function GroceryFolders({
     <div className="flex flex-col gap-6 relative">
       <div className="flex justify-between items-center px-2 mt-4">
         <h2 className="text-sm font-bold text-muted-foreground">장보기 항목 ({groceryItems.filter(i => !i.done).length})</h2>
-        <button onClick={handleCreateFolderClick} className="flex items-center gap-1 text-xs font-bold text-primary bg-primary/10 px-3 py-1.5 rounded-full active:scale-95 transition-transform">
-          <IconPlus size={14} stroke={2.5} /> 새 폴더
-        </button>
       </div>
 
       <div className="flex flex-col gap-6 mt-4">
@@ -182,49 +179,93 @@ export default function GroceryFolders({
               {!isCollapsed && (
                 <div className="flex-1 animate-in fade-in slide-in-from-top-2 duration-200">
                   <ItemRows items={active} onToggle={onToggleDone} onDelete={onDelete} onEdit={onEdit} onMove={handleMove} onSelect={onSelect} members={members} comments={comments} userId={userId} />
-                  {done.length > 0 && (
-                    <DoneDisclosure count={done.length}>
-                      <ItemRows items={done} onToggle={onToggleDone} onDelete={onDelete} onEdit={onEdit} onMove={handleMove} onSelect={onSelect} members={members} comments={comments} userId={userId} />
-                    </DoneDisclosure>
-                  )}
                 </div>
               )}
             </section>
           );
         })}
 
-        {(unassigned.length > 0 || folders.length === 0) && (
-          <section className={clsx("flex flex-col rounded-2xl bg-surface px-4 shadow-sm border border-border/40 transition-all", collapsed["unassigned"] ? "py-2.5" : "py-3")}>
-            <div className={clsx("flex items-center justify-between transition-all", !collapsed["unassigned"] ? "mb-3 border-b border-border/40 pb-2" : "")}>
+        {/* Default Folder (formerly unassigned) */}
+        <section className={clsx("flex flex-col rounded-2xl bg-surface px-4 shadow-sm border border-border/40 transition-all", collapsed["unassigned"] ? "py-2.5" : "py-3")}>
+          <div className={clsx("flex items-center justify-between transition-all", !collapsed["unassigned"] ? "mb-3 border-b border-border/40 pb-2" : "")}>
+            <div className="flex items-center gap-2 flex-1 overflow-hidden">
+              <button onClick={() => toggleCollapse("unassigned")} className="text-muted-foreground hover:text-foreground active:scale-90 transition-transform p-1">
+                {collapsed["unassigned"] ? <IconChevronRight size={18}/> : <IconChevronDown size={18}/>}
+              </button>
+              <div className="flex flex-col flex-1 min-w-0" onClick={() => toggleCollapse("unassigned")}>
+                <h3 className="text-base font-extrabold flex items-center gap-2 text-foreground cursor-pointer truncate">
+                  <span className="text-muted-foreground"><IconFolder size={18} /></span> 기본 폴더 <span className="text-muted-foreground font-normal text-sm">({unassigned.filter(i => !i.done).length})</span>
+                </h3>
+                {collapsed["unassigned"] && unassigned.filter(i => !i.done).length > 0 && (
+                  <span className="text-xs text-muted-foreground truncate pr-2 mt-0.5 opacity-80">
+                    {unassigned.filter(i => !i.done).slice(0, 3).map(i => i.title).join(", ")}
+                    {unassigned.filter(i => !i.done).length > 3 && " ..."}
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+          {!collapsed["unassigned"] && (
+            <div className="flex-1 animate-in fade-in slide-in-from-top-2 duration-200">
+              <ItemRows items={unassigned.filter(i => !i.done)} onToggle={onToggleDone} onDelete={onDelete} onEdit={onEdit} onMove={handleMove} onSelect={onSelect} members={members} comments={comments} userId={userId} />
+            </div>
+          )}
+        </section>
+
+        {/* Add Folder Button in Center */}
+        <div className="flex justify-center py-4">
+          <button 
+            onClick={() => { setInputValue(''); setPopup({ type: 'CREATE_FOLDER' }); }}
+            className="flex items-center gap-2 text-sm font-bold text-muted-foreground hover:text-primary transition-colors bg-surface px-5 py-2.5 rounded-full border border-border/60 shadow-sm active:scale-95"
+          >
+            <IconPlus size={16} stroke={2.5} /> 새 폴더 추가
+          </button>
+        </div>
+
+        {/* Done Folder (Aggregated) */}
+        {items.filter(i => i.done).length > 0 && (
+          <section className={clsx("flex flex-col rounded-2xl bg-surface px-4 shadow-sm border border-border/40 transition-all opacity-70", collapsed["done_folder"] ? "py-2.5" : "py-3")}>
+            <div className={clsx("flex items-center justify-between transition-all", !collapsed["done_folder"] ? "mb-3 border-b border-border/40 pb-2" : "")}>
               <div className="flex items-center gap-2 flex-1 overflow-hidden">
-                <button onClick={() => toggleCollapse("unassigned")} className="text-muted-foreground hover:text-foreground active:scale-90 transition-transform p-1">
-                  {collapsed["unassigned"] ? <IconChevronRight size={18}/> : <IconChevronDown size={18}/>}
+                <button onClick={() => toggleCollapse("done_folder")} className="text-muted-foreground hover:text-foreground active:scale-90 transition-transform p-1">
+                  {collapsed["done_folder"] ? <IconChevronRight size={18}/> : <IconChevronDown size={18}/>}
                 </button>
-                <div className="flex flex-col flex-1 min-w-0" onClick={() => toggleCollapse("unassigned")}>
+                <div className="flex flex-col flex-1 min-w-0" onClick={() => toggleCollapse("done_folder")}>
                   <h3 className="text-base font-extrabold flex items-center gap-2 text-foreground cursor-pointer truncate">
-                    <span className="text-muted-foreground"><IconFolder size={18} /></span> 미분류 <span className="text-muted-foreground font-normal text-sm">({unassigned.filter(i => !i.done).length})</span>
+                    <span className="text-muted-foreground"><IconCheck size={18} /></span> 구매완료 <span className="text-muted-foreground font-normal text-sm">({items.filter(i => i.done).length})</span>
                   </h3>
-                  {collapsed["unassigned"] && unassigned.filter(i => !i.done).length > 0 && (
-                    <span className="text-xs text-muted-foreground truncate pr-2 mt-0.5 opacity-80">
-                      {unassigned.filter(i => !i.done).slice(0, 3).map(i => i.title).join(", ")}
-                      {unassigned.filter(i => !i.done).length > 3 && " ..."}
-                    </span>
-                  )}
                 </div>
               </div>
             </div>
-            {!collapsed["unassigned"] && (
+            {!collapsed["done_folder"] && (
               <div className="flex-1 animate-in fade-in slide-in-from-top-2 duration-200">
-                <ItemRows items={unassigned.filter(i => !i.done)} onToggle={onToggleDone} onDelete={onDelete} onEdit={onEdit} onMove={handleMove} onSelect={onSelect} members={members} comments={comments} userId={userId} />
-                {unassigned.some((i) => i.done) && (
-                  <DoneDisclosure count={unassigned.filter(i => i.done).length}>
-                    <ItemRows items={unassigned.filter((i) => i.done)} onToggle={onToggleDone} onDelete={onDelete} onEdit={onEdit} onMove={handleMove} onSelect={onSelect} members={members} comments={comments} userId={userId} />
-                  </DoneDisclosure>
-                )}
+                <ItemRows items={items.filter(i => i.done)} onToggle={onToggleDone} onDelete={onDelete} onEdit={onEdit} onMove={handleMove} onSelect={onSelect} members={members} comments={comments} userId={userId} />
               </div>
             )}
           </section>
         )}
+
+        {/* Deleted Folder (Placeholder for Backend Extension) */}
+        <section className={clsx("flex flex-col rounded-2xl bg-surface px-4 shadow-sm border border-border/40 transition-all opacity-50", collapsed["deleted_folder"] ? "py-2.5" : "py-3")}>
+          <div className={clsx("flex items-center justify-between transition-all", !collapsed["deleted_folder"] ? "mb-3 border-b border-border/40 pb-2" : "")}>
+            <div className="flex items-center gap-2 flex-1 overflow-hidden">
+              <button onClick={() => toggleCollapse("deleted_folder")} className="text-muted-foreground hover:text-foreground active:scale-90 transition-transform p-1">
+                {collapsed["deleted_folder"] ? <IconChevronRight size={18}/> : <IconChevronDown size={18}/>}
+              </button>
+              <div className="flex flex-col flex-1 min-w-0" onClick={() => toggleCollapse("deleted_folder")}>
+                <h3 className="text-base font-extrabold flex items-center gap-2 text-foreground cursor-pointer truncate">
+                  <span className="text-muted-foreground"><IconTrash size={18} /></span> 삭제됨 <span className="text-muted-foreground font-normal text-sm">(0)</span>
+                </h3>
+              </div>
+            </div>
+          </div>
+          {!collapsed["deleted_folder"] && (
+            <div className="flex-1 animate-in fade-in slide-in-from-top-2 duration-200 py-2">
+              <p className="text-center text-sm text-muted-foreground">삭제 휴지통은 서버 업데이트 이후 지원됩니다.<br/>(30일 후 자동 삭제 기능 포함)</p>
+            </div>
+          )}
+        </section>
+
       </div>
 
       {/* Popups */}

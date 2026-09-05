@@ -59,36 +59,56 @@ export default function FamilyInvite({
         </header>
 
         <main className="flex-1 overflow-y-auto px-5 pb-10 pt-6">
+          <div className="flex justify-between items-center mb-4 px-2">
+            <h2 className="text-sm font-bold text-muted-foreground">가족 초대</h2>
+            <button onClick={() => onBack()} className="text-xs font-bold text-primary bg-primary/10 px-3 py-1.5 rounded-full active:scale-95 transition-transform">
+              그룹 관리하기
+            </button>
+          </div>
+
           {/* Dominant invite block */}
           <section className="rounded-3xl bg-surface p-7 text-center shadow-sm border border-border/60">
-            <p className="text-sm font-medium text-muted-foreground">이 코드로 우리집에 초대하세요</p>
+            <p className="text-sm font-medium text-muted-foreground">코드로 알려주기 <span className="text-xs text-danger/80">(자동 1일 후 만료)</span></p>
             <p className="mt-3 text-5xl font-extrabold tracking-[0.1em] text-primary">{code}</p>
-            <div className="mt-6 flex gap-3">
+            <div className="mt-6 flex flex-col gap-3">
               <button
                 type="button"
-                onClick={copyCode}
-                className="flex min-h-14 flex-1 items-center justify-center gap-2 rounded-xl border border-border/50 bg-background text-sm font-bold text-foreground shadow-sm transition-colors active:bg-chrome"
+                onClick={() => {
+                  const text = `[담아락] 우리집 그룹에 초대합니다.\n아래 링크를 누르면 바로 참여할 수 있어요!\n\n${inviteUrl}`;
+                  if(navigator.share) navigator.share({ text });
+                  else copyCode();
+                }}
+                className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#FEE500] text-sm font-bold text-[#191919] shadow-sm transition-transform active:scale-[0.98]"
               >
-                {copied ? (
-                  <>
-                    <IconCheck size={18} stroke={3} className="text-success" />
-                    <span className="text-success">복사됨</span>
-                  </>
-                ) : (
-                  <>
-                    <IconCopy size={18} stroke={2} />
-                    코드 복사
-                  </>
-                )}
+                카카오톡으로 공유하기
               </button>
-              <button
-                type="button"
-                onClick={shareCode}
-                className="flex min-h-14 flex-1 items-center justify-center gap-2 rounded-xl bg-primary text-sm font-bold text-primary-foreground shadow-sm transition-transform active:scale-[0.98]"
-              >
-                <IconShare2 size={18} stroke={2} />
-                공유하기
-              </button>
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={copyCode}
+                  className="flex min-h-12 flex-1 items-center justify-center gap-2 rounded-xl border border-border/50 bg-background text-sm font-bold text-foreground shadow-sm transition-colors active:bg-chrome"
+                >
+                  {copied ? (
+                    <>
+                      <IconCheck size={18} stroke={3} className="text-success" />
+                      <span className="text-success">복사됨</span>
+                    </>
+                  ) : (
+                    <>
+                      <IconCopy size={18} stroke={2} />
+                      초대 링크 복사
+                    </>
+                  )}
+                </button>
+                <button
+                  type="button"
+                  onClick={shareCode}
+                  className="flex min-h-12 flex-1 items-center justify-center gap-2 rounded-xl border border-border/50 bg-background text-sm font-bold text-foreground shadow-sm transition-colors active:bg-chrome"
+                >
+                  <IconShare2 size={18} stroke={2} />
+                  다른 앱으로 공유
+                </button>
+              </div>
             </div>
           </section>
 

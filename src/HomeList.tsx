@@ -67,6 +67,29 @@ export default function HomeList(props: {
   const [activityOpen, setActivityOpen] = useState(false);
   const [draft, setDraft] = useState("");
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
+  const [touchStartX, setTouchStartX] = useState<number | null>(null);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchStartX(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartX === null) return;
+    const touchEndX = e.changedTouches[0].clientX;
+    const distance = touchEndX - touchStartX;
+
+    // Only switch tabs if the swipe is significant and horizontal
+    if (Math.abs(distance) > 80) {
+      if (distance > 0) {
+        // Swiped right -> go to grocery (if on todo)
+        setCurrentTab("grocery");
+      } else {
+        // Swiped left -> go to todo (if on grocery)
+        setCurrentTab("todo");
+      }
+    }
+    setTouchStartX(null);
+  };
 
   const handleEdit = (item: Item) => {
     const newTitle = window.prompt("수정할 내용을 입력하세요:", item.title);
@@ -213,7 +236,11 @@ export default function HomeList(props: {
         </div>
 
         {/* Content */}
-        <main className="flex-1 overflow-y-auto px-5 pb-36 pt-4">
+        <main 
+          className="flex-1 overflow-y-auto px-5 pb-36 pt-4"
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+        >
           {currentTab === "grocery" ? (
             activeItems.filter(i => i.category === "grocery" || i.category === "inbox").length === 0 ? (
               <EmptyState />
