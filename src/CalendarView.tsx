@@ -14,6 +14,7 @@ export default function CalendarView({
   onAddTodo,
   onDelete,
   onEdit,
+  onSelect,
 }: {
   items: Item[];
   members: Member[];
@@ -23,6 +24,7 @@ export default function CalendarView({
   onAddTodo: (title: string, dateStr: string) => void;
   onDelete?: (id: string) => void;
   onEdit?: (item: Item) => void;
+  onSelect?: (item: Item) => void;
 }) {
   const { t, lang } = useI18n();
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -181,7 +183,11 @@ export default function CalendarView({
                           <button onClick={() => onToggleDone(item.id)} className={clsx("mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded border-2 transition-colors", item.done ? "border-primary bg-primary text-primary-foreground" : "border-border text-transparent")}>
                             <IconCheck size={13} stroke={3} />
                           </button>
-                          <div className="flex flex-col flex-1 min-w-0" data-meta={item.meta || undefined}>
+                          <div
+                            className={clsx("flex flex-col flex-1 min-w-0", onSelect && "cursor-pointer")}
+                            data-meta={item.meta || undefined}
+                            onClick={() => onSelect?.(item)}
+                          >
                             <span className={clsx("text-sm font-bold truncate", item.done ? "text-muted-foreground line-through" : "text-foreground")}>{item.title}</span>
                             <span className="text-xs text-muted-foreground mt-0.5 truncate flex items-center gap-2">
                               {item.addedBy === userId ? t("common.me") : memberName(members, item.addedBy)}
@@ -205,21 +211,6 @@ export default function CalendarView({
                             )}
                           </div>
                         </li>
-                        {itemComments.length > 0 && (
-                          <div className="flex flex-col gap-2 pb-3 px-10 relative z-10 -mt-1">
-                            {itemComments.map(c => {
-                              const isMe = c.author_id === userId;
-                              return (
-                                <div key={c.id} className={clsx("px-3 py-2 rounded-2xl text-[13px] leading-tight max-w-[90%]", isMe ? "bg-primary/10 text-foreground self-end rounded-tr-sm" : "bg-chrome text-foreground self-start rounded-tl-sm")}>
-                                  <span className={clsx("block text-[10px] font-bold mb-0.5", isMe ? "text-primary text-right" : "text-muted-foreground")}>
-                                    {isMe ? t("common.me") : memberName(members, c.author_id)}
-                                  </span>
-                                  {c.content}
-                                </div>
-                              );
-                            })}
-                          </div>
-                        )}
                         </React.Fragment>
                         );
                       })}

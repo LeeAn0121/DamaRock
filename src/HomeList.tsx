@@ -421,6 +421,7 @@ export default function HomeList(props: {
                   onAddTodo={(title, dateStr) => props.addItem({ title, category: "todo", meta: dateStr })}
                   onDelete={handleDelete}
                   onEdit={handleEditTodo}
+                  onSelect={setSelectedItem}
                 />
               ) : (
                 <div className="bg-surface rounded-2xl shadow-sm border border-border/40 p-3">

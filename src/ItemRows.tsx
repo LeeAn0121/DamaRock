@@ -97,22 +97,6 @@ export function ActionableItem({
           </div>
         )}
       </div>
-
-      {itemComments.length > 0 && (
-        <div className="flex flex-col gap-2 pb-3 px-12 relative z-10">
-          {itemComments.map(c => {
-            const isMe = c.author_id === userId;
-            return (
-              <div key={c.id} className={clsx("px-3 py-2 rounded-2xl text-[13px] leading-tight max-w-[90%]", isMe ? "bg-primary/10 text-foreground self-end rounded-tr-sm" : "bg-chrome text-foreground self-start rounded-tl-sm")}>
-                <span className={clsx("block text-[10px] font-bold mb-0.5", isMe ? "text-primary text-right" : "text-muted-foreground")}>
-                  {isMe ? t("common.me") : memberName(members, c.author_id)}
-                </span>
-                {c.content}
-              </div>
-            );
-          })}
-        </div>
-      )}
     </li>
   );
 }
