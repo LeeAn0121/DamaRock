@@ -62,6 +62,8 @@ export default function ItemDetailSheet({
           if (payload.eventType === "INSERT") {
             setComments((prev) => [...prev, payload.new as Comment]);
             setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
+          } else if (payload.eventType === "UPDATE") {
+            setComments((prev) => prev.map((c) => c.id === payload.new.id ? (payload.new as Comment) : c));
           } else if (payload.eventType === "DELETE") {
             setComments((prev) => prev.filter((c) => c.id !== payload.old.id));
           }
@@ -87,6 +89,19 @@ export default function ItemDetailSheet({
       author_id: userId,
       content,
     });
+  };
+
+  const handleEdit = async (commentId: string, oldContent: string) => {
+    const newContent = window.prompt("댓글을 수정하세요:", oldContent);
+    if (newContent !== null && newContent.trim() !== oldContent) {
+      await supabase.from("comments").update({ content: newContent.trim() }).eq("id", commentId);
+    }
+  };
+
+  const handleDelete = async (commentId: string) => {
+    if (window.confirm("댓글을 삭제하시겠습니까?")) {
+      await supabase.from("comments").delete().eq("id", commentId);
+    }
   };
 
   return (
@@ -132,10 +147,16 @@ export default function ItemDetailSheet({
             comments.map((comment) => {
               const isMe = comment.author_id === userId;
               return (
-                <div key={comment.id} className={clsx("flex flex-col max-w-[85%]", isMe ? "ml-auto items-end" : "mr-auto items-start")}>
-                  <span className="text-[10px] text-muted-foreground mb-1 ml-1">
-                    {memberName(members, comment.author_id)}
-                  </span>
+                <div key={comment.id} className={clsx("flex flex-col max-w-[85%] group", isMe ? "ml-auto items-end" : "mr-auto items-start")}>
+                  <div className={clsx("flex items-center gap-2 mb-1", isMe ? "mr-1 flex-row-reverse" : "ml-1")}>
+                    <span className="text-[10px] text-muted-foreground">
+                      {memberName(members, comment.author_id)}
+                    </span>
+                    <div className="flex gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                      <button onClick={() => handleEdit(comment.id, comment.content)} className="text-[10px] text-muted-foreground hover:text-primary">수정</button>
+                      <button onClick={() => handleDelete(comment.id)} className="text-[10px] text-muted-foreground hover:text-danger">삭제</button>
+                    </div>
+                  </div>
                   <div className={clsx("px-4 py-2 rounded-2xl text-sm", isMe ? "bg-primary text-primary-foreground rounded-tr-sm" : "bg-surface text-foreground rounded-tl-sm")}>
                     {comment.content}
                   </div>

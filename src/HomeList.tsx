@@ -419,7 +419,7 @@ function SwipeableItem({
             {item.title}
           </span>
           <span className="block text-xs text-muted-foreground">
-            {memberName(members, item.addedBy)} 추가{item.meta ? ` · ${item.meta}` : ""}
+            {memberName(members, item.addedBy)}{item.meta ? ` · ${item.meta}` : ""}
           </span>
         </span>
       </div>
