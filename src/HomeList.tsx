@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useRef } from "react";
 import clsx from "clsx";
 import { IconCheck, IconChecklist, IconChevronDown, IconInbox, IconPackage, IconPlus, IconSettings, IconShoppingCart, IconWifiOff, IconFolder, IconEdit, IconTrash } from "@tabler/icons-react";
 import { memberName, type Category, type Item, type Member } from "./data";
