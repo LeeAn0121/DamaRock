@@ -1,9 +1,12 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { IconChevronLeft, IconChevronRight, IconCheck, IconPlus, IconTrash, IconEdit } from "@tabler/icons-react";
 import type { Item, Member } from "./data";
 import { memberName } from "./data";
 import { useI18n, getWeekdayLabels, formatMonthYear } from "./lib/i18n";
+import { getHolidays, resolveHolidayCountry, type HolidayMap } from "./lib/holidays";
 import clsx from "clsx";
+
+const pad2 = (n: number) => String(n).padStart(2, "0");
 
 export default function CalendarView({
   items,
@@ -68,6 +71,21 @@ export default function CalendarView({
 
   const weekdays = getWeekdayLabels(lang);
 
+  const [holidays, setHolidays] = useState<HolidayMap>({});
+  useEffect(() => {
+    const country = resolveHolidayCountry(localStorage.getItem("holiday") || "auto");
+    let cancelled = false;
+    getHolidays(country, year).then((map) => {
+      if (!cancelled) setHolidays(map);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [year]);
+
+  const holidayNameFor = (day: number | null) =>
+    day ? holidays[`${year}-${pad2(month + 1)}-${pad2(day)}`] : undefined;
+
   return (
     <div className="flex-1 pb-10">
       {/* Calendar Controls */}
@@ -100,12 +118,14 @@ export default function CalendarView({
                 const isSelected = day === selectedDay;
                 const hasItems = day && itemsByDate.has(day);
                 const isWeekend = i % 7 === 0 || i % 7 === 6;
+                const holidayName = holidayNameFor(day);
 
                 return (
                   <button
                     key={i}
                     type="button"
                     disabled={!day}
+                    title={holidayName}
                     onClick={() => day && setSelectedDay(day)}
                     className={clsx(
                       "relative flex h-12 flex-col items-center justify-center rounded-xl transition-all",
@@ -113,7 +133,8 @@ export default function CalendarView({
                       isSelected && "bg-primary text-primary-foreground shadow-md font-bold",
                       !isSelected && isToday && "bg-primary/10 text-primary font-bold",
                       !isSelected && !isToday && day && "bg-surface hover:bg-chrome/60 active:bg-chrome",
-                      !isSelected && !isToday && isWeekend && "text-muted-foreground"
+                      !isSelected && !isToday && isWeekend && "text-muted-foreground",
+                      !isSelected && !isToday && holidayName && "text-danger"
                     )}
                   >
                     <span>{day}</span>
@@ -132,6 +153,9 @@ export default function CalendarView({
               <h3 className="text-sm font-bold text-muted-foreground">
                 {selectedDay ? t("calendar.dayEvents", { month: month + 1, day: selectedDay }) : t("calendar.selectDate")}
               </h3>
+              {holidayNameFor(selectedDay) && (
+                <span className="text-xs font-bold text-danger">{holidayNameFor(selectedDay)}</span>
+              )}
             </div>
 
             {selectedDay && (
