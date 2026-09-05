@@ -3,6 +3,7 @@ import type { Item, Member } from "./data";
 import { IconFolder, IconPlus, IconTrash, IconChevronDown, IconChevronRight } from "@tabler/icons-react";
 import { ItemRows, DoneDisclosure } from "./HomeList";
 import { showToast } from "./components/Toast";
+import clsx from "clsx";
 
 export type Folder = { id: string; name: string; icon: string };
 
@@ -137,8 +138,8 @@ export default function GroceryFolders({
           const isCollapsed = collapsed[folder.id];
           
           return (
-            <section key={folder.id} className="flex flex-col rounded-2xl bg-surface px-4 py-3 shadow-sm border border-border/40">
-              <div className="flex items-center justify-between mb-3 border-b border-border/40 pb-2">
+            <section key={folder.id} className={clsx("flex flex-col rounded-2xl bg-surface px-4 shadow-sm border border-border/40 transition-all", isCollapsed ? "py-2.5" : "py-3")}>
+              <div className={clsx("flex items-center justify-between transition-all", !isCollapsed ? "mb-3 border-b border-border/40 pb-2" : "")}>
                 <div className="flex items-center gap-2 flex-1 overflow-hidden">
                   <button onClick={() => toggleCollapse(folder.id)} className="text-muted-foreground hover:text-foreground active:scale-90 transition-transform p-1">
                     {isCollapsed ? <IconChevronRight size={18}/> : <IconChevronDown size={18}/>}
@@ -153,12 +154,17 @@ export default function GroceryFolders({
                   >
                     {folder.icon}
                   </button>
-                  <h3 
-                    className="text-base font-extrabold flex items-center gap-2 text-foreground cursor-pointer flex-1 truncate"
-                    onClick={() => toggleCollapse(folder.id)}
-                  >
-                    {folder.name} <span className="text-muted-foreground font-normal text-sm">({active.length})</span>
-                  </h3>
+                  <div className="flex flex-col flex-1 min-w-0" onClick={() => toggleCollapse(folder.id)}>
+                    <h3 className="text-base font-extrabold flex items-center gap-2 text-foreground cursor-pointer truncate">
+                      {folder.name} <span className="text-muted-foreground font-normal text-sm">({active.length})</span>
+                    </h3>
+                    {isCollapsed && active.length > 0 && (
+                      <span className="text-xs text-muted-foreground truncate pr-2 mt-0.5 opacity-80">
+                        {active.slice(0, 3).map(i => i.title).join(", ")}
+                        {active.length > 3 && " ..."}
+                      </span>
+                    )}
+                  </div>
                 </div>
                 <button 
                   onClick={() => setPopup({ type: 'CONFIRM_DELETE', folderId: folder.id })} 
@@ -183,18 +189,23 @@ export default function GroceryFolders({
         })}
 
         {(unassigned.length > 0 || folders.length === 0) && (
-          <section className="flex flex-col rounded-2xl bg-surface px-4 py-3 shadow-sm border border-border/40">
-            <div className="flex items-center justify-between mb-3 border-b border-border/40 pb-2">
-              <div className="flex items-center gap-2">
+          <section className={clsx("flex flex-col rounded-2xl bg-surface px-4 shadow-sm border border-border/40 transition-all", collapsed["unassigned"] ? "py-2.5" : "py-3")}>
+            <div className={clsx("flex items-center justify-between transition-all", !collapsed["unassigned"] ? "mb-3 border-b border-border/40 pb-2" : "")}>
+              <div className="flex items-center gap-2 flex-1 overflow-hidden">
                 <button onClick={() => toggleCollapse("unassigned")} className="text-muted-foreground hover:text-foreground active:scale-90 transition-transform p-1">
                   {collapsed["unassigned"] ? <IconChevronRight size={18}/> : <IconChevronDown size={18}/>}
                 </button>
-                <h3 
-                  className="text-base font-extrabold flex items-center gap-2 text-foreground cursor-pointer"
-                  onClick={() => toggleCollapse("unassigned")}
-                >
-                  <span className="text-muted-foreground"><IconFolder size={18} /></span> 미분류 <span className="text-muted-foreground font-normal text-sm">({unassigned.filter(i => !i.done).length})</span>
-                </h3>
+                <div className="flex flex-col flex-1 min-w-0" onClick={() => toggleCollapse("unassigned")}>
+                  <h3 className="text-base font-extrabold flex items-center gap-2 text-foreground cursor-pointer truncate">
+                    <span className="text-muted-foreground"><IconFolder size={18} /></span> 미분류 <span className="text-muted-foreground font-normal text-sm">({unassigned.filter(i => !i.done).length})</span>
+                  </h3>
+                  {collapsed["unassigned"] && unassigned.filter(i => !i.done).length > 0 && (
+                    <span className="text-xs text-muted-foreground truncate pr-2 mt-0.5 opacity-80">
+                      {unassigned.filter(i => !i.done).slice(0, 3).map(i => i.title).join(", ")}
+                      {unassigned.filter(i => !i.done).length > 3 && " ..."}
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
             {!collapsed["unassigned"] && (
