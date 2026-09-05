@@ -25,6 +25,8 @@ export default function GroceryFolders({
   onSelect,
   addItem,
   editItem,
+  onRestore,
+  onHardDelete,
 }: {
   items: Item[];
   members: Member[];
@@ -36,6 +38,8 @@ export default function GroceryFolders({
   onSelect: (item: Item) => void;
   addItem: (item: Pick<Item, "title" | "category" | "meta">) => void;
   editItem: (id: string, title: string, meta?: string | null) => void;
+  onRestore: (id: string) => void;
+  onHardDelete: (id: string) => void;
 }) {
   const [popup, setPopup] = useState<PopupState>({ type: 'NONE' });
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({ "done_folder": true });

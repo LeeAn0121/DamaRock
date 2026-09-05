@@ -33,6 +33,7 @@ export default function HomeList(props: {
   moveItems: (ids: string[], target: Category) => void;
   onOpenAddSheet: () => void;
   onOpenSettings: () => void;
+  onOpenInvite: () => void;
   deleteItem: (id: string) => void;
   restoreItem: (id: string) => void;
   hardDeleteItem: (id: string) => void;
@@ -50,9 +51,9 @@ export default function HomeList(props: {
     onQuickAdd,
     addItem,
     editItem,
-    moveItems,
     onOpenAddSheet,
     onOpenSettings,
+    onOpenInvite,
     deleteItem,
     refreshData,
     hasUnreadActivity,
@@ -83,9 +84,9 @@ export default function HomeList(props: {
   };
 
   const handleTouchEnd = (e: React.TouchEvent) => {
-    if (touchStartX === null) return;
+    if (touchStart === null) return;
     const touchEndX = e.changedTouches[0].clientX;
-    const distance = touchEndX - touchStartX;
+    const distance = touchEndX - touchStart.x;
 
     // Only switch tabs if the swipe is significant and horizontal
     if (Math.abs(distance) > 80) {
@@ -97,7 +98,7 @@ export default function HomeList(props: {
         setCurrentTab("todo");
       }
     }
-    setTouchStartX(null);
+    setTouchStart(null);
   };
 
   const handleEdit = (item: Item) => {
@@ -210,7 +211,7 @@ export default function HomeList(props: {
 
         {/* Invite Banner */}
         <div className="px-5 mb-2">
-          <div onClick={() => props.onOpenInvite?.()} className="bg-primary/10 rounded-xl px-4 py-3 flex items-center justify-between cursor-pointer active:scale-[0.98] transition-transform">
+          <div onClick={onOpenInvite} className="bg-primary/10 rounded-xl px-4 py-3 flex items-center justify-between cursor-pointer active:scale-[0.98] transition-transform">
             <div className="flex items-center gap-3">
               <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/20 text-primary">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg>
@@ -220,7 +221,7 @@ export default function HomeList(props: {
                 <p className="text-[11px] font-medium text-muted-foreground">함께 기록하면 더 편해요</p>
               </div>
             </div>
-            <button className="text-xs font-bold text-primary bg-primary/10 px-3 py-1.5 rounded-full" onClick={(e) => { e.stopPropagation(); props.onOpenInvite?.(); }}>초대하기</button>
+            <button className="text-xs font-bold text-primary bg-primary/10 px-3 py-1.5 rounded-full" onClick={(e) => { e.stopPropagation(); onOpenInvite(); }}>초대하기</button>
           </div>
         </div>
 
@@ -246,14 +247,11 @@ export default function HomeList(props: {
             <div className="flex-1 overflow-y-auto mt-4 pb-10">
               {searchQuery.trim().length > 0 ? (
                 <div className="bg-surface rounded-2xl shadow-sm border border-border/40 p-2">
-                  <ItemRows 
+                  <ItemRows
                     items={activeItems.filter(i => i.title.toLowerCase().includes(searchQuery.toLowerCase().trim()))}
                     onToggle={onToggleDone}
                     onDelete={handleDelete}
-                onRestore={props.restoreItem}
-                onHardDelete={props.hardDeleteItem}
                     onEdit={handleEdit}
-                    onMove={moveItems}
                     onSelect={setSelectedItem}
                     members={members}
                     comments={props.comments}
@@ -380,6 +378,8 @@ export default function HomeList(props: {
                   onSelect={setSelectedItem}
                   addItem={props.addItem}
                   editItem={editItem}
+                  onRestore={props.restoreItem}
+                  onHardDelete={props.hardDeleteItem}
                 />
               </>
             )
