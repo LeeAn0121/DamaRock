@@ -366,66 +366,66 @@ function SwipeableItem({
   onSelect?: (item: Item) => void;
 }) {
   return (
-    <li className="relative flex overflow-x-auto snap-x snap-mandatory scrollbar-hide">
-      <div className="flex w-full min-w-full shrink-0 items-center snap-start">
-        <div className="flex-1 pr-4">
-          <div className="flex min-h-11 w-full items-center gap-3 py-3 text-left bg-surface cursor-pointer" onClick={() => onSelect?.(item)}>
+    <li className="group flex flex-nowrap overflow-x-auto sm:overflow-x-visible snap-x snap-mandatory scrollbar-hide">
+      <div 
+        className="flex-1 min-w-full sm:min-w-0 flex items-center snap-start py-3 cursor-pointer bg-surface transition-colors active:bg-chrome/40 sm:active:bg-surface" 
+        onClick={() => onSelect?.(item)}
+      >
+        <button
+          type="button"
+          onClick={(e) => { e.stopPropagation(); onToggle(item.id); }}
+          className={clsx(
+            "flex h-5 w-5 shrink-0 items-center justify-center rounded transition-colors mr-3",
+            item.done ? "border-2 border-primary bg-primary text-primary-foreground" : "border-2 border-border text-transparent"
+          )}
+        >
+          {item.done && <IconCheck size={13} stroke={3} />}
+        </button>
+        <span className="min-w-0 flex-1 pr-4">
+          <span className={clsx("block truncate text-base", item.done ? "text-muted-foreground line-through" : "text-foreground")}>
+            {item.title}
+          </span>
+          <span className="block text-xs text-muted-foreground">
+            {memberName(members, item.addedBy)} 추가{item.meta ? ` · ${item.meta}` : ""}
+          </span>
+        </span>
+      </div>
+
+      {/* Swipe Actions (Mobile) & Always Visible (PC) */}
+      {(onEdit || onDelete || onMove) && (
+        <div className="flex shrink-0 items-center snap-end bg-surface gap-1 pr-2 sm:pr-0 pl-2">
+          {onMove && (
             <button
               type="button"
-              onClick={(e) => { e.stopPropagation(); onToggle(item.id); }}
-              className={clsx(
-                "flex h-5 w-5 shrink-0 items-center justify-center rounded transition-colors",
-                item.done ? "border-2 border-primary bg-primary text-primary-foreground" : "border-2 border-border text-transparent"
-              )}
+              className="p-2 text-muted-foreground hover:text-foreground active:scale-90 transition-all"
+              onClick={() => onMove(item)}
+              title="폴더 이동"
             >
-              {item.done && <IconCheck size={13} stroke={3} />}
+              <IconFolder size={20} stroke={2} />
             </button>
-            <span className="min-w-0 flex-1">
-              <span className={clsx("block truncate text-base", item.done ? "text-muted-foreground line-through" : "text-foreground")}>
-                {item.title}
-              </span>
-              <span className="block text-xs text-muted-foreground">
-                {memberName(members, item.addedBy)} 추가{item.meta ? ` · ${item.meta}` : ""}
-              </span>
-            </span>
-          </div>
+          )}
+          {onEdit && (
+            <button
+              type="button"
+              className="p-2 text-muted-foreground hover:text-primary active:scale-90 transition-all"
+              onClick={() => onEdit(item)}
+              title="수정"
+            >
+              <IconEdit size={20} stroke={2} />
+            </button>
+          )}
+          {onDelete && (
+            <button
+              type="button"
+              className="p-2 text-muted-foreground hover:text-danger active:scale-90 transition-all"
+              onClick={() => onDelete(item.id)}
+              title="삭제"
+            >
+              <IconTrash size={20} stroke={2} />
+            </button>
+          )}
         </div>
-        {/* Swipe Actions */}
-        {(onEdit || onDelete || onMove) && (
-          <div className="flex h-full shrink-0 snap-end">
-            {onMove && (
-              <button
-                type="button"
-                className="flex flex-col w-[72px] items-center justify-center bg-chrome/40 text-foreground transition-colors hover:bg-chrome/60 active:bg-chrome/80"
-                onClick={() => onMove(item)}
-              >
-                <IconFolder size={20} stroke={2} className="mb-1" />
-                <span className="text-[11px] font-extrabold tracking-tight">폴더</span>
-              </button>
-            )}
-            {onEdit && (
-              <button
-                type="button"
-                className="flex flex-col w-[72px] items-center justify-center bg-primary/10 text-primary transition-colors hover:bg-primary/20 active:bg-primary/30"
-                onClick={() => onEdit(item)}
-              >
-                <IconEdit size={20} stroke={2} className="mb-1" />
-                <span className="text-[11px] font-extrabold tracking-tight">수정</span>
-              </button>
-            )}
-            {onDelete && (
-              <button
-                type="button"
-                className="flex flex-col w-[72px] items-center justify-center bg-danger/10 text-danger transition-colors hover:bg-danger/20 active:bg-danger/30"
-                onClick={() => onDelete(item.id)}
-              >
-                <IconTrash size={20} stroke={2} className="mb-1" />
-                <span className="text-[11px] font-extrabold tracking-tight">삭제</span>
-              </button>
-            )}
-          </div>
-        )}
-      </div>
+      )}
     </li>
   );
 }
