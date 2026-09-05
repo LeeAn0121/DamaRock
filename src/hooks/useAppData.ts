@@ -150,7 +150,7 @@ export function useAppData() {
       loadFamilyData(session.user.id);
     });
 
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
       if (!session) {
         setStatus("signed-out");
         setUserId(null);
@@ -161,7 +161,11 @@ export function useAppData() {
         return;
       }
       setUserId(session.user.id);
-      loadFamilyData(session.user.id);
+      
+      // Only reload data on initial sign-in or session start, not on silent token refreshes
+      if (event === "SIGNED_IN" || event === "INITIAL_SESSION") {
+        loadFamilyData(session.user.id);
+      }
     });
 
     return () => {
