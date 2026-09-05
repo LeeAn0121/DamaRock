@@ -18,6 +18,8 @@ export type Item = {
   assignee?: string;
   meta?: string;
   created_at: string;
+  updated_at: string;
+  deleted_at?: string | null;
 };
 
 export const memberName = (members: Member[], id?: string) =>

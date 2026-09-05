@@ -41,6 +41,20 @@ export function useAppData() {
   const [hasUnreadActivity, setHasUnreadActivity] = useState(false);
   const clearUnreadActivity = useCallback(() => setHasUnreadActivity(false), []);
 
+  const refreshInviteCode = useCallback(
+    async () => {
+      if (!family) return;
+      const { data, error: rpcError } = await supabase.rpc("refresh_invite_code", { p_family_id: family.id });
+      if (rpcError) {
+        console.error(rpcError);
+        return;
+      }
+      if (userId) await loadFamilyData(userId);
+    },
+    [family, userId, loadFamilyData]
+  );
+
+
   const applyOnline = useCallback((rows: Member[]) => {
     const online = onlineIdsRef.current;
     return rows.map((m) => ({ ...m, online: online.has(m.id) }));
@@ -324,9 +338,28 @@ export function useAppData() {
 
   const deleteItem = useCallback(
     async (id: string) => {
-      setItems((prev) => prev.filter((i) => i.id !== id));
-      const { error: deleteError } = await supabase.from("items").delete().eq("id", id);
+      const now = new Date().toISOString();
+      setItems((prev) => prev.map((i) => (i.id === id ? { ...i, deleted_at: now } : i)));
+      const { error: deleteError } = await supabase.from("items").update({ deleted_at: now }).eq("id", id);
       if (deleteError && userId) loadFamilyData(userId);
+    },
+    [userId, loadFamilyData]
+  );
+
+  const restoreItem = useCallback(
+    async (id: string) => {
+      setItems((prev) => prev.map((i) => (i.id === id ? { ...i, deleted_at: null } : i)));
+      const { error } = await supabase.from("items").update({ deleted_at: null }).eq("id", id);
+      if (error && userId) loadFamilyData(userId);
+    },
+    [userId, loadFamilyData]
+  );
+
+  const hardDeleteItem = useCallback(
+    async (id: string) => {
+      setItems((prev) => prev.filter((i) => i.id !== id));
+      const { error } = await supabase.from("items").delete().eq("id", id);
+      if (error && userId) loadFamilyData(userId);
     },
     [userId, loadFamilyData]
   );
@@ -413,6 +446,8 @@ export function useAppData() {
     addItem,
     quickAdd,
     deleteItem,
+    restoreItem,
+    hardDeleteItem,
     editItem,
     moveItems,
     createFamily,
@@ -422,5 +457,6 @@ export function useAppData() {
     signOut,
     hasUnreadActivity,
     clearUnreadActivity,
+    refreshInviteCode,
   };
 }

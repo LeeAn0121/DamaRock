@@ -89,6 +89,7 @@ export default function App() {
   if (screen === "invite") {
     return (
       <FamilyInvite
+        onRefreshCode={data.refreshInviteCode}
         family={data.family}
         members={data.members}
         invites={data.invites}
@@ -116,6 +117,8 @@ export default function App() {
         onOpenSettings={() => setScreen("settings")}
         onOpenInvite={() => setScreen("invite")}
         deleteItem={data.deleteItem}
+        restoreItem={data.restoreItem}
+        hardDeleteItem={data.hardDeleteItem}
         refreshData={data.refreshData}
         hasUnreadActivity={data.hasUnreadActivity}
         clearUnreadActivity={data.clearUnreadActivity}

@@ -9,12 +9,14 @@ export default function FamilyInvite({
   invites,
   onCancelInvite,
   onBack,
+  onRefreshCode,
 }: {
   family: Family | null;
   members: Member[];
   invites: Invite[];
   onCancelInvite: (id: string) => void;
   onBack: () => void;
+  onRefreshCode: () => void;
 }) {
   const [copied, setCopied] = useState(false);
   const code = family?.inviteCode ?? "";
@@ -68,8 +70,13 @@ export default function FamilyInvite({
 
           {/* Dominant invite block */}
           <section className="rounded-3xl bg-surface p-7 text-center shadow-sm border border-border/60">
-            <p className="text-sm font-medium text-muted-foreground">코드로 알려주기 <span className="text-xs text-danger/80">(자동 1일 후 만료)</span></p>
+            <div className="flex items-center justify-center gap-2 text-sm font-medium text-muted-foreground">
+              코드로 알려주기 <span className="text-xs text-danger/80">(자동 1일 후 만료)</span>
+            </div>
             <p className="mt-3 text-5xl font-extrabold tracking-[0.1em] text-primary">{code}</p>
+            <button onClick={() => onRefreshCode()} className="mt-2 mb-4 text-xs font-bold text-muted-foreground underline underline-offset-2 active:text-primary">
+              새 코드 발급받기
+            </button>
             <div className="mt-6 flex flex-col gap-3">
               <button
                 type="button"

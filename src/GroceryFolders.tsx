@@ -245,23 +245,61 @@ export default function GroceryFolders({
           </section>
         )}
 
-        {/* Deleted Folder (Placeholder for Backend Extension) */}
-        <section className={clsx("flex flex-col rounded-2xl bg-surface px-4 shadow-sm border border-border/40 transition-all opacity-50", collapsed["deleted_folder"] ? "py-2.5" : "py-3")}>
+        {/* Deleted Folder */}
+        <section className={clsx("flex flex-col rounded-2xl bg-surface px-4 shadow-sm border border-border/40 transition-all opacity-70", collapsed["deleted_folder"] ? "py-2.5" : "py-3")}>
           <div className={clsx("flex items-center justify-between transition-all", !collapsed["deleted_folder"] ? "mb-3 border-b border-border/40 pb-2" : "")}>
-            <div className="flex items-center gap-2 flex-1 overflow-hidden">
-              <button onClick={() => toggleCollapse("deleted_folder")} className="text-muted-foreground hover:text-foreground active:scale-90 transition-transform p-1">
-                {collapsed["deleted_folder"] ? <IconChevronRight size={18}/> : <IconChevronDown size={18}/>}
-              </button>
-              <div className="flex flex-col flex-1 min-w-0" onClick={() => toggleCollapse("deleted_folder")}>
-                <h3 className="text-base font-extrabold flex items-center gap-2 text-foreground cursor-pointer truncate">
-                  <span className="text-muted-foreground"><IconTrash size={18} /></span> 삭제됨 <span className="text-muted-foreground font-normal text-sm">(0)</span>
-                </h3>
+            <button
+              onClick={() => setCollapsed(prev => ({ ...prev, "deleted_folder": !prev["deleted_folder"] }))}
+              className="flex items-center gap-2 flex-1 text-left"
+            >
+              <div className="flex items-center justify-center w-6 h-6 rounded-md bg-chrome text-muted-foreground">
+                <IconTrash size={16} />
               </div>
+              <h3 className="text-base font-extrabold flex items-center gap-2 text-muted-foreground">
+                삭제됨 <span className="text-muted-foreground/60 font-normal text-sm">({deletedItems.length})</span>
+              </h3>
+            </button>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground mr-1 hidden sm:inline">30일 후 자동 삭제</span>
+              <button
+                onClick={() => setCollapsed(prev => ({ ...prev, "deleted_folder": !prev["deleted_folder"] }))}
+                className="text-muted-foreground p-1 hover:bg-chrome rounded-full transition-colors active:scale-95"
+              >
+                {collapsed["deleted_folder"] ? <IconChevronRight size={18} /> : <IconChevronDown size={18} />}
+              </button>
             </div>
           </div>
           {!collapsed["deleted_folder"] && (
-            <div className="flex-1 animate-in fade-in slide-in-from-top-2 duration-200 py-2">
-              <p className="text-center text-sm text-muted-foreground">삭제 휴지통은 서버 업데이트 이후 지원됩니다.<br/>(30일 후 자동 삭제 기능 포함)</p>
+            <div className="flex-1 animate-in fade-in slide-in-from-top-2 duration-200 pb-2">
+              {deletedItems.length === 0 ? (
+                <p className="text-xs text-muted-foreground text-center py-4">삭제된 항목이 없습니다</p>
+              ) : (
+                <ul className="divide-y divide-border/60">
+                  {deletedItems.map(item => (
+                    <li key={item.id} className="flex items-center gap-3 py-3">
+                      <span className="min-w-0 flex-1 truncate text-sm text-muted-foreground line-through decoration-muted-foreground/30">{item.title}</span>
+                      <div className="flex shrink-0 gap-2">
+                        <button
+                          type="button"
+                          onClick={() => onRestore?.(item.id)}
+                          className="inline-flex min-h-8 items-center justify-center rounded-lg border border-border/80 px-3 text-xs font-bold text-muted-foreground transition-all hover:bg-chrome active:scale-95"
+                        >
+                          복구
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (window.confirm('완전히 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) onHardDelete?.(item.id);
+                          }}
+                          className="inline-flex min-h-8 w-8 items-center justify-center rounded-lg border border-danger/20 text-danger transition-all hover:bg-danger/10 active:scale-95"
+                        >
+                          <IconTrash size={14} />
+                        </button>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
           )}
         </section>

@@ -32,6 +32,8 @@ export default function HomeList(props: {
   onOpenAddSheet: () => void;
   onOpenSettings: () => void;
   deleteItem: (id: string) => void;
+  restoreItem: (id: string) => void;
+  hardDeleteItem: (id: string) => void;
   refreshData?: () => void;
   hasUnreadActivity?: boolean;
   clearUnreadActivity?: () => void;
@@ -120,7 +122,8 @@ export default function HomeList(props: {
     }
   };
 
-  const activeItems = viewState === "empty" ? [] : items.filter(i => i.title !== "__SYSTEM_FOLDERS__");
+  const activeItems = viewState === "empty" ? [] : items.filter(i => i.title !== "__SYSTEM_FOLDERS__" && !i.deleted_at);
+  const deletedItems = viewState === "empty" ? [] : items.filter(i => i.title !== "__SYSTEM_FOLDERS__" && i.deleted_at);
   const inbox = activeItems.filter((i) => i.category === "inbox");
   const grocery = activeItems.filter((i) => i.category === "grocery");
   const todo = activeItems.filter((i) => i.category === "todo");
@@ -247,6 +250,8 @@ export default function HomeList(props: {
                     items={activeItems.filter(i => i.title.toLowerCase().includes(searchQuery.toLowerCase().trim()))}
                     onToggle={onToggleDone}
                     onDelete={handleDelete}
+                onRestore={props.restoreItem}
+                onHardDelete={props.hardDeleteItem}
                     onEdit={handleEdit}
                     onMove={moveItems}
                     onSelect={setSelectedItem}
