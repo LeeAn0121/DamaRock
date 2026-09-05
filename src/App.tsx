@@ -6,6 +6,7 @@ import FamilyInvite from "./FamilyInvite";
 import AuthScreen from "./AuthScreen";
 import FamilyOnboarding from "./FamilyOnboarding";
 import { useAppData } from "./hooks/useAppData";
+import { ToastContainer } from "./components/Toast";
 import type { Category, Item } from "./data";
 
 type Screen = "home" | "settings" | "invite";
@@ -129,6 +130,7 @@ export default function App() {
         onClose={() => setAddSheetOpen(false)}
         onSubmit={addFromSheet}
       />
+      <ToastContainer />
     </>
   );
 }

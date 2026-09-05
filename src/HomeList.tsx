@@ -1,6 +1,6 @@
 import { useMemo, useState, useRef, useEffect } from "react";
 import clsx from "clsx";
-import { IconCheck, IconChecklist, IconChevronDown, IconInbox, IconPackage, IconPlus, IconSettings, IconShoppingCart, IconWifiOff, IconFolder, IconEdit, IconTrash } from "@tabler/icons-react";
+import { IconCalendar, IconList, IconCheck, IconChecklist, IconChevronDown, IconInbox, IconPackage, IconPlus, IconSettings, IconShoppingCart, IconWifiOff, IconFolder, IconEdit, IconTrash } from "@tabler/icons-react";
 import { memberName, type Category, type Item, type Member } from "./data";
 import ActivitySheet from "./ActivitySheet";
 import CalendarView from "./CalendarView";
