@@ -14,6 +14,15 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: "autoUpdate",
+      injectRegister: null,
+      workbox: {
+        // Force every open tab (including an installed/standalone PWA) to
+        // pick up a new deploy on its own — otherwise skipWaiting/clientsClaim
+        // only take effect on the *next* navigation, so a page left open
+        // across a deploy would silently keep running stale JS.
+        clientsClaim: true,
+        skipWaiting: true,
+      },
       manifest: {
         name: "담아락 (DamaRock)",
         short_name: "담아락",

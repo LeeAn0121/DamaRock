@@ -243,24 +243,8 @@ export default function HomeList(props: {
         )}
 
 
-        {/* Todo view switch - mirrors the tab row's flex-1/gap-2 grid so this
-            sits precisely in the "할 일" column, not floating above both tabs */}
-        {currentTab === "todo" && (
-          <div className="flex gap-2 px-5 pt-2">
-            <div className="flex-1" aria-hidden="true" />
-            <div className="flex flex-1 justify-end">
-              <button
-                type="button"
-                onClick={() => setTodoView(v => v === "list" ? "calendar" : "list")}
-                className="flex h-9 w-9 items-center justify-center rounded-full bg-surface border border-border/60 text-muted-foreground hover:text-primary hover:bg-chrome active:scale-95 transition-all shadow-sm"
-              >
-                {todoView === "list" ? <IconCalendar size={18} stroke={2} /> : <IconList size={18} stroke={2} />}
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Tabs - Fixed below header */}
+        {/* Tabs - Fixed below header. Tapping 할 일 while already on it
+            cycles list <-> calendar, so there's one button, not two. */}
         <div className="sticky top-0 z-20 flex gap-2 overflow-x-auto scrollbar-hide bg-background/95 backdrop-blur-md px-5 py-3 border-b border-border/40 shadow-sm">
           <button
             type="button"
@@ -276,15 +260,24 @@ export default function HomeList(props: {
           </button>
           <button
             type="button"
-            onClick={() => setCurrentTab("todo")}
+            onClick={() => {
+              if (currentTab === "todo") {
+                setTodoView(v => v === "list" ? "calendar" : "list");
+              } else {
+                setCurrentTab("todo");
+              }
+            }}
             className={clsx(
-              "flex-1 whitespace-nowrap rounded-xl py-2.5 text-[15px] font-bold shadow-sm transition-all active:scale-[0.98]",
+              "flex-1 whitespace-nowrap rounded-xl py-2.5 text-[15px] font-bold shadow-sm transition-all active:scale-[0.98] flex items-center justify-center gap-1.5",
               currentTab === "todo"
                 ? "bg-foreground text-background"
                 : "bg-surface text-muted-foreground border border-border/60 hover:bg-chrome"
             )}
           >
             {t("common.todo")}
+            {currentTab === "todo" && (
+              todoView === "list" ? <IconList size={15} stroke={2.5} /> : <IconCalendar size={15} stroke={2.5} />
+            )}
           </button>
         </div>
 
