@@ -109,6 +109,7 @@ function SettingsRow({
 
 export default function SettingsPage({
   familyName,
+  familyCreatedAt,
   members,
   userId,
   onBack,
@@ -120,6 +121,7 @@ export default function SettingsPage({
   updateDisplayName,
 }: {
   familyName: string;
+  familyCreatedAt: string | null;
   members: Member[];
   userId: string | null;
   onBack: () => void;
@@ -132,6 +134,9 @@ export default function SettingsPage({
 }) {
   const { t, setting: langSetting, setLanguage } = useI18n();
   const me = members.find(m => m.id === userId);
+  const daysTogether = familyCreatedAt
+    ? Math.max(1, Math.floor((Date.now() - new Date(familyCreatedAt).getTime()) / 86400000) + 1)
+    : null;
 
   // Push Notifications Settings
   const [notifyNewItem, setNotifyNewItem] = useState(() => localStorage.getItem("notifyNewItem") !== "false");
@@ -282,11 +287,13 @@ export default function SettingsPage({
               onClick={handleEditFamilyName}
               trailing={<span className="text-sm font-medium text-primary">{familyName} <IconEdit className="inline" size={14}/></span>}
             />
-            <SettingsRow
-              label={t("settings.timeTogether")}
-              description={t("settings.timeTogetherDesc")}
-              trailing={<span className="text-sm font-bold text-muted-foreground text-right">{t("settings.daysTogether", { n: 12 })}</span>}
-            />
+            {daysTogether !== null && (
+              <SettingsRow
+                label={t("settings.timeTogether")}
+                description={t("settings.timeTogetherDesc")}
+                trailing={<span className="text-sm font-bold text-muted-foreground text-right">{t("settings.daysTogether", { n: daysTogether })}</span>}
+              />
+            )}
             <SettingsRow
               label={t("settings.groupMembers")}
               description={t("settings.memberCount", { n: members.length })}

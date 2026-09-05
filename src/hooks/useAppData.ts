@@ -4,7 +4,7 @@ import { supabase } from "../lib/supabaseClient";
 import { useI18n } from "../lib/i18n";
 import type { Category, Item, Member, Comment } from "../data";
 
-export type Family = { id: string; name: string; inviteCode: string };
+export type Family = { id: string; name: string; inviteCode: string; createdAt: string };
 export type Invite = { id: string; invitedName: string; invitedEmail: string | null };
 
 type Status = "loading" | "signed-out" | "needs-family" | "ready" | "error";
@@ -104,13 +104,13 @@ export function useAppData() {
 
       const { data: familyRows } = await supabase
         .from("families")
-        .select("id, name, invite_code")
+        .select("id, name, invite_code, created_at")
         .in("id", familyIds);
-      setFamilies((familyRows ?? []).map((f) => ({ id: f.id, name: f.name, inviteCode: f.invite_code })));
+      setFamilies((familyRows ?? []).map((f) => ({ id: f.id, name: f.name, inviteCode: f.invite_code, createdAt: f.created_at })));
 
       const [{ data: familyRow, error: fErr }, { data: memberRows }, { data: itemRows }, { data: inviteRows }, { data: commentRows }] =
         await Promise.all([
-          supabase.from("families").select("id, name, invite_code").eq("id", familyId).single(),
+          supabase.from("families").select("id, name, invite_code, created_at").eq("id", familyId).single(),
           supabase
             .from("family_members")
             .select("user_id, role, profiles(display_name, initial, avatar_url, language)")
@@ -141,7 +141,7 @@ export function useAppData() {
         return;
       }
 
-      setFamily({ id: familyRow.id, name: familyRow.name, inviteCode: familyRow.invite_code });
+      setFamily({ id: familyRow.id, name: familyRow.name, inviteCode: familyRow.invite_code, createdAt: familyRow.created_at });
       setMembers(
         applyOnline(
           (memberRows ?? []).map((r) => ({

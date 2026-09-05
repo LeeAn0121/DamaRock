@@ -139,88 +139,91 @@ export default function GroceryFolders({
         <h2 className="text-sm font-bold text-muted-foreground">{t("grocery.itemsHeading")} ({groceryItems.filter(i => !i.done).length})</h2>
       </div>
 
-      <div className="flex flex-col gap-6 mt-4">
-        {folders.map(folder => {
-          const folderItems = grouped.get(folder.id) || [];
-          const active = folderItems.filter(i => !i.done);
-          const isCollapsed = collapsed[folder.id];
+      <div className="flex flex-col gap-5">
+        {/* Active folders — one grouped surface with hairline dividers, not a stack of separate cards */}
+        <div className="flex flex-col rounded-2xl bg-surface shadow-sm border border-border/40 divide-y divide-border/40">
+          {folders.map(folder => {
+            const folderItems = grouped.get(folder.id) || [];
+            const active = folderItems.filter(i => !i.done);
+            const isCollapsed = collapsed[folder.id];
 
-          return (
-            <section key={folder.id} className={clsx("flex flex-col rounded-2xl bg-surface px-4 shadow-sm border border-border/40 transition-all", isCollapsed ? "py-2.5" : "py-3")}>
-              <div className={clsx("flex items-center justify-between transition-all", !isCollapsed ? "mb-3 border-b border-border/40 pb-2" : "")}>
-                <div className="flex items-center gap-2 flex-1 overflow-hidden">
-                  <button onClick={() => toggleCollapse(folder.id)} className="text-muted-foreground hover:text-foreground active:scale-90 transition-transform p-1">
-                    {isCollapsed ? <IconChevronRight size={18}/> : <IconChevronDown size={18}/>}
-                  </button>
-                  <button
-                    className="text-xl active:scale-90 transition-transform hover:opacity-80"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setInputValue(folder.icon);
-                      setPopup({ type: 'CHANGE_ICON', folderId: folder.id });
-                    }}
-                    title={t("grocery.changeIconTitle")}
-                  >
-                    {folder.icon}
-                  </button>
-                  <div className="flex flex-col flex-1 min-w-0" onClick={() => toggleCollapse(folder.id)}>
-                    <h3 className="text-base font-extrabold flex items-center gap-2 text-foreground cursor-pointer truncate">
-                      {folder.name} <span className="text-muted-foreground font-normal text-sm">({active.length})</span>
-                    </h3>
-                    {isCollapsed && active.length > 0 && (
-                      <span className="text-xs text-muted-foreground truncate pr-2 mt-0.5 opacity-80">
-                        {active.slice(0, 3).map(i => i.title).join(", ")}
-                        {active.length > 3 && " ..."}
-                      </span>
-                    )}
+            return (
+              <div key={folder.id} className={clsx("flex flex-col px-4 transition-all", isCollapsed ? "py-2.5" : "py-3")}>
+                <div className={clsx("flex items-center justify-between transition-all", !isCollapsed ? "mb-3 border-b border-border/40 pb-2" : "")}>
+                  <div className="flex items-center gap-2 flex-1 overflow-hidden">
+                    <button onClick={() => toggleCollapse(folder.id)} className="text-muted-foreground hover:text-foreground active:scale-90 transition-transform p-1">
+                      {isCollapsed ? <IconChevronRight size={18}/> : <IconChevronDown size={18}/>}
+                    </button>
+                    <button
+                      className="text-xl active:scale-90 transition-transform hover:opacity-80"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setInputValue(folder.icon);
+                        setPopup({ type: 'CHANGE_ICON', folderId: folder.id });
+                      }}
+                      title={t("grocery.changeIconTitle")}
+                    >
+                      {folder.icon}
+                    </button>
+                    <div className="flex flex-col flex-1 min-w-0" onClick={() => toggleCollapse(folder.id)}>
+                      <h3 className="text-base font-extrabold flex items-center gap-2 text-foreground cursor-pointer truncate">
+                        {folder.name} <span className="text-muted-foreground font-normal text-sm">({active.length})</span>
+                      </h3>
+                      {isCollapsed && active.length > 0 && (
+                        <span className="text-xs text-muted-foreground truncate pr-2 mt-0.5 opacity-80">
+                          {active.slice(0, 3).map(i => i.title).join(", ")}
+                          {active.length > 3 && " ..."}
+                        </span>
+                      )}
+                    </div>
                   </div>
+                  <button
+                    onClick={() => setPopup({ type: 'CONFIRM_DELETE', folderId: folder.id })}
+                    className="text-muted-foreground hover:text-danger active:bg-chrome p-1.5 rounded-full transition-colors ml-2"
+                  >
+                    <IconTrash size={16} stroke={2} />
+                  </button>
                 </div>
-                <button
-                  onClick={() => setPopup({ type: 'CONFIRM_DELETE', folderId: folder.id })}
-                  className="text-muted-foreground hover:text-danger active:bg-chrome p-1.5 rounded-full transition-colors ml-2"
-                >
-                  <IconTrash size={16} stroke={2} />
-                </button>
-              </div>
 
-              {!isCollapsed && (
-                <div className="flex-1 animate-in fade-in slide-in-from-top-2 duration-200">
-                  <ItemRows items={active} onToggle={onToggleDone} onDelete={onDelete} onEdit={onEdit} onMove={handleMove} onSelect={onSelect} members={members} comments={comments} userId={userId} />
-                </div>
-              )}
-            </section>
-          );
-        })}
-
-        {/* Default Folder (formerly unassigned) */}
-        <section className={clsx("flex flex-col rounded-2xl bg-surface px-4 shadow-sm border border-border/40 transition-all", collapsed["unassigned"] ? "py-2.5" : "py-3")}>
-          <div className={clsx("flex items-center justify-between transition-all", !collapsed["unassigned"] ? "mb-3 border-b border-border/40 pb-2" : "")}>
-            <div className="flex items-center gap-2 flex-1 overflow-hidden">
-              <button onClick={() => toggleCollapse("unassigned")} className="text-muted-foreground hover:text-foreground active:scale-90 transition-transform p-1">
-                {collapsed["unassigned"] ? <IconChevronRight size={18}/> : <IconChevronDown size={18}/>}
-              </button>
-              <div className="flex flex-col flex-1 min-w-0" onClick={() => toggleCollapse("unassigned")}>
-                <h3 className="text-base font-extrabold flex items-center gap-2 text-foreground cursor-pointer truncate">
-                  <span className="text-muted-foreground"><IconFolder size={18} /></span> {t("grocery.defaultFolder")} <span className="text-muted-foreground font-normal text-sm">({unassigned.filter(i => !i.done).length})</span>
-                </h3>
-                {collapsed["unassigned"] && unassigned.filter(i => !i.done).length > 0 && (
-                  <span className="text-xs text-muted-foreground truncate pr-2 mt-0.5 opacity-80">
-                    {unassigned.filter(i => !i.done).slice(0, 3).map(i => i.title).join(", ")}
-                    {unassigned.filter(i => !i.done).length > 3 && " ..."}
-                  </span>
+                {!isCollapsed && (
+                  <div className="flex-1 animate-in fade-in slide-in-from-top-2 duration-200">
+                    <ItemRows items={active} onToggle={onToggleDone} onDelete={onDelete} onEdit={onEdit} onMove={handleMove} onSelect={onSelect} members={members} comments={comments} userId={userId} />
+                  </div>
                 )}
               </div>
+            );
+          })}
+
+          {/* Default Folder (formerly unassigned) */}
+          <div className={clsx("flex flex-col px-4 transition-all", collapsed["unassigned"] ? "py-2.5" : "py-3")}>
+            <div className={clsx("flex items-center justify-between transition-all", !collapsed["unassigned"] ? "mb-3 border-b border-border/40 pb-2" : "")}>
+              <div className="flex items-center gap-2 flex-1 overflow-hidden">
+                <button onClick={() => toggleCollapse("unassigned")} className="text-muted-foreground hover:text-foreground active:scale-90 transition-transform p-1">
+                  {collapsed["unassigned"] ? <IconChevronRight size={18}/> : <IconChevronDown size={18}/>}
+                </button>
+                <div className="flex flex-col flex-1 min-w-0" onClick={() => toggleCollapse("unassigned")}>
+                  <h3 className="text-base font-extrabold flex items-center gap-2 text-foreground cursor-pointer truncate">
+                    <span className="text-muted-foreground"><IconFolder size={18} /></span> {t("grocery.defaultFolder")} <span className="text-muted-foreground font-normal text-sm">({unassigned.filter(i => !i.done).length})</span>
+                  </h3>
+                  {collapsed["unassigned"] && unassigned.filter(i => !i.done).length > 0 && (
+                    <span className="text-xs text-muted-foreground truncate pr-2 mt-0.5 opacity-80">
+                      {unassigned.filter(i => !i.done).slice(0, 3).map(i => i.title).join(", ")}
+                      {unassigned.filter(i => !i.done).length > 3 && " ..."}
+                    </span>
+                  )}
+                </div>
+              </div>
             </div>
+            {!collapsed["unassigned"] && (
+              <div className="flex-1 animate-in fade-in slide-in-from-top-2 duration-200">
+                <ItemRows items={unassigned.filter(i => !i.done)} onToggle={onToggleDone} onDelete={onDelete} onEdit={onEdit} onMove={handleMove} onSelect={onSelect} members={members} comments={comments} userId={userId} />
+              </div>
+            )}
           </div>
-          {!collapsed["unassigned"] && (
-            <div className="flex-1 animate-in fade-in slide-in-from-top-2 duration-200">
-              <ItemRows items={unassigned.filter(i => !i.done)} onToggle={onToggleDone} onDelete={onDelete} onEdit={onEdit} onMove={handleMove} onSelect={onSelect} members={members} comments={comments} userId={userId} />
-            </div>
-          )}
-        </section>
+        </div>
 
         {/* Add Folder Button in Center */}
-        <div className="flex justify-center py-4">
+        <div className="flex justify-center">
           <button
             onClick={handleCreateFolderClick}
             className="flex items-center gap-2 text-sm font-bold text-muted-foreground hover:text-primary transition-colors bg-surface px-5 py-2.5 rounded-full border border-border/60 shadow-sm active:scale-95"
@@ -229,88 +232,86 @@ export default function GroceryFolders({
           </button>
         </div>
 
-        {/* Done Folder (Aggregated) */}
-        {items.filter(i => i.done).length > 0 && (
-          <section className={clsx("flex flex-col rounded-2xl bg-surface px-4 shadow-sm border border-border/40 transition-all opacity-70", collapsed["done_folder"] ? "py-2.5" : "py-3")}>
-            <div className={clsx("flex items-center justify-between transition-all", !collapsed["done_folder"] ? "mb-3 border-b border-border/40 pb-2" : "")}>
-              <div className="flex items-center gap-2 flex-1 overflow-hidden">
-                <button onClick={() => toggleCollapse("done_folder")} className="text-muted-foreground hover:text-foreground active:scale-90 transition-transform p-1">
-                  {collapsed["done_folder"] ? <IconChevronRight size={18}/> : <IconChevronDown size={18}/>}
-                </button>
-                <div className="flex flex-col flex-1 min-w-0" onClick={() => toggleCollapse("done_folder")}>
-                  <h3 className="text-base font-extrabold flex items-center gap-2 text-foreground cursor-pointer truncate">
-                    <span className="text-muted-foreground"><IconCheck size={18} /></span> {t("grocery.purchased")} <span className="text-muted-foreground font-normal text-sm">({items.filter(i => i.done).length})</span>
-                  </h3>
+        {/* Archive: purchased + deleted — a second, quieter grouped surface */}
+        <div className="flex flex-col rounded-2xl bg-surface shadow-sm border border-border/40 divide-y divide-border/40">
+          {items.filter(i => i.done).length > 0 && (
+            <div className={clsx("flex flex-col px-4 transition-all", collapsed["done_folder"] ? "py-2.5" : "py-3")}>
+              <div className={clsx("flex items-center justify-between transition-all", !collapsed["done_folder"] ? "mb-3 border-b border-border/40 pb-2" : "")}>
+                <div className="flex items-center gap-2 flex-1 overflow-hidden">
+                  <button onClick={() => toggleCollapse("done_folder")} className="text-muted-foreground hover:text-foreground active:scale-90 transition-transform p-1">
+                    {collapsed["done_folder"] ? <IconChevronRight size={18}/> : <IconChevronDown size={18}/>}
+                  </button>
+                  <div className="flex flex-col flex-1 min-w-0" onClick={() => toggleCollapse("done_folder")}>
+                    <h3 className="text-base font-extrabold flex items-center gap-2 text-muted-foreground cursor-pointer truncate">
+                      <IconCheck size={18} /> {t("grocery.purchased")} <span className="font-normal text-sm">({items.filter(i => i.done).length})</span>
+                    </h3>
+                  </div>
                 </div>
               </div>
-            </div>
-            {!collapsed["done_folder"] && (
-              <div className="flex-1 animate-in fade-in slide-in-from-top-2 duration-200">
-                <ItemRows items={items.filter(i => i.done)} onToggle={onToggleDone} onDelete={onDelete} onEdit={onEdit} onMove={handleMove} onSelect={onSelect} members={members} comments={comments} userId={userId} />
-              </div>
-            )}
-          </section>
-        )}
-
-        {/* Deleted Folder */}
-        <section className={clsx("flex flex-col rounded-2xl bg-surface px-4 shadow-sm border border-border/40 transition-all opacity-70", collapsed["deleted_folder"] ? "py-2.5" : "py-3")}>
-          <div className={clsx("flex items-center justify-between transition-all", !collapsed["deleted_folder"] ? "mb-3 border-b border-border/40 pb-2" : "")}>
-            <button
-              onClick={() => setCollapsed(prev => ({ ...prev, "deleted_folder": !prev["deleted_folder"] }))}
-              className="flex items-center gap-2 flex-1 text-left"
-            >
-              <div className="flex items-center justify-center w-6 h-6 rounded-md bg-chrome text-muted-foreground">
-                <IconTrash size={16} />
-              </div>
-              <h3 className="text-base font-extrabold flex items-center gap-2 text-muted-foreground">
-                {t("grocery.deletedSection")} <span className="text-muted-foreground/60 font-normal text-sm">({deletedItems.length})</span>
-              </h3>
-            </button>
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-muted-foreground mr-1 hidden sm:inline">{t("grocery.autoDeleteNote")}</span>
-              <button
-                onClick={() => setCollapsed(prev => ({ ...prev, "deleted_folder": !prev["deleted_folder"] }))}
-                className="text-muted-foreground p-1 hover:bg-chrome rounded-full transition-colors active:scale-95"
-              >
-                {collapsed["deleted_folder"] ? <IconChevronRight size={18} /> : <IconChevronDown size={18} />}
-              </button>
-            </div>
-          </div>
-          {!collapsed["deleted_folder"] && (
-            <div className="flex-1 animate-in fade-in slide-in-from-top-2 duration-200 pb-2">
-              {deletedItems.length === 0 ? (
-                <p className="text-xs text-muted-foreground text-center py-4">{t("grocery.noDeletedItems")}</p>
-              ) : (
-                <ul className="divide-y divide-border/60">
-                  {deletedItems.map(item => (
-                    <li key={item.id} className="flex items-center gap-3 py-3">
-                      <span className="min-w-0 flex-1 truncate text-sm text-muted-foreground line-through decoration-muted-foreground/30">{item.title}</span>
-                      <div className="flex shrink-0 gap-2">
-                        <button
-                          type="button"
-                          onClick={() => onRestore(item.id)}
-                          className="inline-flex min-h-8 items-center justify-center rounded-lg border border-border/80 px-3 text-xs font-bold text-muted-foreground transition-all hover:bg-chrome active:scale-95"
-                        >
-                          {t("grocery.restore")}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            if (window.confirm(t("grocery.confirmHardDelete"))) onHardDelete(item.id);
-                          }}
-                          className="inline-flex min-h-8 w-8 items-center justify-center rounded-lg border border-danger/20 text-danger transition-all hover:bg-danger/10 active:scale-95"
-                        >
-                          <IconTrash size={14} />
-                        </button>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
+              {!collapsed["done_folder"] && (
+                <div className="flex-1 animate-in fade-in slide-in-from-top-2 duration-200">
+                  <ItemRows items={items.filter(i => i.done)} onToggle={onToggleDone} onDelete={onDelete} onEdit={onEdit} onMove={handleMove} onSelect={onSelect} members={members} comments={comments} userId={userId} />
+                </div>
               )}
             </div>
           )}
-        </section>
 
+          <div className={clsx("flex flex-col px-4 transition-all", collapsed["deleted_folder"] ? "py-2.5" : "py-3")}>
+            <div className={clsx("flex items-center justify-between transition-all", !collapsed["deleted_folder"] ? "mb-3 border-b border-border/40 pb-2" : "")}>
+              <button
+                onClick={() => setCollapsed(prev => ({ ...prev, "deleted_folder": !prev["deleted_folder"] }))}
+                className="flex items-center gap-2 flex-1 text-left p-1 -m-1"
+              >
+                <IconTrash size={18} className="text-muted-foreground" />
+                <h3 className="text-base font-extrabold flex items-center gap-2 text-muted-foreground">
+                  {t("grocery.deletedSection")} <span className="font-normal text-sm">({deletedItems.length})</span>
+                </h3>
+              </button>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground mr-1 hidden sm:inline">{t("grocery.autoDeleteNote")}</span>
+                <button
+                  onClick={() => setCollapsed(prev => ({ ...prev, "deleted_folder": !prev["deleted_folder"] }))}
+                  className="text-muted-foreground p-1 hover:bg-chrome rounded-full transition-colors active:scale-95"
+                >
+                  {collapsed["deleted_folder"] ? <IconChevronRight size={18} /> : <IconChevronDown size={18} />}
+                </button>
+              </div>
+            </div>
+            {!collapsed["deleted_folder"] && (
+              <div className="flex-1 animate-in fade-in slide-in-from-top-2 duration-200 pb-2">
+                {deletedItems.length === 0 ? (
+                  <p className="text-xs text-muted-foreground text-center py-4">{t("grocery.noDeletedItems")}</p>
+                ) : (
+                  <ul className="divide-y divide-border/60">
+                    {deletedItems.map(item => (
+                      <li key={item.id} className="flex items-center gap-3 py-3">
+                        <span className="min-w-0 flex-1 truncate text-sm text-muted-foreground line-through decoration-muted-foreground/30">{item.title}</span>
+                        <div className="flex shrink-0 gap-2">
+                          <button
+                            type="button"
+                            onClick={() => onRestore(item.id)}
+                            className="inline-flex min-h-8 items-center justify-center rounded-lg border border-border/80 px-3 text-xs font-bold text-muted-foreground transition-all hover:bg-chrome active:scale-95"
+                          >
+                            {t("grocery.restore")}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (window.confirm(t("grocery.confirmHardDelete"))) onHardDelete(item.id);
+                            }}
+                            className="inline-flex min-h-8 w-8 items-center justify-center rounded-lg border border-danger/20 text-danger transition-all hover:bg-danger/10 active:scale-95"
+                          >
+                            <IconTrash size={14} />
+                          </button>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* Popups */}

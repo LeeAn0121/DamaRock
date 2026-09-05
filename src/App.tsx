@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import HomeList from "./HomeList";
+import HomeList, { LoadingState } from "./HomeList";
 import AddItemSheet from "./AddItemSheet";
 import SettingsPage from "./SettingsPage";
 import FamilyInvite from "./FamilyInvite";
@@ -55,7 +55,7 @@ function AppShell() {
   }, []);
 
   if (data.status === "loading") {
-    return <div className="min-h-dvh bg-background" />;
+    return <LoadingState />;
   }
 
   if (data.status === "signed-out") {
@@ -97,6 +97,7 @@ function AppShell() {
     return (
       <SettingsPage
         familyName={data.family?.name ?? t("appName")}
+        familyCreatedAt={data.family?.createdAt ?? null}
         members={data.members}
         userId={data.userId}
         onBack={() => setScreen("home")}

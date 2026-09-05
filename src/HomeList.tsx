@@ -202,22 +202,6 @@ export default function HomeList(props: {
           </div>
 </header>
 
-        {/* Invite Banner */}
-        <div className="px-5 mb-2">
-          <div onClick={onOpenInvite} className="bg-primary/10 rounded-xl px-4 py-3 flex items-center justify-between cursor-pointer active:scale-[0.98] transition-transform">
-            <div className="flex items-center gap-3">
-              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/20 text-primary">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg>
-              </span>
-              <div>
-                <p className="text-sm font-bold text-foreground">{t("home.inviteBannerTitle")}</p>
-                <p className="text-[11px] font-medium text-muted-foreground">{t("home.inviteBannerDesc")}</p>
-              </div>
-            </div>
-            <button className="text-xs font-bold text-primary bg-primary/10 px-3 py-1.5 rounded-full" onClick={(e) => { e.stopPropagation(); onOpenInvite(); }}>{t("home.inviteCta")}</button>
-          </div>
-        </div>
-
         {/* Search Bar Overlay */}
         {searchOpen && (
           <div className="absolute inset-0 z-[100] bg-background/95 backdrop-blur-md px-5 py-4 flex flex-col animate-in fade-in duration-200">
@@ -259,16 +243,20 @@ export default function HomeList(props: {
         )}
 
 
-        {/* Todo view switch - sits above the tabs, right-aligned, only for 할 일 */}
+        {/* Todo view switch - mirrors the tab row's flex-1/gap-2 grid so this
+            sits precisely in the "할 일" column, not floating above both tabs */}
         {currentTab === "todo" && (
-          <div className="flex justify-end px-5 pt-3">
-            <button
-              type="button"
-              onClick={() => setTodoView(v => v === "list" ? "calendar" : "list")}
-              className="flex h-10 w-10 items-center justify-center rounded-full bg-surface border border-border/60 text-muted-foreground hover:text-primary hover:bg-chrome active:scale-95 transition-all shadow-sm"
-            >
-              {todoView === "list" ? <IconCalendar size={20} stroke={2} /> : <IconList size={20} stroke={2} />}
-            </button>
+          <div className="flex gap-2 px-5 pt-2">
+            <div className="flex-1" aria-hidden="true" />
+            <div className="flex flex-1 justify-end">
+              <button
+                type="button"
+                onClick={() => setTodoView(v => v === "list" ? "calendar" : "list")}
+                className="flex h-9 w-9 items-center justify-center rounded-full bg-surface border border-border/60 text-muted-foreground hover:text-primary hover:bg-chrome active:scale-95 transition-all shadow-sm"
+              >
+                {todoView === "list" ? <IconCalendar size={18} stroke={2} /> : <IconList size={18} stroke={2} />}
+              </button>
+            </div>
           </div>
         )}
 
@@ -330,6 +318,25 @@ export default function HomeList(props: {
                     )}
                   </div>
                 </section>
+
+                {/* Invite nudge: only useful while there's no one else to share with yet */}
+                {members.length <= 1 && (
+                  <div
+                    onClick={onOpenInvite}
+                    className="mb-6 flex cursor-pointer items-center justify-between rounded-xl bg-primary/10 px-4 py-3 transition-transform active:scale-[0.98]"
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/20 text-primary">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg>
+                      </span>
+                      <div>
+                        <p className="text-sm font-bold text-foreground">{t("home.inviteBannerTitle")}</p>
+                        <p className="text-[11px] font-medium text-muted-foreground">{t("home.inviteBannerDesc")}</p>
+                      </div>
+                    </div>
+                    <button className="text-xs font-bold text-primary bg-primary/10 px-3 py-1.5 rounded-full" onClick={(e) => { e.stopPropagation(); onOpenInvite(); }}>{t("home.inviteCta")}</button>
+                  </div>
+                )}
 
                 {/* Inbox: just captured, not sorted yet */}
                 {inbox.length > 0 && (
@@ -476,7 +483,7 @@ function EmptyState() {
   );
 }
 
-function LoadingState() {
+export function LoadingState() {
   const { t } = useI18n();
   return (
     <div className="min-h-dvh bg-background font-sans">
