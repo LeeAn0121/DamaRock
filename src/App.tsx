@@ -131,6 +131,7 @@ function AppShell() {
         onRefreshCode={data.refreshInviteCode}
         family={data.family}
         members={data.members}
+        userId={data.userId}
         invites={data.invites}
         onCancelInvite={data.cancelInvite}
         onBack={() => setScreen("settings")}

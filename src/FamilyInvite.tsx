@@ -7,6 +7,7 @@ import { useI18n } from "./lib/i18n";
 export default function FamilyInvite({
   family,
   members,
+  userId,
   invites,
   onCancelInvite,
   onBack,
@@ -14,6 +15,7 @@ export default function FamilyInvite({
 }: {
   family: Family | null;
   members: Member[];
+  userId: string | null;
   invites: Invite[];
   onCancelInvite: (id: string) => void;
   onBack: () => void;
@@ -142,19 +144,27 @@ export default function FamilyInvite({
             </div>
             <div className="rounded-2xl bg-surface px-2">
               <ul className="divide-y divide-border/40">
-                {members.map((m) => (
-                  <li key={m.id} className="flex items-center gap-4 px-3 py-3.5">
-                    <span className="relative flex h-12 w-12 items-center justify-center rounded-full bg-chrome text-base font-bold text-chrome-foreground shadow-sm overflow-hidden">
-                      {m.avatar_url ? (
-                        <img src={m.avatar_url} alt={m.name} className="h-full w-full object-cover" />
-                      ) : (
-                        m.initial
-                      )}
-
-                    </span>
-                    <span className="flex-1 text-base font-medium text-foreground">{m.name}</span>
-                  </li>
-                ))}
+                {members.map((m) => {
+                  const isMe = m.id === userId;
+                  const roleLabel = m.role === "가족대표" ? t("role.leader") : t("role.member");
+                  return (
+                    <li key={m.id} className="flex items-center gap-4 px-3 py-3.5">
+                      <span className="relative flex h-12 w-12 items-center justify-center rounded-full bg-chrome text-base font-bold text-chrome-foreground shadow-sm overflow-hidden">
+                        {m.avatar_url ? (
+                          <img src={m.avatar_url} alt={m.name} className="h-full w-full object-cover" />
+                        ) : (
+                          m.initial
+                        )}
+                      </span>
+                      <span className="flex-1 min-w-0">
+                        <span className="block truncate text-base font-medium text-foreground">{m.name}</span>
+                        <span className="block text-xs font-medium text-muted-foreground">
+                          {roleLabel}{isMe ? ` · ${t("common.me")}` : ""}
+                        </span>
+                      </span>
+                    </li>
+                  );
+                })}
               </ul>
             </div>
           </section>

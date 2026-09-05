@@ -111,9 +111,16 @@ export default function ItemDetailSheet({
   const handleEdit = async (commentId: string, oldContent: string) => {
     const newContent = window.prompt(t("itemDetail.editPrompt"), oldContent);
     if (newContent !== null && newContent.trim() !== oldContent) {
-      const { error } = await supabase.from("comments").update({ content: newContent.trim() }).eq("id", commentId);
-      if (error) {
-        console.error("Comment update error:", error);
+      // RLS blocking the row (e.g. missing/misconfigured policy) doesn't
+      // raise `error` — it just matches and updates zero rows — so a
+      // .select() is needed to actually confirm the write happened.
+      const { data, error } = await supabase
+        .from("comments")
+        .update({ content: newContent.trim() })
+        .eq("id", commentId)
+        .select();
+      if (error || !data || data.length === 0) {
+        console.error("Comment update failed:", error ?? "no rows affected (blocked by RLS?)");
         showToast(t("itemDetail.editFailed"));
       }
     }
@@ -121,9 +128,9 @@ export default function ItemDetailSheet({
 
   const handleDelete = async (commentId: string) => {
     if (window.confirm(t("itemDetail.confirmDelete"))) {
-      const { error } = await supabase.from("comments").delete().eq("id", commentId);
-      if (error) {
-        console.error("Comment delete error:", error);
+      const { data, error } = await supabase.from("comments").delete().eq("id", commentId).select();
+      if (error || !data || data.length === 0) {
+        console.error("Comment delete failed:", error ?? "no rows affected (blocked by RLS?)");
         showToast(t("itemDetail.deleteFailed"));
       }
     }

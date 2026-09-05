@@ -262,7 +262,7 @@ const dict: Dict = {
   "theme.grape-dark": { ko: "그레이프 다크", en: "Grape Dark", ja: "グレープダーク", zh: "葡萄暗紫" },
 
   // roles & regions
-  "role.leader": { ko: "가족대표", en: "Family lead", ja: "家族代表", zh: "家庭代表" },
+  "role.leader": { ko: "관리자", en: "Admin", ja: "管理者", zh: "管理员" },
   "role.member": { ko: "구성원", en: "Member", ja: "メンバー", zh: "成员" },
   "holiday.kr": { ko: "한국 🇰🇷", en: "Korea 🇰🇷", ja: "韓国 🇰🇷", zh: "韩国 🇰🇷" },
   "holiday.us": { ko: "미국 🇺🇸", en: "USA 🇺🇸", ja: "アメリカ 🇺🇸", zh: "美国 🇺🇸" },
