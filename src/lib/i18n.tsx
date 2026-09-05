@@ -78,6 +78,7 @@ const dict: Dict = {
   "home.inviteCta": { ko: "초대하기", en: "Invite", ja: "招待する", zh: "邀请" },
   "home.searchPlaceholder": { ko: "장보기, 할일 검색 (삭제된 항목 제외)", en: "Search groceries and to-dos (excludes deleted)", ja: "買い物・やることを検索（削除済みを除く）", zh: "搜索购物和待办事项（不含已删除）" },
   "home.searchEmpty": { ko: "검색어를 입력하세요", en: "Type something to search", ja: "検索キーワードを入力してください", zh: "请输入搜索关键词" },
+  "home.searchNoResults": { ko: "'{{query}}'에 대한 검색 결과가 없어요", en: "No results for '{{query}}'", ja: "「{{query}}」の検索結果はありません", zh: "没有找到「{{query}}」的结果" },
   "home.remaining": { ko: "{{n}}개 남았어요", en: "{{n}} left", ja: "残り{{n}}件", zh: "还剩 {{n}} 项" },
   "home.remainingSuffix": { ko: "개 남았어요", en: "left", ja: "件残り", zh: "项待办" },
   "home.summaryLine": { ko: "장보기 {{grocery}} · 할 일 {{todo}}", en: "Groceries {{grocery}} · To-dos {{todo}}", ja: "買い物{{grocery}}・やること{{todo}}", zh: "购物 {{grocery}} · 待办 {{todo}}" },

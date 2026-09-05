@@ -37,6 +37,15 @@ export default function ItemDetailSheet({
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open, onClose]);
+
+  useEffect(() => {
     if (!open || !item) return;
 
     // Load initial comments
@@ -111,7 +120,7 @@ export default function ItemDetailSheet({
       {/* Backdrop */}
       <div
         className={clsx(
-          "fixed inset-0 z-40 bg-black/40 backdrop-blur-sm transition-opacity duration-300",
+          "fixed inset-0 z-[140] bg-black/40 backdrop-blur-sm transition-opacity duration-300",
           open ? "opacity-100" : "pointer-events-none opacity-0"
         )}
         onClick={onClose}
@@ -119,7 +128,7 @@ export default function ItemDetailSheet({
       {/* Sheet */}
       <div
         className={clsx(
-          "fixed inset-x-0 bottom-0 z-50 flex max-h-[85dvh] flex-col rounded-t-3xl bg-background shadow-2xl transition-transform duration-300 ease-out sm:mx-auto sm:max-w-md",
+          "fixed inset-x-0 bottom-0 z-[150] flex max-h-[85dvh] flex-col rounded-t-3xl bg-background shadow-2xl transition-transform duration-300 ease-out sm:mx-auto sm:max-w-md",
           open ? "translate-y-0" : "translate-y-full"
         )}
       >

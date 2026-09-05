@@ -71,6 +71,20 @@ export default function HomeList(props: {
   const [todoView, setTodoView] = useState<"list" | "calendar">("list");
   const [searchQuery, setSearchQuery] = useState("");
   const [searchOpen, setSearchOpen] = useState(false);
+
+  const closeSearch = () => {
+    setSearchOpen(false);
+    setSearchQuery("");
+  };
+
+  useEffect(() => {
+    if (!searchOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") closeSearch();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [searchOpen]);
   const [addGroceryOpen, setAddGroceryOpen] = useState(false);
 
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -126,6 +140,12 @@ export default function HomeList(props: {
 
   const remaining = activeItems.filter((i) => !i.done).length;
   const doneToday = activeItems.filter((i) => i.done).length;
+
+  const searchResults = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return [];
+    return activeItems.filter((i) => i.title.toLowerCase().includes(q));
+  }, [activeItems, searchQuery]);
 
   const summaryLine = useMemo(() => {
     const groceryLeft = grocery.filter((i) => !i.done).length;
@@ -219,22 +239,28 @@ export default function HomeList(props: {
                   <button onClick={() => setSearchQuery("")} className="text-muted-foreground p-1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
                 )}
               </div>
-              <button onClick={() => { setSearchOpen(false); setSearchQuery(""); }} className="text-sm font-bold text-foreground py-2 px-1">{t("common.cancel")}</button>
+              <button onClick={closeSearch} className="text-sm font-bold text-foreground py-2 px-1">{t("common.cancel")}</button>
             </div>
             <div className="flex-1 overflow-y-auto mt-4 pb-10">
               {searchQuery.trim().length > 0 ? (
-                <div className="bg-surface rounded-2xl shadow-sm border border-border/40 p-2">
-                  <ItemRows
-                    items={activeItems.filter(i => i.title.toLowerCase().includes(searchQuery.toLowerCase().trim()))}
-                    onToggle={onToggleDone}
-                    onDelete={handleDelete}
-                    onEdit={handleEdit}
-                    onSelect={setSelectedItem}
-                    members={members}
-                    comments={props.comments}
-                    userId={userId}
-                  />
-                </div>
+                searchResults.length > 0 ? (
+                  <div className="bg-surface rounded-2xl shadow-sm border border-border/40 p-2">
+                    <ItemRows
+                      items={searchResults}
+                      onToggle={onToggleDone}
+                      onDelete={handleDelete}
+                      onEdit={handleEdit}
+                      onSelect={setSelectedItem}
+                      members={members}
+                      comments={props.comments}
+                      userId={userId}
+                    />
+                  </div>
+                ) : (
+                  <p className="text-center text-muted-foreground text-sm mt-10">
+                    {t("home.searchNoResults", { query: searchQuery.trim() })}
+                  </p>
+                )
               ) : (
                 <p className="text-center text-muted-foreground text-sm mt-10">{t("home.searchEmpty")}</p>
               )}
