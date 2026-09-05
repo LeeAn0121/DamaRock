@@ -21,18 +21,7 @@ export default function SettingsPage({
 }) {
   const [newItemAlerts, setNewItemAlerts] = useState(true);
   const [doneAlerts, setDoneAlerts] = useState(true);
-  const [appVersion, setAppVersion] = useState("v1.0.1");
-
-  useEffect(() => {
-    fetch("https://api.github.com/repos/LeeAn0121/DamaRock/releases/latest")
-      .then((res) => res.json())
-      .then((data) => {
-        if (data && data.tag_name) {
-          setAppVersion(data.tag_name);
-        }
-      })
-      .catch((err) => console.error("Failed to fetch latest release version:", err));
-  }, []);
+  const appVersion = `v${__APP_VERSION__}`;
 
   const me = members.find((m) => m.id === userId);
 
