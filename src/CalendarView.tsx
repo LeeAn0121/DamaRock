@@ -171,9 +171,9 @@ export default function CalendarView({
                           <button onClick={() => onToggleDone(item.id)} className={clsx("mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded border-2 transition-colors", item.done ? "border-primary bg-primary text-primary-foreground" : "border-border text-transparent")}>
                             <IconCheck size={13} stroke={3} />
                           </button>
-                          <div className="flex flex-col flex-1 min-w-0">
+                          <div className="flex flex-col flex-1 min-w-0" data-meta={item.meta || undefined}>
                             <span className={clsx("text-sm font-bold truncate", item.done ? "text-muted-foreground line-through" : "text-foreground")}>{item.title}</span>
-                            <span className="text-xs text-muted-foreground mt-0.5 truncate">{memberName(members, item.addedBy)} {item.meta && ` · ${item.meta}`}</span>
+                            <span className="text-xs text-muted-foreground mt-0.5 truncate">{memberName(members, item.addedBy)}</span>
                           </div>
                           <div className="flex items-center gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                             {onEdit && (

@@ -422,12 +422,12 @@ export function ActionableItem({
         >
           {item.done && <IconCheck size={13} stroke={3} />}
         </button>
-        <span className="min-w-0 flex-1 pr-4">
+        <span className="min-w-0 flex-1 pr-4" data-meta={item.meta || undefined}>
           <span className={clsx("block truncate text-base", item.done ? "text-muted-foreground line-through" : "text-foreground")}>
             {item.title}
           </span>
           <span className="block text-xs text-muted-foreground">
-            {memberName(members, item.addedBy)}{item.meta ? ` · ${item.meta}` : ""}
+            {memberName(members, item.addedBy)}
           </span>
         </span>
       </div>
