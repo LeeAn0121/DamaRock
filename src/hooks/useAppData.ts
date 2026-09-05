@@ -37,6 +37,9 @@ export function useAppData() {
   const [invites, setInvites] = useState<Invite[]>([]);
   const onlineIdsRef = useRef<Set<string>>(new Set());
 
+  const [hasUnreadActivity, setHasUnreadActivity] = useState(false);
+  const clearUnreadActivity = useCallback(() => setHasUnreadActivity(false), []);
+
   const applyOnline = useCallback((rows: Member[]) => {
     const online = onlineIdsRef.current;
     return rows.map((m) => ({ ...m, online: online.has(m.id) }));
@@ -215,6 +218,7 @@ export function useAppData() {
                 }
                 
                 if (body) {
+                  setHasUnreadActivity(true);
                   new Notification(title, { body, icon: `${import.meta.env.BASE_URL}icon-192.png` });
                 }
               }
@@ -228,6 +232,7 @@ export function useAppData() {
         (payload) => {
           loadFamilyData(userId);
           if (payload.eventType === "INSERT" && payload.new.user_id !== userId) {
+            setHasUnreadActivity(true);
             const notify = localStorage.getItem("notifyMemberJoin") !== "false";
             if (notify && typeof window !== "undefined" && "Notification" in window && Notification.permission === "granted") {
               new Notification("담아락 소식", { body: "새로운 가족 구성원이 참여했습니다!", icon: `${import.meta.env.BASE_URL}icon-192.png` });
@@ -389,5 +394,7 @@ export function useAppData() {
     cancelInvite,
     refreshData,
     signOut,
+    hasUnreadActivity,
+    clearUnreadActivity,
   };
 }

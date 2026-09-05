@@ -146,7 +146,8 @@ export default function GroceryFolders({
                   </button>
                   <button 
                     className="text-xl active:scale-90 transition-transform hover:opacity-80" 
-                    onClick={() => {
+                    onClick={(e) => {
+                      e.stopPropagation();
                       setInputValue(folder.icon);
                       setPopup({ type: 'CHANGE_ICON', folderId: folder.id });
                     }}

@@ -115,6 +115,8 @@ export default function App() {
         onOpenSettings={() => setScreen("settings")}
         deleteItem={data.deleteItem}
         refreshData={data.refreshData}
+        hasUnreadActivity={data.hasUnreadActivity}
+        clearUnreadActivity={data.clearUnreadActivity}
       />
       <AddItemSheet
         open={addSheetOpen}
