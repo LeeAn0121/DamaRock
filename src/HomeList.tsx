@@ -1,4 +1,4 @@
-import { useMemo, useState, useRef } from "react";
+import { useMemo, useState, useRef, useEffect } from "react";
 import clsx from "clsx";
 import { IconCheck, IconChecklist, IconChevronDown, IconInbox, IconPackage, IconPlus, IconSettings, IconShoppingCart, IconWifiOff, IconFolder, IconEdit, IconTrash } from "@tabler/icons-react";
 import { memberName, type Category, type Item, type Member } from "./data";
@@ -31,6 +31,7 @@ export default function HomeList(props: {
   onOpenAddSheet: () => void;
   onOpenSettings: () => void;
   deleteItem: (id: string) => void;
+  refreshData?: () => void;
 }) {
   const {
     items,
@@ -46,10 +47,16 @@ export default function HomeList(props: {
     onOpenAddSheet,
     onOpenSettings,
     deleteItem,
+    refreshData,
   } = props;
   const viewState = useUrlState();
   const [currentTab, setCurrentTab] = useState<"grocery" | "todo">("grocery");
   
+  // Refresh data whenever the tab changes to ensure fresh state
+  useEffect(() => {
+    refreshData?.();
+  }, [currentTab, refreshData]);
+
   const { isInstallable, promptInstall } = useInstallPrompt();
   const [showDoneGrocery, setShowDoneGrocery] = useState(false);
   const [showDoneTodo, setShowDoneTodo] = useState(false);

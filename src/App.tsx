@@ -114,6 +114,7 @@ export default function App() {
         onOpenAddSheet={() => setAddSheetOpen(true)}
         onOpenSettings={() => setScreen("settings")}
         deleteItem={data.deleteItem}
+        refreshData={data.refreshData}
       />
       <AddItemSheet
         open={addSheetOpen}

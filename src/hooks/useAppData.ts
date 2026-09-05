@@ -361,6 +361,12 @@ export function useAppData() {
     await supabase.from("family_invites").update({ status: "cancelled" }).eq("id", id);
   }, []);
 
+  const refreshData = useCallback(() => {
+    if (userId) {
+      loadFamilyData(userId);
+    }
+  }, [userId, loadFamilyData]);
+
   const signOut = useCallback(() => supabase.auth.signOut(), []);
 
   return {
@@ -381,6 +387,7 @@ export function useAppData() {
     createFamily,
     joinFamily,
     cancelInvite,
+    refreshData,
     signOut,
   };
 }
