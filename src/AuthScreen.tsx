@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "./lib/supabaseClient";
 import { IconCheck } from "@tabler/icons-react";
+import { useI18n } from "./lib/i18n";
 
 function KakaoMark() {
   return (
@@ -37,6 +38,7 @@ function GoogleMark() {
 }
 
 export default function AuthScreen() {
+  const { t } = useI18n();
   const [authError, setAuthError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -45,14 +47,14 @@ export default function AuthScreen() {
     const errDesc = params.get("error_description") || hash.get("error_description");
     if (errDesc) {
       if (errDesc.includes("already registered") || errDesc.includes("different credential")) {
-        setAuthError("이미 다른 소셜 계정(카카오 또는 구글)으로 가입된 이메일입니다. 기존 계정으로 로그인해주세요.");
+        setAuthError(t("auth.errorAlreadyRegistered"));
       } else {
         setAuthError(errDesc);
       }
       // clear error from url
       window.history.replaceState({}, "", window.location.pathname);
     }
-  }, []);
+  }, [t]);
 
   const lastLogin = typeof window !== "undefined" ? localStorage.getItem('lastLoginProvider') : null;
 
@@ -68,35 +70,34 @@ export default function AuthScreen() {
     <div className="flex min-h-dvh flex-col items-center justify-center px-6 font-sans text-foreground pb-12 relative overflow-hidden bg-gradient-to-b from-background via-background to-primary/5">
       {/* Background decoration */}
       <div className="absolute top-0 left-0 w-full h-1/2 bg-gradient-to-b from-primary/10 to-transparent pointer-events-none" />
-      
+
       <div className="z-10 flex flex-col items-center max-w-sm w-full">
         <div className="flex items-center gap-2 mb-8">
-          <img src={`${import.meta.env.BASE_URL}icon-192.png`} alt="담아락" className="h-10 w-10 rounded-xl shadow-md border border-border/50" />
-          <span className="text-3xl font-extrabold tracking-tight text-primary">담아락</span>
+          <img src={`${import.meta.env.BASE_URL}icon-192.png`} alt={t("appName")} className="h-10 w-10 rounded-xl shadow-md border border-border/50" />
+          <span className="text-3xl font-extrabold tracking-tight text-primary">{t("appName")}</span>
         </div>
 
         <h1 className="text-center text-3xl font-extrabold leading-tight text-foreground tracking-tight">
-          우리집 장보기와 할 일을<br />
-          <span className="text-primary">가족과 한곳에</span>
+          {t("auth.headline1")}<br />
+          <span className="text-primary">{t("auth.headline2")}</span>
         </h1>
-        <p className="mt-4 text-center text-[15px] font-medium leading-relaxed text-muted-foreground/90">
-          누가 적어도 실시간으로 함께 채워져요.<br />
-          초대 코드 하나면 가족과 바로 시작할 수 있어요.
+        <p className="mt-4 whitespace-pre-line text-center text-[15px] font-medium leading-relaxed text-muted-foreground/90">
+          {t("auth.subtitle")}
         </p>
 
         <div className="mt-10 w-full rounded-2xl bg-surface/80 p-5 shadow-sm border border-border/40 backdrop-blur-sm">
           <ul className="flex flex-col gap-3.5 text-[14px] font-medium text-foreground">
             <li className="flex items-center gap-3">
               <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-primary"><IconCheck size={14} stroke={3} /></div>
-              장보기 항목과 할 일을 깔끔하게 관리
+              {t("auth.feature1")}
             </li>
             <li className="flex items-center gap-3">
               <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-primary"><IconCheck size={14} stroke={3} /></div>
-              캘린더로 일정을 한눈에 파악
+              {t("auth.feature2")}
             </li>
             <li className="flex items-center gap-3">
               <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-primary"><IconCheck size={14} stroke={3} /></div>
-              항목별 실시간 댓글로 쉽게 상의해요
+              {t("auth.feature3")}
             </li>
           </ul>
         </div>
@@ -110,9 +111,9 @@ export default function AuthScreen() {
             <span className="absolute left-5 flex items-center">
               <KakaoMark />
             </span>
-            카카오로 시작하기
+            {t("auth.kakao")}
             {lastLogin === "kakao" && (
-              <span className="absolute right-4 text-[11px] font-extrabold bg-[#191600]/10 text-[#191600] px-2 py-1 rounded-md">최근 로그인</span>
+              <span className="absolute right-4 text-[11px] font-extrabold bg-[#191600]/10 text-[#191600] px-2 py-1 rounded-md">{t("auth.recentLogin")}</span>
             )}
           </button>
           <button
@@ -123,9 +124,9 @@ export default function AuthScreen() {
             <span className="absolute left-5 flex items-center">
               <GoogleMark />
             </span>
-            Google로 시작하기
+            {t("auth.google")}
             {lastLogin === "google" && (
-              <span className="absolute right-4 text-[11px] font-extrabold bg-muted text-muted-foreground px-2 py-1 rounded-md">최근 로그인</span>
+              <span className="absolute right-4 text-[11px] font-extrabold bg-muted text-muted-foreground px-2 py-1 rounded-md">{t("auth.recentLogin")}</span>
             )}
           </button>
 

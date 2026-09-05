@@ -10,6 +10,13 @@ interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>;
 }
 
+const ua = typeof navigator !== "undefined" ? navigator.userAgent : "";
+const isIOS = /iphone|ipad|ipod/i.test(ua);
+// In-app webviews (KakaoTalk, Instagram, Facebook, Naver, Line) never fire
+// beforeinstallprompt and can't install a PWA at all — the user has to leave
+// the webview and open the link in a real browser first.
+const isInAppBrowser = /KAKAOTALK|Instagram|FBAN|FBAV|NAVER|Line\//i.test(ua);
+
 export function useInstallPrompt() {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [isInstallable, setIsInstallable] = useState(false);
@@ -55,5 +62,5 @@ export function useInstallPrompt() {
     }
   };
 
-  return { isInstallable, isAppInstalled, promptInstall };
+  return { isInstallable, isAppInstalled, promptInstall, isIOS, isInAppBrowser };
 }

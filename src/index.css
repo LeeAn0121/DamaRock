@@ -131,3 +131,63 @@
   --ss-primary: #1E3A8A;
   --ss-primary-foreground: #FFFFFF;
 }
+
+[data-theme="lavender"] {
+  --ss-background: #F5F3FF;
+  --ss-surface: #FFFFFF;
+  --ss-chrome: #EDE9FE;
+  --ss-foreground: #3B0764;
+  --ss-muted-foreground: #7C6F94;
+  --ss-chrome-foreground: #3B0764;
+  --ss-border: #DDD6FE;
+  --ss-primary: #7C3AED;
+  --ss-primary-foreground: #FFFFFF;
+}
+
+[data-theme="forest"] {
+  --ss-background: #F0FDF4;
+  --ss-surface: #FFFFFF;
+  --ss-chrome: #DCFCE7;
+  --ss-foreground: #14532D;
+  --ss-muted-foreground: #4D7C63;
+  --ss-chrome-foreground: #14532D;
+  --ss-border: #BBF7D0;
+  --ss-primary: #16A34A;
+  --ss-primary-foreground: #FFFFFF;
+}
+
+[data-theme="cherry"] {
+  --ss-background: #FFF1F2;
+  --ss-surface: #FFFFFF;
+  --ss-chrome: #FFE4E6;
+  --ss-foreground: #881337;
+  --ss-muted-foreground: #9F6B77;
+  --ss-chrome-foreground: #881337;
+  --ss-border: #FECDD3;
+  --ss-primary: #E11D48;
+  --ss-primary-foreground: #FFFFFF;
+}
+
+[data-theme="mint"] {
+  --ss-background: #ECFEFF;
+  --ss-surface: #FFFFFF;
+  --ss-chrome: #CFFAFE;
+  --ss-foreground: #164E63;
+  --ss-muted-foreground: #5B8A96;
+  --ss-chrome-foreground: #164E63;
+  --ss-border: #A5F3FC;
+  --ss-primary: #0891B2;
+  --ss-primary-foreground: #FFFFFF;
+}
+
+[data-theme="grape-dark"] {
+  --ss-background: #1A1025;
+  --ss-surface: #241736;
+  --ss-chrome: #2F1F47;
+  --ss-foreground: #F3E8FF;
+  --ss-muted-foreground: #B9A6D1;
+  --ss-chrome-foreground: #F3E8FF;
+  --ss-border: #4C3468;
+  --ss-primary: #A855F7;
+  --ss-primary-foreground: #FFFFFF;
+}

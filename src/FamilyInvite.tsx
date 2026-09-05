@@ -2,6 +2,7 @@ import { useState } from "react";
 import { IconCheck, IconChevronLeft, IconCopy, IconMail, IconShare2 } from "@tabler/icons-react";
 import type { Family, Invite } from "./hooks/useAppData";
 import type { Member } from "./data";
+import { useI18n } from "./lib/i18n";
 
 export default function FamilyInvite({
   family,
@@ -18,6 +19,7 @@ export default function FamilyInvite({
   onBack: () => void;
   onRefreshCode: () => void;
 }) {
+  const { t } = useI18n();
   const [copied, setCopied] = useState(false);
   const code = family?.inviteCode ?? "";
   const inviteUrl = `${window.location.origin}${import.meta.env.BASE_URL}?join=${encodeURIComponent(code)}`;
@@ -33,7 +35,7 @@ export default function FamilyInvite({
   };
 
   const shareCode = async () => {
-    const text = `담아락 "${family?.name ?? "우리집"}"에 초대할게요! 아래 링크를 열면 바로 들어올 수 있어요.\n${inviteUrl}`;
+    const text = t("invite.shareText", { family: family?.name ?? t("onboarding.defaultFamilyName"), url: inviteUrl });
     if (navigator.share) {
       try {
         await navigator.share({ text });
@@ -51,38 +53,38 @@ export default function FamilyInvite({
         <header className="flex items-center gap-1 border-b border-border/40 px-2 py-3 bg-background/80 backdrop-blur-md sticky top-0 z-10">
           <button
             type="button"
-            aria-label="뒤로"
+            aria-label={t("common.back")}
             onClick={onBack}
             className="flex h-11 w-11 items-center justify-center rounded-full text-muted-foreground hover:bg-chrome/60 active:bg-chrome transition-colors"
           >
             <IconChevronLeft size={20} stroke={2} />
           </button>
-          <h1 className="text-base font-extrabold text-foreground tracking-tight">가족 구성원</h1>
+          <h1 className="text-base font-extrabold text-foreground tracking-tight">{t("invite.header")}</h1>
         </header>
 
         <main className="flex-1 overflow-y-auto px-5 pb-10 pt-6">
           <div className="flex justify-between items-center mb-4 px-2">
-            <h2 className="text-sm font-bold text-muted-foreground">가족 초대</h2>
+            <h2 className="text-sm font-bold text-muted-foreground">{t("invite.sectionTitle")}</h2>
             <button onClick={() => onBack()} className="text-xs font-bold text-primary bg-primary/10 px-3 py-1.5 rounded-full active:scale-95 transition-transform">
-              그룹 관리하기
+              {t("invite.manageGroup")}
             </button>
           </div>
 
           {/* Dominant invite block */}
           <section className="rounded-3xl bg-surface p-7 text-center shadow-sm border border-border/60">
             <div className="flex items-center justify-center gap-2 text-sm font-medium text-muted-foreground">
-              코드로 알려주기 <span className="text-xs text-danger/80">(자동 1일 후 만료)</span>
+              {t("invite.shareByCode")} <span className="text-xs text-danger/80">{t("invite.codeExpiry")}</span>
             </div>
             <p className="mt-3 text-5xl font-extrabold tracking-[0.1em] text-primary">{code}</p>
             <button onClick={() => onRefreshCode()} className="mt-2 mb-4 text-xs font-bold text-muted-foreground underline underline-offset-2 active:text-primary">
-              새 코드 발급받기
+              {t("invite.refreshCode")}
             </button>
             <div className="mt-6 flex flex-col gap-3">
               <button
                 type="button"
                 onClick={() => {
-                  const text = `[담아락] 우리집 그룹에 초대합니다.\n아래 링크를 누르면 바로 참여할 수 있어요!\n\n${inviteUrl}`;
-                  
+                  const text = t("invite.kakaoShareText", { url: inviteUrl });
+
                   if (window.Kakao && window.Kakao.isInitialized()) {
                     window.Kakao.Share.sendDefault({
                       objectType: 'text',
@@ -93,13 +95,13 @@ export default function FamilyInvite({
                       },
                     });
                   } else {
-                    alert("카카오톡 공유가 초기화되지 않았습니다. 관리자에게 문의하세요.");
+                    alert(t("invite.kakaoNotReady"));
                   }
 
                 }}
                 className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#FEE500] text-sm font-bold text-[#191919] shadow-sm transition-transform active:scale-[0.98]"
               >
-                카카오톡으로 공유하기
+                {t("invite.kakaoShare")}
               </button>
               <div className="flex gap-3">
                 <button
@@ -110,12 +112,12 @@ export default function FamilyInvite({
                   {copied ? (
                     <>
                       <IconCheck size={18} stroke={3} className="text-success" />
-                      <span className="text-success">복사됨</span>
+                      <span className="text-success">{t("invite.copied")}</span>
                     </>
                   ) : (
                     <>
                       <IconCopy size={18} stroke={2} />
-                      초대 링크 복사
+                      {t("invite.copyLink")}
                     </>
                   )}
                 </button>
@@ -125,7 +127,7 @@ export default function FamilyInvite({
                   className="flex min-h-12 flex-1 items-center justify-center gap-2 rounded-xl border border-border/50 bg-background text-sm font-bold text-foreground shadow-sm transition-colors active:bg-chrome"
                 >
                   <IconShare2 size={18} stroke={2} />
-                  다른 앱으로 공유
+                  {t("invite.shareOther")}
                 </button>
               </div>
             </div>
@@ -134,7 +136,7 @@ export default function FamilyInvite({
           {/* Members */}
           <section className="mt-8">
             <div className="mb-3 flex items-center gap-2 px-2 text-muted-foreground">
-              <h2 className="text-sm font-bold">구성원</h2>
+              <h2 className="text-sm font-bold">{t("invite.membersSection")}</h2>
               <span className="text-sm text-border">·</span>
               <span className="text-sm font-medium">{members.length}</span>
             </div>
@@ -148,7 +150,7 @@ export default function FamilyInvite({
                       ) : (
                         m.initial
                       )}
-                      
+
                     </span>
                     <span className="flex-1 text-base font-medium text-foreground">{m.name}</span>
                   </li>
@@ -161,7 +163,7 @@ export default function FamilyInvite({
           {invites.length > 0 && (
             <section className="mt-8">
               <div className="mb-3 flex items-center gap-2 px-2 text-muted-foreground">
-                <h2 className="text-sm font-bold">초대 대기 중</h2>
+                <h2 className="text-sm font-bold">{t("invite.pendingSection")}</h2>
                 <span className="text-sm text-border">·</span>
                 <span className="text-sm font-medium">{invites.length}</span>
               </div>
@@ -174,14 +176,14 @@ export default function FamilyInvite({
                       </span>
                       <span className="flex-1">
                         <span className="block text-base font-medium text-foreground">{invite.invitedName}</span>
-                        <span className="block mt-0.5 text-xs font-medium text-muted-foreground">코드 공유함 · 아직 참여 전</span>
+                        <span className="block mt-0.5 text-xs font-medium text-muted-foreground">{t("invite.pendingDesc")}</span>
                       </span>
                       <button
                         type="button"
                         onClick={() => onCancelInvite(invite.id)}
                         className="inline-flex min-h-11 items-center justify-center rounded-lg px-3 text-sm font-bold text-muted-foreground hover:text-danger active:bg-chrome/60"
                       >
-                        취소
+                        {t("common.cancel")}
                       </button>
                     </li>
                   ))}

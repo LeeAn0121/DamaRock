@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 import { supabase } from "../lib/supabaseClient";
+import { useI18n } from "../lib/i18n";
 import type { Category, Item, Member, Comment } from "../data";
 
 export type Family = { id: string; name: string; inviteCode: string };
@@ -9,10 +10,11 @@ export type Invite = { id: string; invitedName: string; invitedEmail: string | n
 type Status = "loading" | "signed-out" | "needs-family" | "ready" | "error";
 
 const PENDING_JOIN_KEY = "damarock_pending_join";
+const ACTIVE_FAMILY_KEY = "damarock_active_family";
 
 type MemberRow = {
   user_id: string;
-  role: "가족대표" | "구성원";
+  role: "어른" | "아이";
   profiles: { display_name: string; initial: string; avatar_url: string | null; language?: string } | null;
 };
 
@@ -29,10 +31,12 @@ type ItemRow = {
 };
 
 export function useAppData() {
+  const { t } = useI18n();
   const [status, setStatus] = useState<Status>("loading");
   const [error, setError] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const [family, setFamily] = useState<Family | null>(null);
+  const [families, setFamilies] = useState<Family[]>([]);
   const [members, setMembers] = useState<Member[]>([]);
   const [items, setItems] = useState<Item[]>([]);
   const [comments, setComments] = useState<Comment[]>([]);
@@ -67,25 +71,42 @@ export function useAppData() {
     }
   };
 
+  const updateDisplayName = async (name: string) => {
+    if (!userId) return;
+    const { error } = await supabase.from("profiles").update({ display_name: name }).eq("id", userId);
+    if (!error) {
+      setMembers(prev => prev.map(m => m.id === userId ? { ...m, name } : m));
+    }
+  };
+
   const loadFamilyData = useCallback(
-    async (uid: string) => {
-      const { data: membership, error: mErr } = await supabase
+    async (uid: string, preferredFamilyId?: string) => {
+      const { data: memberships, error: mErr } = await supabase
         .from("family_members")
         .select("family_id")
         .eq("user_id", uid)
-        .maybeSingle();
+        .order("joined_at", { ascending: true });
 
       if (mErr) {
         setError(mErr.message);
         setStatus("error");
         return;
       }
-      if (!membership) {
+      if (!memberships || memberships.length === 0) {
         setStatus("needs-family");
         return;
       }
 
-      const familyId = membership.family_id as string;
+      const familyIds = memberships.map((m) => m.family_id as string);
+      const stored = preferredFamilyId ?? localStorage.getItem(ACTIVE_FAMILY_KEY) ?? undefined;
+      const familyId = stored && familyIds.includes(stored) ? stored : familyIds[0];
+      localStorage.setItem(ACTIVE_FAMILY_KEY, familyId);
+
+      const { data: familyRows } = await supabase
+        .from("families")
+        .select("id, name, invite_code")
+        .in("id", familyIds);
+      setFamilies((familyRows ?? []).map((f) => ({ id: f.id, name: f.name, inviteCode: f.invite_code })));
 
       const [{ data: familyRow, error: fErr }, { data: memberRows }, { data: itemRows }, { data: inviteRows }, { data: commentRows }] =
         await Promise.all([
@@ -115,7 +136,7 @@ export function useAppData() {
         ]);
 
       if (fErr || !familyRow) {
-        setError(fErr?.message ?? "가족 정보를 찾을 수 없어요");
+        setError(fErr?.message ?? t("errors.familyNotFound"));
         setStatus("error");
         return;
       }
@@ -154,7 +175,16 @@ export function useAppData() {
       setComments(commentRows ?? []);
       setStatus("ready");
     },
-    [applyOnline]
+    [applyOnline, t]
+  );
+
+  const switchFamily = useCallback(
+    (id: string) => {
+      if (!userId || id === family?.id) return;
+      localStorage.setItem(ACTIVE_FAMILY_KEY, id);
+      loadFamilyData(userId, id);
+    },
+    [userId, family?.id, loadFamilyData]
   );
 
   const refreshInviteCode = useCallback(
@@ -201,6 +231,7 @@ export function useAppData() {
         setStatus("signed-out");
         setUserId(null);
         setFamily(null);
+        setFamilies([]);
         setMembers([]);
         setItems([]);
         setInvites([]);
@@ -254,21 +285,21 @@ export function useAppData() {
             if (Notification.permission === "granted") {
               const eventType = payload.eventType;
               const itemData = newRow || oldRow;
-              const title = "담아락 가족 활동";
+              const title = t("notif.activityTitle");
               let body = "";
-              
+
               if (itemData) {
-                const categoryStr = itemData.category === "todo" ? "할 일" : (itemData.category === "grocery" ? "장보기 항목" : "항목");
-                const itemTitle = itemData.title;
-                
+                const categoryStr = itemData.category === "todo" ? t("common.todo") : (itemData.category === "grocery" ? t("notif.categoryGroceryItem") : t("notif.categoryItem"));
+                const itemTitle = itemData.title ?? "";
+
                 if (eventType === "INSERT" && itemData.added_by !== userId) {
-                  body = `새로운 ${categoryStr} '${itemTitle}'(이)가 등록되었습니다.`;
+                  body = t("notif.itemInserted", { category: categoryStr, title: itemTitle });
                 } else if (eventType === "UPDATE") {
-                  body = `${categoryStr} '${itemTitle}'(이)가 수정/완료되었습니다.`;
+                  body = t("notif.itemUpdated", { category: categoryStr, title: itemTitle });
                 } else if (eventType === "DELETE") {
-                  body = `${categoryStr} '${itemTitle}'(이)가 삭제되었습니다.`;
+                  body = t("notif.itemDeleted", { category: categoryStr, title: itemTitle });
                 }
-                
+
                 if (body) {
                   setHasUnreadActivity(true);
                   new Notification(title, { body, icon: `${import.meta.env.BASE_URL}icon-192.png` });
@@ -287,7 +318,7 @@ export function useAppData() {
             setHasUnreadActivity(true);
             const notify = localStorage.getItem("notifyMemberJoin") !== "false";
             if (notify && typeof window !== "undefined" && "Notification" in window && Notification.permission === "granted") {
-              new Notification("담아락 소식", { body: "새로운 가족 구성원이 참여했습니다!", icon: `${import.meta.env.BASE_URL}icon-192.png` });
+              new Notification(t("notif.newsTitle"), { body: t("notif.memberJoined"), icon: `${import.meta.env.BASE_URL}icon-192.png` });
             }
           }
         }
@@ -319,7 +350,7 @@ export function useAppData() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [family, userId, loadFamilyData, applyOnline]);
+  }, [family, userId, loadFamilyData, applyOnline, t]);
 
   const toggleDone = useCallback(
     async (id: string) => {
@@ -354,10 +385,10 @@ export function useAppData() {
       });
       if (insertError) {
         console.error("Item add error:", insertError);
-        window.alert(`아이템 추가 실패: ${insertError.message}\n상세: ${insertError.details}\n힌트: ${insertError.hint}`);
+        window.alert(`${t("errors.addItemFailedTitle")}: ${insertError.message}\n${t("errors.detail")}: ${insertError.details}\n${t("errors.hint")}: ${insertError.hint}`);
       }
     },
-    [family, userId]
+    [family, userId, t]
   );
 
   const quickAdd = useCallback((title: string) => addItem({ title, category: "inbox" }), [addItem]);
@@ -412,26 +443,26 @@ export function useAppData() {
 
   const createFamily = useCallback(
     async (name: string) => {
-      const { error: rpcError } = await supabase.rpc("create_family", { family_name: name });
+      const { data: newFamily, error: rpcError } = await supabase.rpc("create_family", { family_name: name });
       if (rpcError) {
         setError(rpcError.message);
         return;
       }
       setError(null);
-      if (userId) await loadFamilyData(userId);
+      if (userId) await loadFamilyData(userId, newFamily?.id);
     },
     [userId, loadFamilyData]
   );
 
   const joinFamily = useCallback(
     async (code: string) => {
-      const { error: rpcError } = await supabase.rpc("join_family_by_code", { code });
+      const { data: joinedFamily, error: rpcError } = await supabase.rpc("join_family_by_code", { code });
       if (rpcError) {
         setError(rpcError.message);
         return;
       }
       setError(null);
-      if (userId) await loadFamilyData(userId);
+      if (userId) await loadFamilyData(userId, joinedFamily?.id);
     },
     [userId, loadFamilyData]
   );
@@ -463,6 +494,8 @@ export function useAppData() {
     error,
     userId,
     family,
+    families,
+    switchFamily,
     members,
     items,
     comments,
@@ -486,5 +519,6 @@ export function useAppData() {
     refreshInviteCode,
     updateLanguage,
     updateFamilyName,
+    updateDisplayName,
   };
 }

@@ -2,6 +2,7 @@ import React, { useState, useMemo } from "react";
 import { IconChevronLeft, IconChevronRight, IconCheck, IconPlus, IconTrash, IconEdit } from "@tabler/icons-react";
 import type { Item, Member } from "./data";
 import { memberName } from "./data";
+import { useI18n, getWeekdayLabels, formatMonthYear } from "./lib/i18n";
 import clsx from "clsx";
 
 export default function CalendarView({
@@ -23,6 +24,7 @@ export default function CalendarView({
   onDelete?: (id: string) => void;
   onEdit?: (item: Item) => void;
 }) {
+  const { t, lang } = useI18n();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [draft, setDraft] = useState("");
 
@@ -62,13 +64,14 @@ export default function CalendarView({
   const selectedItems = selectedDay ? itemsByDate.get(selectedDay) || [] : [];
   const todos = selectedItems.filter(i => i.category === "todo");
 
+  const weekdays = getWeekdayLabels(lang);
 
   return (
     <div className="flex-1 pb-10">
       {/* Calendar Controls */}
           <div className="flex items-center justify-between px-6 py-5">
             <h2 className="text-2xl font-extrabold tracking-tight text-foreground">
-              {year}년 {month + 1}월
+              {formatMonthYear(lang, year, month)}
             </h2>
             <div className="flex items-center gap-2">
               <button onClick={prevMonth} className="flex h-10 w-10 items-center justify-center rounded-full bg-surface shadow-sm active:bg-chrome">
@@ -83,7 +86,7 @@ export default function CalendarView({
           {/* Calendar Grid */}
           <div className="px-5">
             <div className="grid grid-cols-7 mb-2">
-              {['일', '월', '화', '수', '목', '금', '토'].map((day, i) => (
+              {weekdays.map((day, i) => (
                 <div key={day} className={clsx("text-center text-xs font-bold", i === 0 ? "text-danger" : i === 6 ? "text-primary" : "text-muted-foreground")}>
                   {day}
                 </div>
@@ -125,12 +128,12 @@ export default function CalendarView({
           <div className="mt-8 px-5">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-bold text-muted-foreground">
-                {selectedDay ? `${month + 1}월 ${selectedDay}일 일정` : "날짜를 선택하세요"}
+                {selectedDay ? t("calendar.dayEvents", { month: month + 1, day: selectedDay }) : t("calendar.selectDate")}
               </h3>
             </div>
-            
+
             {selectedDay && (
-              <form 
+              <form
                 onSubmit={(e) => {
                   e.preventDefault();
                   if (draft.trim() && selectedDay) {
@@ -143,7 +146,7 @@ export default function CalendarView({
               >
                 <input
                   type="text"
-                  placeholder={`${selectedDay}일 할 일 추가...`}
+                  placeholder={t("calendar.addTodoPlaceholder", { day: selectedDay })}
                   value={draft}
                   onChange={(e) => setDraft(e.target.value)}
                   className="flex-1 rounded-xl bg-surface px-4 py-3 text-sm font-medium outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/20"
@@ -160,14 +163,14 @@ export default function CalendarView({
 
             {selectedDay && selectedItems.length === 0 ? (
               <div className="rounded-2xl border border-border border-dashed p-8 text-center text-muted-foreground">
-                <p className="text-sm font-medium">등록된 일정이 없어요</p>
+                <p className="text-sm font-medium">{t("calendar.noSchedule")}</p>
               </div>
             ) : (
               <div className="flex flex-col gap-4">
                 {todos.length > 0 && (
                   <div className="rounded-2xl bg-surface p-4 shadow-sm">
                     <h4 className="text-xs font-bold text-primary mb-3 flex items-center gap-1">
-                      <span className="w-1 h-3 bg-primary rounded-full" /> 할 일
+                      <span className="w-1 h-3 bg-primary rounded-full" /> {t("common.todo")}
                     </h4>
                     <ul className="flex flex-col gap-3">
                       {todos.map(item => {
@@ -181,10 +184,10 @@ export default function CalendarView({
                           <div className="flex flex-col flex-1 min-w-0" data-meta={item.meta || undefined}>
                             <span className={clsx("text-sm font-bold truncate", item.done ? "text-muted-foreground line-through" : "text-foreground")}>{item.title}</span>
                             <span className="text-xs text-muted-foreground mt-0.5 truncate flex items-center gap-2">
-                              {item.addedBy === userId ? "나" : memberName(members, item.addedBy)}
+                              {item.addedBy === userId ? t("common.me") : memberName(members, item.addedBy)}
                               {itemComments.length > 0 && (
                                 <span className="font-bold text-[10px] text-primary bg-primary/10 px-1.5 py-0.5 rounded-full">
-                                  댓글 {itemComments.length}
+                                  {t("common.comments", { n: itemComments.length })}
                                 </span>
                               )}
                             </span>
@@ -209,7 +212,7 @@ export default function CalendarView({
                               return (
                                 <div key={c.id} className={clsx("px-3 py-2 rounded-2xl text-[13px] leading-tight max-w-[90%]", isMe ? "bg-primary/10 text-foreground self-end rounded-tr-sm" : "bg-chrome text-foreground self-start rounded-tl-sm")}>
                                   <span className={clsx("block text-[10px] font-bold mb-0.5", isMe ? "text-primary text-right" : "text-muted-foreground")}>
-                                    {isMe ? "나" : memberName(members, c.author_id)}
+                                    {isMe ? t("common.me") : memberName(members, c.author_id)}
                                   </span>
                                   {c.content}
                                 </div>

@@ -1,14 +1,14 @@
-import { useMemo, useState, useRef, useEffect } from "react";
+import { useMemo, useState, useEffect } from "react";
 import clsx from "clsx";
-import { IconCalendar, IconList, IconCheck, IconChecklist, IconChevronDown, IconInbox, IconPackage, IconPlus, IconSettings, IconShoppingCart, IconWifiOff, IconFolder, IconEdit, IconTrash } from "@tabler/icons-react";
-import { memberName, type Category, type Item, type Member } from "./data";
+import { IconCalendar, IconList, IconCheck, IconChecklist, IconPackage, IconPlus, IconSettings, IconShoppingCart, IconWifiOff } from "@tabler/icons-react";
+import type { Category, Item, Member } from "./data";
 import ActivitySheet from "./ActivitySheet";
 import CalendarView from "./CalendarView";
 import AddGrocerySheet from "./AddGrocerySheet";
 import ItemDetailSheet from "./ItemDetailSheet";
 import GroceryFolders from "./GroceryFolders";
-import { ItemRows, DoneDisclosure, ActionableItem } from "./ItemRows";
-
+import { ItemRows } from "./ItemRows";
+import { useI18n } from "./lib/i18n";
 
 type ViewState = "normal" | "empty" | "loading" | "error";
 
@@ -41,6 +41,7 @@ export default function HomeList(props: {
   hasUnreadActivity?: boolean;
   clearUnreadActivity?: () => void;
 }) {
+  const { t } = useI18n();
   const {
     items,
     members,
@@ -48,10 +49,7 @@ export default function HomeList(props: {
     familyId,
     onToggleDone,
     onAssignCategory,
-    onQuickAdd,
-    addItem,
     editItem,
-    onOpenAddSheet,
     onOpenSettings,
     onOpenInvite,
     deleteItem,
@@ -61,17 +59,13 @@ export default function HomeList(props: {
   } = props;
   const viewState = useUrlState();
   const [currentTab, setCurrentTab] = useState<"grocery" | "todo">("grocery");
-  
+
   // Refresh data whenever the tab changes to ensure fresh state
   useEffect(() => {
     refreshData?.();
   }, [currentTab, refreshData]);
 
-  
-  const [showDoneGrocery, setShowDoneGrocery] = useState(false);
-  const [showDoneTodo, setShowDoneTodo] = useState(false);
   const [activityOpen, setActivityOpen] = useState(false);
-  const [draft, setDraft] = useState("");
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
   const [touchStart, setTouchStart] = useState<{x: number, y: number} | null>(null);
   const [todoView, setTodoView] = useState<"list" | "calendar">("list");
@@ -102,31 +96,30 @@ export default function HomeList(props: {
   };
 
   const handleEdit = (item: Item) => {
-    const newTitle = window.prompt("수정할 내용을 입력하세요:", item.title);
+    const newTitle = window.prompt(t("home.promptEditItem"), item.title);
     if (newTitle && newTitle.trim() !== item.title) {
       editItem(item.id, newTitle.trim());
     }
   };
 
   const handleEditTodo = (item: Item) => {
-    const newTitle = window.prompt("할 일을 수정하세요:", item.title);
+    const newTitle = window.prompt(t("home.promptEditTodo"), item.title);
     if (newTitle === null) return;
-    const newDate = window.prompt("날짜를 수정하세요 (YYYY-MM-DD):", item.meta || "");
+    const newDate = window.prompt(t("home.promptEditDate"), item.meta || "");
     if (newDate === null) return;
-    
+
     if (newTitle.trim() !== item.title || newDate.trim() !== item.meta) {
       editItem(item.id, newTitle.trim(), newDate.trim());
     }
   };
 
   const handleDelete = (id: string) => {
-    if (window.confirm("항목 삭제 시, 달린 댓글도 모두 삭제됩니다. 그래도 삭제하시겠습니까?")) {
+    if (window.confirm(t("home.confirmDelete"))) {
       deleteItem(id);
     }
   };
 
   const activeItems = viewState === "empty" ? [] : items.filter(i => i.title !== "__SYSTEM_FOLDERS__" && !i.deleted_at);
-  const deletedItems = viewState === "empty" ? [] : items.filter(i => i.title !== "__SYSTEM_FOLDERS__" && i.deleted_at);
   const inbox = activeItems.filter((i) => i.category === "inbox");
   const grocery = activeItems.filter((i) => i.category === "grocery");
   const todo = activeItems.filter((i) => i.category === "todo");
@@ -137,8 +130,8 @@ export default function HomeList(props: {
   const summaryLine = useMemo(() => {
     const groceryLeft = grocery.filter((i) => !i.done).length;
     const todoLeft = todo.filter((i) => !i.done).length;
-    return `장보기 ${groceryLeft} · 할 일 ${todoLeft}`;
-  }, [grocery, todo]);
+    return t("home.summaryLine", { grocery: groceryLeft, todo: todoLeft });
+  }, [grocery, todo, t]);
 
   if (viewState === "loading") {
     return <LoadingState />;
@@ -154,8 +147,8 @@ export default function HomeList(props: {
         {/* Standard nav bar */}
         <header className="flex items-center justify-between px-5 py-4">
           <div className="flex items-center gap-2">
-            <img src={`${import.meta.env.BASE_URL}icon-192.png`} alt="로고" className="h-6 w-6 rounded-md shadow-sm" />
-            <span className="text-xl font-extrabold tracking-tight text-primary">담아락</span>
+            <img src={`${import.meta.env.BASE_URL}icon-192.png`} alt={t("appName")} className="h-6 w-6 rounded-md shadow-sm" />
+            <span className="text-xl font-extrabold tracking-tight text-primary">{t("appName")}</span>
           </div>
           <div className="flex items-center gap-3">
             <div className="flex -space-x-2">
@@ -170,13 +163,13 @@ export default function HomeList(props: {
                   ) : (
                     m.initial
                   )}
-                  
+
                 </div>
               ))}
             </div>
             <button
               type="button"
-              aria-label="소식"
+              aria-label={t("home.activity")}
               onClick={() => { setActivityOpen(true); clearUnreadActivity?.(); }}
               className="relative flex h-11 w-11 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-chrome/60 active:bg-chrome"
             >
@@ -192,7 +185,7 @@ export default function HomeList(props: {
             </button>
 <button
               type="button"
-              aria-label="검색"
+              aria-label={t("home.search")}
               onClick={() => setSearchOpen(true)}
               className="flex h-11 w-11 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-chrome/60 active:bg-chrome"
             >
@@ -200,7 +193,7 @@ export default function HomeList(props: {
             </button>
             <button
               type="button"
-              aria-label="설정"
+              aria-label={t("home.settings")}
               onClick={onOpenSettings}
               className="flex h-11 w-11 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-chrome/60 active:bg-chrome"
             >
@@ -217,11 +210,11 @@ export default function HomeList(props: {
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg>
               </span>
               <div>
-                <p className="text-sm font-bold text-foreground">가족을 초대해보세요!</p>
-                <p className="text-[11px] font-medium text-muted-foreground">함께 기록하면 더 편해요</p>
+                <p className="text-sm font-bold text-foreground">{t("home.inviteBannerTitle")}</p>
+                <p className="text-[11px] font-medium text-muted-foreground">{t("home.inviteBannerDesc")}</p>
               </div>
             </div>
-            <button className="text-xs font-bold text-primary bg-primary/10 px-3 py-1.5 rounded-full" onClick={(e) => { e.stopPropagation(); onOpenInvite(); }}>초대하기</button>
+            <button className="text-xs font-bold text-primary bg-primary/10 px-3 py-1.5 rounded-full" onClick={(e) => { e.stopPropagation(); onOpenInvite(); }}>{t("home.inviteCta")}</button>
           </div>
         </div>
 
@@ -231,9 +224,9 @@ export default function HomeList(props: {
             <div className="flex items-center gap-3 mt-2">
               <div className="flex-1 flex items-center bg-chrome px-4 py-2.5 rounded-2xl border border-border/50">
                 <svg className="text-muted-foreground mr-2 shrink-0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                <input 
+                <input
                   autoFocus
-                  placeholder="장보기, 할일 검색 (삭제된 항목 제외)" 
+                  placeholder={t("home.searchPlaceholder")}
                   className="bg-transparent flex-1 outline-none text-foreground font-medium"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
@@ -242,7 +235,7 @@ export default function HomeList(props: {
                   <button onClick={() => setSearchQuery("")} className="text-muted-foreground p-1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
                 )}
               </div>
-              <button onClick={() => { setSearchOpen(false); setSearchQuery(""); }} className="text-sm font-bold text-foreground py-2 px-1">취소</button>
+              <button onClick={() => { setSearchOpen(false); setSearchQuery(""); }} className="text-sm font-bold text-foreground py-2 px-1">{t("common.cancel")}</button>
             </div>
             <div className="flex-1 overflow-y-auto mt-4 pb-10">
               {searchQuery.trim().length > 0 ? (
@@ -259,12 +252,25 @@ export default function HomeList(props: {
                   />
                 </div>
               ) : (
-                <p className="text-center text-muted-foreground text-sm mt-10">검색어를 입력하세요</p>
+                <p className="text-center text-muted-foreground text-sm mt-10">{t("home.searchEmpty")}</p>
               )}
             </div>
           </div>
         )}
 
+
+        {/* Todo view switch - sits above the tabs, right-aligned, only for 할 일 */}
+        {currentTab === "todo" && (
+          <div className="flex justify-end px-5 pt-3">
+            <button
+              type="button"
+              onClick={() => setTodoView(v => v === "list" ? "calendar" : "list")}
+              className="flex h-10 w-10 items-center justify-center rounded-full bg-surface border border-border/60 text-muted-foreground hover:text-primary hover:bg-chrome active:scale-95 transition-all shadow-sm"
+            >
+              {todoView === "list" ? <IconCalendar size={20} stroke={2} /> : <IconList size={20} stroke={2} />}
+            </button>
+          </div>
+        )}
 
         {/* Tabs - Fixed below header */}
         <div className="sticky top-0 z-20 flex gap-2 overflow-x-auto scrollbar-hide bg-background/95 backdrop-blur-md px-5 py-3 border-b border-border/40 shadow-sm">
@@ -273,40 +279,29 @@ export default function HomeList(props: {
             onClick={() => setCurrentTab("grocery")}
             className={clsx(
               "flex-1 whitespace-nowrap rounded-xl py-2.5 text-[15px] font-bold shadow-sm transition-all active:scale-[0.98]",
-              currentTab === "grocery" 
-                ? "bg-foreground text-background" 
+              currentTab === "grocery"
+                ? "bg-foreground text-background"
                 : "bg-surface text-muted-foreground border border-border/60 hover:bg-chrome"
             )}
           >
-            장보기
+            {t("common.grocery")}
           </button>
           <button
             type="button"
             onClick={() => setCurrentTab("todo")}
             className={clsx(
               "flex-1 whitespace-nowrap rounded-xl py-2.5 text-[15px] font-bold shadow-sm transition-all active:scale-[0.98]",
-              currentTab === "todo" 
-                ? "bg-foreground text-background" 
+              currentTab === "todo"
+                ? "bg-foreground text-background"
                 : "bg-surface text-muted-foreground border border-border/60 hover:bg-chrome"
             )}
           >
-            할 일
+            {t("common.todo")}
           </button>
-          
-          {currentTab === "todo" && (
-            <div className="flex-1 flex justify-end">
-              <button 
-                onClick={() => setTodoView(v => v === "list" ? "calendar" : "list")}
-                className="flex h-10 w-10 items-center justify-center rounded-full bg-surface border border-border/60 text-muted-foreground hover:text-primary hover:bg-chrome active:scale-95 transition-all shadow-sm"
-              >
-                {todoView === "list" ? <IconCalendar size={20} stroke={2} /> : <IconList size={20} stroke={2} />}
-              </button>
-            </div>
-          )}
         </div>
 
         {/* Content */}
-        <main 
+        <main
           className="flex-1 overflow-y-auto px-5 pb-36 pt-4"
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
@@ -317,12 +312,12 @@ export default function HomeList(props: {
             ) : (
               <>
                 {/* Dominant summary */}
-                <section aria-label="오늘의 상태" className="mb-6 rounded-2xl bg-primary/5 p-5 border border-primary/10">
+                <section aria-label={t("home.remaining", { n: remaining })} className="mb-6 rounded-2xl bg-primary/5 p-5 border border-primary/10">
                   <div className="flex items-baseline gap-2">
                     <span className="text-4xl font-extrabold leading-none tracking-tight text-foreground">
                       {remaining}
                     </span>
-                    <span className="text-base font-medium text-muted-foreground">개 남았어요</span>
+                    <span className="text-base font-medium text-muted-foreground">{t("home.remainingSuffix")}</span>
                   </div>
                   <div className="mt-3 flex items-center gap-2 text-sm text-muted-foreground">
                     <span className="font-medium">{summaryLine}</span>
@@ -330,7 +325,7 @@ export default function HomeList(props: {
                       <span className="flex items-center gap-1 font-medium text-success">
                         <span className="text-border">·</span>
                         <IconCheck size={14} stroke={3} />
-                        오늘 {doneToday}개 완료
+                        {t("home.doneToday", { n: doneToday })}
                       </span>
                     )}
                   </div>
@@ -339,7 +334,7 @@ export default function HomeList(props: {
                 {/* Inbox: just captured, not sorted yet */}
                 {inbox.length > 0 && (
                   <section className="mb-6 rounded-2xl bg-surface px-4 py-3 shadow-sm border border-border/40">
-                    <h3 className="mb-3 text-base font-extrabold flex items-center gap-2 text-foreground">새로 담은 것 <span className="text-muted-foreground font-normal text-sm">({inbox.length})</span></h3>
+                    <h3 className="mb-3 text-base font-extrabold flex items-center gap-2 text-foreground">{t("home.newlyAdded")} <span className="text-muted-foreground font-normal text-sm">({inbox.length})</span></h3>
                     <ul className="divide-y divide-border/60">
                       {inbox.map((item) => (
                         <li key={item.id} className="flex items-center gap-3 py-3">
@@ -351,7 +346,7 @@ export default function HomeList(props: {
                               className="inline-flex min-h-10 items-center justify-center gap-1.5 rounded-full border border-border/80 px-4 text-xs font-bold text-muted-foreground transition-all hover:border-primary/50 hover:bg-primary/5 hover:text-primary active:scale-95"
                             >
                               <IconShoppingCart size={14} stroke={2.5} />
-                              장보기
+                              {t("common.grocery")}
                             </button>
                             <button
                               type="button"
@@ -359,7 +354,7 @@ export default function HomeList(props: {
                               className="inline-flex min-h-10 items-center justify-center gap-1.5 rounded-full border border-border/80 px-4 text-xs font-bold text-muted-foreground transition-all hover:border-primary/50 hover:bg-primary/5 hover:text-primary active:scale-95"
                             >
                               <IconChecklist size={14} stroke={2.5} />
-                              할 일
+                              {t("common.todo")}
                             </button>
                           </div>
                         </li>
@@ -386,7 +381,7 @@ export default function HomeList(props: {
           ) : (
             <>
 
-              
+
               {todoView === "calendar" ? (
                 <CalendarView
                   items={todo}
@@ -400,8 +395,8 @@ export default function HomeList(props: {
                 />
               ) : (
                 <div className="bg-surface rounded-2xl shadow-sm border border-border/40 p-3">
-                  <h3 className="text-sm font-bold text-muted-foreground ml-2 mb-3 mt-1">할 일 목록</h3>
-                  <ItemRows 
+                  <h3 className="text-sm font-bold text-muted-foreground ml-2 mb-3 mt-1">{t("home.todoListTitle")}</h3>
+                  <ItemRows
                     items={todo}
                     onToggle={onToggleDone}
                     onDelete={handleDelete}
@@ -443,7 +438,7 @@ export default function HomeList(props: {
                 onClick={() => setAddGroceryOpen(true)}
                 className="w-full flex items-center justify-between gap-3 rounded-full border border-border/50 bg-background p-3 shadow-sm hover:border-primary/50 transition-colors text-left"
               >
-                <span className="text-muted-foreground text-sm font-medium pl-2">새로운 장보기 항목을 추가하세요...</span>
+                <span className="text-muted-foreground text-sm font-medium pl-2">{t("home.addGroceryPlaceholder")}</span>
                 <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-sm">
                   <IconPlus size={18} stroke={2.5} />
                 </span>
@@ -466,47 +461,28 @@ export default function HomeList(props: {
   );
 }
 
-function SectionGroup({
-  label,
-  count,
-  children,
-}: {
-  label: string;
-  count: number;
-  children: React.ReactNode;
-}) {
-  return (
-    <section className="mt-8">
-      <div className="mb-3 px-2">
-        <h2 className="text-sm font-bold text-muted-foreground">{label} <span className="font-normal">({count})</span></h2>
-      </div>
-      <div className="rounded-2xl bg-surface px-4 py-2">{children}</div>
-    </section>
-  );
-}
-
 function EmptyState() {
+  const { t } = useI18n();
   return (
     <div className="mt-16 flex flex-col items-center px-6 text-center">
       <div className="flex h-14 w-14 items-center justify-center rounded-full bg-chrome/60 text-muted-foreground">
         <IconPackage size={26} stroke={1.5} />
       </div>
-      <p className="mt-4 text-base font-bold text-foreground">아직 담긴 게 없어요</p>
-      <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-        다 떨어진 것이나 할 일이 떠오르면
-        <br />
-        아래 입력창에 바로 담아보세요
+      <p className="mt-4 text-base font-bold text-foreground">{t("home.emptyTitle")}</p>
+      <p className="mt-1 whitespace-pre-line text-sm leading-relaxed text-muted-foreground">
+        {t("home.emptyDesc")}
       </p>
     </div>
   );
 }
 
 function LoadingState() {
+  const { t } = useI18n();
   return (
     <div className="min-h-dvh bg-background font-sans">
       <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col">
         <div className="flex items-center justify-between border-b border-border/60 px-4 py-3">
-          <span className="text-base font-bold text-primary">담아락</span>
+          <span className="text-base font-bold text-primary">{t("appName")}</span>
           <div className="h-9 w-9 animate-pulse rounded-full bg-chrome" />
         </div>
         <div className="px-4 pt-4">
@@ -523,20 +499,19 @@ function LoadingState() {
 }
 
 function ErrorState() {
+  const { t } = useI18n();
   return (
     <div className="flex min-h-dvh flex-col bg-background font-sans">
       <header className="border-b border-border/60 px-4 py-3">
-        <span className="text-base font-bold tracking-tight text-primary">담아락</span>
+        <span className="text-base font-bold tracking-tight text-primary">{t("appName")}</span>
       </header>
       <div className="flex flex-1 flex-col items-center justify-center px-6 text-center">
         <div className="flex h-14 w-14 items-center justify-center rounded-full bg-chrome/60 text-danger">
           <IconWifiOff size={24} stroke={1.5} />
         </div>
-        <p className="mt-4 text-base font-bold text-foreground">목록을 불러오지 못했어요</p>
-        <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-          인터넷 연결을 확인하고
-          <br />
-          다시 시도해주세요
+        <p className="mt-4 text-base font-bold text-foreground">{t("home.errorTitle")}</p>
+        <p className="mt-1 whitespace-pre-line text-sm leading-relaxed text-muted-foreground">
+          {t("home.errorDesc")}
         </p>
         <button
           type="button"
@@ -545,7 +520,7 @@ function ErrorState() {
           }}
           className="mt-5 inline-flex min-h-11 items-center justify-center rounded bg-primary px-5 text-sm font-bold text-primary-foreground active:scale-95"
         >
-          다시 시도
+          {t("common.retry")}
         </button>
       </div>
     </div>

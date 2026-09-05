@@ -5,25 +5,44 @@ import SettingsPage from "./SettingsPage";
 import FamilyInvite from "./FamilyInvite";
 import AuthScreen from "./AuthScreen";
 import FamilyOnboarding from "./FamilyOnboarding";
+import GroupSwitcher from "./GroupSwitcher";
 import { useAppData } from "./hooks/useAppData";
 import { ToastContainer } from "./components/Toast";
+import { LanguageProvider, useI18n, type LangSetting } from "./lib/i18n";
 import type { Category, Item } from "./data";
 
-type Screen = "home" | "settings" | "invite";
+type Screen = "home" | "settings" | "invite" | "groups";
 
 function useInitialScreen(): Screen {
   if (typeof window === "undefined") return "home";
   const v = new URLSearchParams(window.location.search).get("screen");
-  if (v === "settings" || v === "invite") return v as Screen;
+  if (v === "settings" || v === "invite" || v === "groups") return v as Screen;
   return "home";
 }
 
 export default function App() {
+  return (
+    <LanguageProvider>
+      <AppShell />
+    </LanguageProvider>
+  );
+}
+
+function AppShell() {
+  const { t, setLanguage } = useI18n();
   const data = useAppData();
   const [screen, setScreen] = useState<Screen>(useInitialScreen);
   const [addSheetOpen, setAddSheetOpen] = useState(
     () => typeof window !== "undefined" && new URLSearchParams(window.location.search).get("modal") === "add"
   );
+
+  const me = data.members.find((m) => m.id === data.userId);
+
+  // Once the account's saved language preference is known, reconcile it
+  // with whatever this device currently has (cross-device sync).
+  useEffect(() => {
+    if (me?.language) setLanguage(me.language as LangSetting);
+  }, [me?.language, setLanguage]);
 
   useEffect(() => {
     if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "default") {
@@ -57,14 +76,14 @@ export default function App() {
   if (data.status === "error") {
     return (
       <div className="flex min-h-dvh flex-col items-center justify-center gap-3 bg-background px-6 text-center font-sans">
-        <p className="text-base font-bold text-foreground">문제가 생겼어요</p>
+        <p className="text-base font-bold text-foreground">{t("app.errorTitle")}</p>
         <p className="text-sm text-muted-foreground">{data.error}</p>
         <button
           type="button"
           onClick={() => window.location.reload()}
           className="mt-2 inline-flex min-h-11 items-center justify-center rounded-full bg-primary px-5 text-sm font-bold text-primary-foreground"
         >
-          다시 시도
+          {t("common.retry")}
         </button>
       </div>
     );
@@ -77,14 +96,30 @@ export default function App() {
   if (screen === "settings") {
     return (
       <SettingsPage
-        familyName={data.family?.name ?? "담아락"}
+        familyName={data.family?.name ?? t("appName")}
         members={data.members}
         userId={data.userId}
         onBack={() => setScreen("home")}
         onOpenInvite={() => setScreen("invite")}
+        onOpenGroups={() => setScreen("groups")}
         onSignOut={data.signOut}
         updateLanguage={data.updateLanguage}
         updateFamilyName={data.updateFamilyName}
+        updateDisplayName={data.updateDisplayName}
+      />
+    );
+  }
+
+  if (screen === "groups") {
+    return (
+      <GroupSwitcher
+        families={data.families}
+        activeFamilyId={data.family?.id ?? null}
+        onSwitch={data.switchFamily}
+        onCreate={data.createFamily}
+        onJoin={data.joinFamily}
+        onBack={() => setScreen("settings")}
+        error={data.error}
       />
     );
   }

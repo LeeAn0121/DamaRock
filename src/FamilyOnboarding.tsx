@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { IconLogout, IconUserPlus, IconUsers } from "@tabler/icons-react";
+import { useI18n } from "./lib/i18n";
 
 export default function FamilyOnboarding({
   onCreate,
@@ -12,16 +13,17 @@ export default function FamilyOnboarding({
   onSignOut: () => void;
   error?: string | null;
 }) {
+  const { t } = useI18n();
   const [mode, setMode] = useState<"choose" | "create" | "join">("choose");
-  const [name, setName] = useState("우리집");
+  const [name, setName] = useState(t("onboarding.defaultFamilyName"));
   const [code, setCode] = useState("");
 
   return (
     <div className="flex min-h-dvh flex-col bg-gradient-to-b from-background via-background to-primary/5 px-6 pt-10 font-sans text-foreground pb-10">
       <header className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-2">
-          <img src={`${import.meta.env.BASE_URL}icon-192.png`} alt="담아락" className="h-6 w-6 rounded-md shadow-sm" />
-          <span className="text-xl font-extrabold tracking-tight text-primary">담아락</span>
+          <img src={`${import.meta.env.BASE_URL}icon-192.png`} alt={t("appName")} className="h-6 w-6 rounded-md shadow-sm" />
+          <span className="text-xl font-extrabold tracking-tight text-primary">{t("appName")}</span>
         </div>
         <button
           type="button"
@@ -29,7 +31,7 @@ export default function FamilyOnboarding({
           className="flex h-10 items-center gap-1.5 rounded-lg px-3 text-sm font-bold text-muted-foreground hover:bg-chrome/60 active:bg-chrome"
         >
           <IconLogout size={18} stroke={2} />
-          로그아웃
+          {t("onboarding.signOut")}
         </button>
       </header>
 
@@ -40,11 +42,10 @@ export default function FamilyOnboarding({
               <IconUsers size={36} stroke={1.5} />
             </div>
             <h1 className="text-center text-3xl font-extrabold leading-tight text-foreground tracking-tight">
-              아직 참여한<br />
-              <span className="text-primary">가족 공간</span>이 없어요
+              {t("onboarding.title")}
             </h1>
             <p className="mt-4 text-center text-[15px] font-medium leading-relaxed text-muted-foreground">
-              새로 만들거나 초대 코드로 참여해보세요.
+              {t("onboarding.subtitle")}
             </p>
 
             <div className="mt-12 flex w-full max-w-sm flex-col gap-4">
@@ -57,8 +58,8 @@ export default function FamilyOnboarding({
                   <IconUsers size={22} stroke={2} />
                 </span>
                 <span className="flex flex-col text-left">
-                  <span className="text-base font-bold text-foreground">가족 공간 만들기</span>
-                  <span className="mt-0.5 text-[13px] font-medium text-muted-foreground group-hover:text-foreground/80">우리 가족만의 공간을 새로 시작해요</span>
+                  <span className="text-base font-bold text-foreground">{t("onboarding.createTitle")}</span>
+                  <span className="mt-0.5 text-[13px] font-medium text-muted-foreground group-hover:text-foreground/80">{t("onboarding.createDesc")}</span>
                 </span>
               </button>
 
@@ -71,8 +72,8 @@ export default function FamilyOnboarding({
                   <IconUserPlus size={22} stroke={2} />
                 </span>
                 <span className="flex flex-col text-left">
-                  <span className="text-base font-bold text-foreground">초대 코드로 참여하기</span>
-                  <span className="mt-0.5 text-[13px] font-medium text-muted-foreground group-hover:text-foreground/80">가족에게 받은 코드를 입력해요</span>
+                  <span className="text-base font-bold text-foreground">{t("onboarding.joinTitle")}</span>
+                  <span className="mt-0.5 text-[13px] font-medium text-muted-foreground group-hover:text-foreground/80">{t("onboarding.joinDesc")}</span>
                 </span>
               </button>
             </div>
@@ -83,40 +84,40 @@ export default function FamilyOnboarding({
           <form
             onSubmit={(e) => {
               e.preventDefault();
-              onCreate(name.trim() || "우리집");
+              onCreate(name.trim() || t("onboarding.defaultFamilyName"));
             }}
             className="flex w-full max-w-sm mx-auto flex-col gap-6"
           >
             <div className="text-center mb-4">
-              <h1 className="text-2xl font-extrabold text-foreground tracking-tight">가족 공간 만들기</h1>
-              <p className="mt-2 text-[14px] text-muted-foreground">우리 가족이 모일 공간의 이름을 지어주세요.</p>
+              <h1 className="text-2xl font-extrabold text-foreground tracking-tight">{t("onboarding.createTitle")}</h1>
+              <p className="mt-2 text-[14px] text-muted-foreground">{t("onboarding.createHeading")}</p>
             </div>
-            
+
             <label className="flex flex-col gap-2">
-              <span className="text-[13px] font-bold text-foreground/80 ml-1">가족 이름</span>
+              <span className="text-[13px] font-bold text-foreground/80 ml-1">{t("onboarding.familyNameLabel")}</span>
               <input
                 autoFocus
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="예: 우리집"
+                placeholder={t("onboarding.familyNamePlaceholder")}
                 className="h-14 rounded-xl border border-border/60 bg-surface px-5 text-[15px] font-medium text-foreground placeholder:text-muted-foreground shadow-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
               />
             </label>
             {error && <p className="text-[13px] font-bold text-danger text-center bg-danger/10 py-2 rounded-lg">{error}</p>}
-            
+
             <div className="flex gap-3 mt-6">
               <button
                 type="button"
                 onClick={() => setMode("choose")}
                 className="flex min-h-14 flex-1 items-center justify-center rounded-xl bg-surface border border-border/60 text-[15px] font-bold text-foreground shadow-sm hover:bg-chrome transition-colors"
               >
-                뒤로
+                {t("common.back")}
               </button>
               <button
                 type="submit"
                 className="flex min-h-14 flex-[2] items-center justify-center rounded-xl bg-primary text-[15px] font-bold text-primary-foreground shadow-sm transition-transform active:scale-[0.98]"
               >
-                만들기
+                {t("onboarding.createSubmit")}
               </button>
             </div>
           </form>
@@ -131,36 +132,36 @@ export default function FamilyOnboarding({
             className="flex w-full max-w-sm mx-auto flex-col gap-6"
           >
             <div className="text-center mb-4">
-              <h1 className="text-2xl font-extrabold text-foreground tracking-tight">초대 코드로 참여하기</h1>
-              <p className="mt-2 text-[14px] text-muted-foreground">전달받은 6자리 코드를 입력해주세요.</p>
+              <h1 className="text-2xl font-extrabold text-foreground tracking-tight">{t("onboarding.joinTitle")}</h1>
+              <p className="mt-2 text-[14px] text-muted-foreground">{t("onboarding.joinHeading")}</p>
             </div>
 
             <label className="flex flex-col gap-2">
-              <span className="text-[13px] font-bold text-foreground/80 ml-1">초대 코드</span>
+              <span className="text-[13px] font-bold text-foreground/80 ml-1">{t("onboarding.codeLabel")}</span>
               <input
                 autoFocus
                 value={code}
                 onChange={(e) => setCode(e.target.value)}
-                placeholder="예: 742-819"
+                placeholder={t("onboarding.codePlaceholder")}
                 className="h-14 rounded-xl border border-border/60 bg-surface px-5 text-center text-xl font-bold tracking-widest text-foreground placeholder:text-muted-foreground placeholder:tracking-normal placeholder:font-medium shadow-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all uppercase"
               />
             </label>
             {error && <p className="text-[13px] font-bold text-danger text-center bg-danger/10 py-2 rounded-lg">{error}</p>}
-            
+
             <div className="flex gap-3 mt-6">
               <button
                 type="button"
                 onClick={() => setMode("choose")}
                 className="flex min-h-14 flex-1 items-center justify-center rounded-xl bg-surface border border-border/60 text-[15px] font-bold text-foreground shadow-sm hover:bg-chrome transition-colors"
               >
-                뒤로
+                {t("common.back")}
               </button>
               <button
                 type="submit"
                 disabled={!code.trim()}
                 className="flex min-h-14 flex-[2] items-center justify-center rounded-xl bg-primary text-[15px] font-bold text-primary-foreground shadow-sm transition-transform disabled:bg-chrome disabled:text-muted-foreground disabled:shadow-none active:scale-[0.98]"
               >
-                참여하기
+                {t("onboarding.joinSubmit")}
               </button>
             </div>
           </form>

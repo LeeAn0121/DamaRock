@@ -3,6 +3,7 @@ import { IconX, IconSend } from "@tabler/icons-react";
 import { supabase } from "./lib/supabaseClient";
 import type { Item, Member } from "./data";
 import { memberName } from "./data";
+import { useI18n } from "./lib/i18n";
 import clsx from "clsx";
 
 type Comment = {
@@ -29,6 +30,7 @@ export default function ItemDetailSheet({
   userId: string;
   onClose: () => void;
 }) {
+  const { t } = useI18n();
   const [comments, setComments] = useState<Comment[]>([]);
   const [draft, setDraft] = useState("");
   const [loading, setLoading] = useState(false);
@@ -92,14 +94,14 @@ export default function ItemDetailSheet({
   };
 
   const handleEdit = async (commentId: string, oldContent: string) => {
-    const newContent = window.prompt("댓글을 수정하세요:", oldContent);
+    const newContent = window.prompt(t("itemDetail.editPrompt"), oldContent);
     if (newContent !== null && newContent.trim() !== oldContent) {
       await supabase.from("comments").update({ content: newContent.trim() }).eq("id", commentId);
     }
   };
 
   const handleDelete = async (commentId: string) => {
-    if (window.confirm("댓글을 삭제하시겠습니까?")) {
+    if (window.confirm(t("itemDetail.confirmDelete"))) {
       await supabase.from("comments").delete().eq("id", commentId);
     }
   };
@@ -124,7 +126,7 @@ export default function ItemDetailSheet({
         <div className="flex h-1.5 w-full items-center justify-center pt-3 pb-4">
           <div className="h-1.5 w-10 rounded-full bg-border/60" />
         </div>
-        
+
         <div className="flex items-center justify-between px-6 pb-2 border-b border-border/40">
           <h2 className="text-lg font-extrabold text-foreground truncate flex-1">
             {item?.title}
@@ -140,9 +142,9 @@ export default function ItemDetailSheet({
 
         <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4">
           {loading ? (
-            <p className="text-center text-sm text-muted-foreground mt-4">댓글을 불러오는 중...</p>
+            <p className="text-center text-sm text-muted-foreground mt-4">{t("itemDetail.loading")}</p>
           ) : comments.length === 0 ? (
-            <p className="text-center text-sm text-muted-foreground mt-4">첫 댓글을 남겨보세요!</p>
+            <p className="text-center text-sm text-muted-foreground mt-4">{t("itemDetail.empty")}</p>
           ) : (
             comments.map((comment) => {
               const isMe = comment.author_id === userId;
@@ -150,11 +152,11 @@ export default function ItemDetailSheet({
                 <div key={comment.id} className={clsx("flex flex-col max-w-[85%] group", isMe ? "ml-auto items-end" : "mr-auto items-start")}>
                   <div className={clsx("flex items-center gap-2 mb-1", isMe ? "mr-1 flex-row-reverse" : "ml-1")}>
                     <span className="text-[10px] text-muted-foreground">
-                      {memberName(members, comment.author_id)}
+                      {isMe ? t("common.me") : memberName(members, comment.author_id)}
                     </span>
                     <div className="flex gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
-                      <button onClick={() => handleEdit(comment.id, comment.content)} className="text-[10px] text-muted-foreground hover:text-primary">수정</button>
-                      <button onClick={() => handleDelete(comment.id)} className="text-[10px] text-muted-foreground hover:text-danger">삭제</button>
+                      <button onClick={() => handleEdit(comment.id, comment.content)} className="text-[10px] text-muted-foreground hover:text-primary">{t("common.edit")}</button>
+                      <button onClick={() => handleDelete(comment.id)} className="text-[10px] text-muted-foreground hover:text-danger">{t("common.delete")}</button>
                     </div>
                   </div>
                   <div className={clsx("px-4 py-2 rounded-2xl text-sm", isMe ? "bg-primary text-primary-foreground rounded-tr-sm" : "bg-surface text-foreground rounded-tl-sm")}>
@@ -170,7 +172,7 @@ export default function ItemDetailSheet({
         <form onSubmit={handleSubmit} className="border-t border-border/40 p-4 pb-safe flex gap-2">
           <input
             type="text"
-            placeholder="댓글 입력..."
+            placeholder={t("itemDetail.placeholder")}
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
             className="flex-1 rounded-full bg-surface px-4 py-2 text-sm font-medium outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/20"

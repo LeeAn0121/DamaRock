@@ -3,11 +3,12 @@ import type { Item, Member } from "./data";
 import { IconFolder, IconPlus, IconTrash, IconChevronDown, IconChevronRight, IconCheck } from "@tabler/icons-react";
 import { ItemRows, DoneDisclosure } from "./ItemRows";
 import { showToast } from "./components/Toast";
+import { useI18n } from "./lib/i18n";
 import clsx from "clsx";
 
 export type Folder = { id: string; name: string; icon: string };
 
-type PopupState = 
+type PopupState =
   | { type: 'NONE' }
   | { type: 'CREATE_FOLDER' }
   | { type: 'CHANGE_ICON', folderId: string }
@@ -41,6 +42,7 @@ export default function GroceryFolders({
   onRestore: (id: string) => void;
   onHardDelete: (id: string) => void;
 }) {
+  const { t } = useI18n();
   const [popup, setPopup] = useState<PopupState>({ type: 'NONE' });
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({ "done_folder": true });
   const [inputValue, setInputValue] = useState("");
@@ -49,7 +51,7 @@ export default function GroceryFolders({
   const groceryItems = items.filter((i) => i.category === "grocery" && i.title !== "__SYSTEM_FOLDERS__");
   const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
   const deletedItems = items.filter(i => i.deleted_at && i.deleted_at > thirtyDaysAgo);
-  
+
   const folders: Folder[] = useMemo(() => {
     if (!systemItem?.meta) return [];
     try {
@@ -76,26 +78,26 @@ export default function GroceryFolders({
   const handleConfirmPopup = () => {
     if (popup.type === 'CREATE_FOLDER') {
       if (!inputValue.trim()) {
-        showToast("폴더 이름을 입력해주세요.");
+        showToast(t("grocery.folderNamePrompt"));
         return;
       }
       saveFolders([...folders, { id: Date.now().toString(), name: inputValue.trim(), icon: "📁" }]);
-      showToast("새 폴더가 추가되었습니다.");
+      showToast(t("grocery.folderCreated"));
       setPopup({ type: 'NONE' });
       setInputValue("");
     } else if (popup.type === 'CHANGE_ICON') {
       if (!inputValue.trim()) {
-        showToast("아이콘(이모지)을 입력해주세요.");
+        showToast(t("grocery.iconPrompt"));
         return;
       }
       const newFolders = folders.map(f => f.id === popup.folderId ? { ...f, icon: inputValue.trim() } : f);
       saveFolders(newFolders);
-      showToast("아이콘이 변경되었습니다.");
+      showToast(t("grocery.iconChanged"));
       setPopup({ type: 'NONE' });
       setInputValue("");
     } else if (popup.type === 'CONFIRM_DELETE') {
       saveFolders(folders.filter(f => f.id !== popup.folderId));
-      showToast("폴더가 삭제되었습니다.");
+      showToast(t("grocery.folderDeleted"));
       setPopup({ type: 'NONE' });
     }
   };
@@ -125,7 +127,7 @@ export default function GroceryFolders({
 
   const handleMove = (item: Item) => {
     if (folders.length === 0) {
-      showToast("생성된 폴더가 없습니다. 먼저 폴더를 추가해주세요.");
+      showToast(t("grocery.noFolders"));
       return;
     }
     setPopup({ type: 'MOVE_ITEM', item });
@@ -134,16 +136,15 @@ export default function GroceryFolders({
   return (
     <div className="flex flex-col gap-6 relative">
       <div className="flex justify-between items-center px-2 mt-4">
-        <h2 className="text-sm font-bold text-muted-foreground">장보기 항목 ({groceryItems.filter(i => !i.done).length})</h2>
+        <h2 className="text-sm font-bold text-muted-foreground">{t("grocery.itemsHeading")} ({groceryItems.filter(i => !i.done).length})</h2>
       </div>
 
       <div className="flex flex-col gap-6 mt-4">
         {folders.map(folder => {
           const folderItems = grouped.get(folder.id) || [];
           const active = folderItems.filter(i => !i.done);
-          const done = folderItems.filter(i => i.done);
           const isCollapsed = collapsed[folder.id];
-          
+
           return (
             <section key={folder.id} className={clsx("flex flex-col rounded-2xl bg-surface px-4 shadow-sm border border-border/40 transition-all", isCollapsed ? "py-2.5" : "py-3")}>
               <div className={clsx("flex items-center justify-between transition-all", !isCollapsed ? "mb-3 border-b border-border/40 pb-2" : "")}>
@@ -151,14 +152,14 @@ export default function GroceryFolders({
                   <button onClick={() => toggleCollapse(folder.id)} className="text-muted-foreground hover:text-foreground active:scale-90 transition-transform p-1">
                     {isCollapsed ? <IconChevronRight size={18}/> : <IconChevronDown size={18}/>}
                   </button>
-                  <button 
-                    className="text-xl active:scale-90 transition-transform hover:opacity-80" 
+                  <button
+                    className="text-xl active:scale-90 transition-transform hover:opacity-80"
                     onClick={(e) => {
                       e.stopPropagation();
                       setInputValue(folder.icon);
                       setPopup({ type: 'CHANGE_ICON', folderId: folder.id });
                     }}
-                    title="아이콘 변경"
+                    title={t("grocery.changeIconTitle")}
                   >
                     {folder.icon}
                   </button>
@@ -174,14 +175,14 @@ export default function GroceryFolders({
                     )}
                   </div>
                 </div>
-                <button 
-                  onClick={() => setPopup({ type: 'CONFIRM_DELETE', folderId: folder.id })} 
+                <button
+                  onClick={() => setPopup({ type: 'CONFIRM_DELETE', folderId: folder.id })}
                   className="text-muted-foreground hover:text-danger active:bg-chrome p-1.5 rounded-full transition-colors ml-2"
                 >
                   <IconTrash size={16} stroke={2} />
                 </button>
               </div>
-              
+
               {!isCollapsed && (
                 <div className="flex-1 animate-in fade-in slide-in-from-top-2 duration-200">
                   <ItemRows items={active} onToggle={onToggleDone} onDelete={onDelete} onEdit={onEdit} onMove={handleMove} onSelect={onSelect} members={members} comments={comments} userId={userId} />
@@ -200,7 +201,7 @@ export default function GroceryFolders({
               </button>
               <div className="flex flex-col flex-1 min-w-0" onClick={() => toggleCollapse("unassigned")}>
                 <h3 className="text-base font-extrabold flex items-center gap-2 text-foreground cursor-pointer truncate">
-                  <span className="text-muted-foreground"><IconFolder size={18} /></span> 기본 폴더 <span className="text-muted-foreground font-normal text-sm">({unassigned.filter(i => !i.done).length})</span>
+                  <span className="text-muted-foreground"><IconFolder size={18} /></span> {t("grocery.defaultFolder")} <span className="text-muted-foreground font-normal text-sm">({unassigned.filter(i => !i.done).length})</span>
                 </h3>
                 {collapsed["unassigned"] && unassigned.filter(i => !i.done).length > 0 && (
                   <span className="text-xs text-muted-foreground truncate pr-2 mt-0.5 opacity-80">
@@ -220,11 +221,11 @@ export default function GroceryFolders({
 
         {/* Add Folder Button in Center */}
         <div className="flex justify-center py-4">
-          <button 
-            onClick={() => { setInputValue(''); setPopup({ type: 'CREATE_FOLDER' }); }}
+          <button
+            onClick={handleCreateFolderClick}
             className="flex items-center gap-2 text-sm font-bold text-muted-foreground hover:text-primary transition-colors bg-surface px-5 py-2.5 rounded-full border border-border/60 shadow-sm active:scale-95"
           >
-            <IconPlus size={16} stroke={2.5} /> 새 폴더 추가
+            <IconPlus size={16} stroke={2.5} /> {t("grocery.addFolder")}
           </button>
         </div>
 
@@ -238,7 +239,7 @@ export default function GroceryFolders({
                 </button>
                 <div className="flex flex-col flex-1 min-w-0" onClick={() => toggleCollapse("done_folder")}>
                   <h3 className="text-base font-extrabold flex items-center gap-2 text-foreground cursor-pointer truncate">
-                    <span className="text-muted-foreground"><IconCheck size={18} /></span> 구매완료 <span className="text-muted-foreground font-normal text-sm">({items.filter(i => i.done).length})</span>
+                    <span className="text-muted-foreground"><IconCheck size={18} /></span> {t("grocery.purchased")} <span className="text-muted-foreground font-normal text-sm">({items.filter(i => i.done).length})</span>
                   </h3>
                 </div>
               </div>
@@ -262,11 +263,11 @@ export default function GroceryFolders({
                 <IconTrash size={16} />
               </div>
               <h3 className="text-base font-extrabold flex items-center gap-2 text-muted-foreground">
-                삭제됨 <span className="text-muted-foreground/60 font-normal text-sm">({deletedItems.length})</span>
+                {t("grocery.deletedSection")} <span className="text-muted-foreground/60 font-normal text-sm">({deletedItems.length})</span>
               </h3>
             </button>
             <div className="flex items-center gap-2">
-              <span className="text-xs text-muted-foreground mr-1 hidden sm:inline">30일 후 자동 삭제</span>
+              <span className="text-xs text-muted-foreground mr-1 hidden sm:inline">{t("grocery.autoDeleteNote")}</span>
               <button
                 onClick={() => setCollapsed(prev => ({ ...prev, "deleted_folder": !prev["deleted_folder"] }))}
                 className="text-muted-foreground p-1 hover:bg-chrome rounded-full transition-colors active:scale-95"
@@ -278,7 +279,7 @@ export default function GroceryFolders({
           {!collapsed["deleted_folder"] && (
             <div className="flex-1 animate-in fade-in slide-in-from-top-2 duration-200 pb-2">
               {deletedItems.length === 0 ? (
-                <p className="text-xs text-muted-foreground text-center py-4">삭제된 항목이 없습니다</p>
+                <p className="text-xs text-muted-foreground text-center py-4">{t("grocery.noDeletedItems")}</p>
               ) : (
                 <ul className="divide-y divide-border/60">
                   {deletedItems.map(item => (
@@ -287,15 +288,15 @@ export default function GroceryFolders({
                       <div className="flex shrink-0 gap-2">
                         <button
                           type="button"
-                          onClick={() => onRestore?.(item.id)}
+                          onClick={() => onRestore(item.id)}
                           className="inline-flex min-h-8 items-center justify-center rounded-lg border border-border/80 px-3 text-xs font-bold text-muted-foreground transition-all hover:bg-chrome active:scale-95"
                         >
-                          복구
+                          {t("grocery.restore")}
                         </button>
                         <button
                           type="button"
                           onClick={() => {
-                            if (window.confirm('완전히 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) onHardDelete?.(item.id);
+                            if (window.confirm(t("grocery.confirmHardDelete"))) onHardDelete(item.id);
                           }}
                           className="inline-flex min-h-8 w-8 items-center justify-center rounded-lg border border-danger/20 text-danger transition-all hover:bg-danger/10 active:scale-95"
                         >
@@ -316,31 +317,31 @@ export default function GroceryFolders({
       {popup.type !== 'NONE' && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 p-4 animate-in fade-in duration-200">
           <div className="bg-surface rounded-2xl w-full max-w-sm shadow-xl p-5 flex flex-col gap-4 animate-in zoom-in-95 duration-200">
-            
+
             {popup.type === 'CREATE_FOLDER' && (
               <>
-                <h3 className="font-bold text-lg">새 폴더</h3>
-                <input 
+                <h3 className="font-bold text-lg">{t("grocery.newFolderTitle")}</h3>
+                <input
                   autoFocus
-                  className="w-full bg-chrome rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-primary/50" 
-                  placeholder="폴더 이름"
+                  className="w-full bg-chrome rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-primary/50"
+                  placeholder={t("grocery.folderNamePlaceholder")}
                   value={inputValue}
                   onChange={e => setInputValue(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && handleConfirmPopup()}
                 />
                 <div className="flex gap-2 mt-2">
-                  <button className="flex-1 py-3 rounded-xl font-bold bg-chrome text-foreground/70" onClick={() => setPopup({ type: 'NONE' })}>취소</button>
-                  <button className="flex-1 py-3 rounded-xl font-bold bg-primary text-primary-foreground" onClick={handleConfirmPopup}>추가</button>
+                  <button className="flex-1 py-3 rounded-xl font-bold bg-chrome text-foreground/70" onClick={() => setPopup({ type: 'NONE' })}>{t("common.cancel")}</button>
+                  <button className="flex-1 py-3 rounded-xl font-bold bg-primary text-primary-foreground" onClick={handleConfirmPopup}>{t("common.add")}</button>
                 </div>
               </>
             )}
 
             {popup.type === 'CHANGE_ICON' && (
               <>
-                <h3 className="font-bold text-lg mb-2">아이콘 변경</h3>
+                <h3 className="font-bold text-lg mb-2">{t("grocery.changeIconTitle")}</h3>
                 <div className="grid grid-cols-5 gap-3 max-h-60 overflow-y-auto p-1 scrollbar-hide">
                   {["📁", "🛒", "🍗", "🥦", "🍎", "🧀", "🍞", "🍦", "🍷", "🐟", "📦", "💊", "🧼", "🍼", "💧", "☕", "🎂", "🍽", "🔪", "🥩", "🎉", "🔥", "🏠", "💡", "💰"].map(emoji => (
-                    <button 
+                    <button
                       key={emoji}
                       onClick={() => {
                         saveFolders(folders.map(f => f.id === popup.folderId ? { ...f, icon: emoji } : f));
@@ -353,45 +354,45 @@ export default function GroceryFolders({
                   ))}
                 </div>
                 <div className="flex gap-2 mt-4">
-                  <button className="flex-1 py-3 rounded-xl font-bold bg-chrome text-foreground/70" onClick={() => setPopup({ type: 'NONE' })}>닫기</button>
+                  <button className="flex-1 py-3 rounded-xl font-bold bg-chrome text-foreground/70" onClick={() => setPopup({ type: 'NONE' })}>{t("common.close")}</button>
                 </div>
               </>
             )}
 
             {popup.type === 'CONFIRM_DELETE' && (
               <>
-                <h3 className="font-bold text-lg text-danger">폴더 삭제</h3>
-                <p className="text-muted-foreground text-sm leading-relaxed">
-                  폴더를 삭제하시겠습니까?<br/>안에 있는 항목은 '미분류'로 이동됩니다.
+                <h3 className="font-bold text-lg text-danger">{t("grocery.deleteFolderTitle")}</h3>
+                <p className="whitespace-pre-line text-muted-foreground text-sm leading-relaxed">
+                  {t("grocery.deleteFolderDesc")}
                 </p>
                 <div className="flex gap-2 mt-2">
-                  <button className="flex-1 py-3 rounded-xl font-bold bg-chrome text-foreground/70" onClick={() => setPopup({ type: 'NONE' })}>취소</button>
-                  <button className="flex-1 py-3 rounded-xl font-bold bg-danger text-danger-foreground" onClick={handleConfirmPopup}>삭제</button>
+                  <button className="flex-1 py-3 rounded-xl font-bold bg-chrome text-foreground/70" onClick={() => setPopup({ type: 'NONE' })}>{t("common.cancel")}</button>
+                  <button className="flex-1 py-3 rounded-xl font-bold bg-danger text-danger-foreground" onClick={handleConfirmPopup}>{t("common.delete")}</button>
                 </div>
               </>
             )}
 
             {popup.type === 'MOVE_ITEM' && (
               <div className="flex flex-col gap-3">
-                <h3 className="font-bold text-lg mb-1">이동할 폴더 선택</h3>
+                <h3 className="font-bold text-lg mb-1">{t("grocery.selectMoveFolder")}</h3>
                 <div className="flex flex-col gap-2 max-h-[50vh] overflow-y-auto pr-1">
-                  <button 
+                  <button
                     className="flex items-center gap-3 text-left px-4 py-3 rounded-xl bg-chrome hover:bg-border/50 font-medium transition-colors"
                     onClick={() => {
                       editItem(popup.item.id, popup.item.title, "");
-                      showToast("미분류로 이동되었습니다.");
+                      showToast(t("grocery.movedToUnsorted"));
                       setPopup({ type: 'NONE' });
                     }}
                   >
-                    <span className="text-xl">📁</span> 미분류
+                    <span className="text-xl">📁</span> {t("grocery.unsorted")}
                   </button>
                   {folders.map(f => (
-                    <button 
+                    <button
                       key={f.id}
                       className="flex items-center gap-3 text-left px-4 py-3 rounded-xl bg-chrome hover:bg-border/50 font-medium transition-colors"
                       onClick={() => {
                         editItem(popup.item.id, popup.item.title, f.id);
-                        showToast(`'${f.name}' 폴더로 이동되었습니다.`);
+                        showToast(t("grocery.movedToFolder", { name: f.name }));
                         setPopup({ type: 'NONE' });
                       }}
                     >
@@ -399,7 +400,7 @@ export default function GroceryFolders({
                     </button>
                   ))}
                 </div>
-                <button className="mt-2 py-3 rounded-xl font-bold bg-chrome text-foreground/70" onClick={() => setPopup({ type: 'NONE' })}>취소</button>
+                <button className="mt-2 py-3 rounded-xl font-bold bg-chrome text-foreground/70" onClick={() => setPopup({ type: 'NONE' })}>{t("common.cancel")}</button>
               </div>
             )}
           </div>

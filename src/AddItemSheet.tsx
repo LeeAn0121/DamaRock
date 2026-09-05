@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import clsx from "clsx";
 import { IconX } from "@tabler/icons-react";
 import type { Category, Item, Member } from "./data";
+import { useI18n } from "./lib/i18n";
 
 type Draft = {
   title: string;
@@ -10,8 +11,6 @@ type Draft = {
   assignee?: string;
   due?: string;
 };
-
-const DUE_CHIPS = ["오늘", "이번 주말", "다음 주"];
 
 export default function AddItemSheet({
   open,
@@ -24,6 +23,8 @@ export default function AddItemSheet({
   onClose: () => void;
   onSubmit: (item: Omit<Item, "id" | "done" | "created_at">) => void;
 }) {
+  const { t } = useI18n();
+  const DUE_CHIPS = [t("addItem.dueToday"), t("addItem.dueWeekend"), t("addItem.dueNextWeek")];
   const [draft, setDraft] = useState<Draft>({ title: "", category: "grocery", note: "" });
 
   useEffect(() => {
@@ -57,7 +58,7 @@ export default function AddItemSheet({
     <div className="fixed inset-0 z-50 flex items-end justify-center">
       <button
         type="button"
-        aria-label="닫기"
+        aria-label={t("common.close")}
         onClick={onClose}
         className="absolute inset-0 bg-foreground/30 backdrop-blur-[2px]"
       />
@@ -71,11 +72,11 @@ export default function AddItemSheet({
 
         <div className="flex items-center justify-between px-6 pt-4">
           <h2 id="add-sheet-title" className="text-base font-bold text-foreground">
-            새 항목 담기
+            {t("addItem.title")}
           </h2>
           <button
             type="button"
-            aria-label="닫기"
+            aria-label={t("common.close")}
             onClick={onClose}
             className="flex h-11 w-11 items-center justify-center rounded-full text-muted-foreground hover:bg-chrome/60 active:bg-chrome"
           >
@@ -97,7 +98,7 @@ export default function AddItemSheet({
                   draft.category === c ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground"
                 )}
               >
-                {c === "grocery" ? "장보기" : "할 일"}
+                {c === "grocery" ? t("common.grocery") : t("common.todo")}
               </button>
             ))}
           </div>
@@ -105,13 +106,13 @@ export default function AddItemSheet({
           {/* Title */}
           <label className="flex flex-col gap-2">
             <span className="text-sm font-bold text-foreground">
-              무엇을 담을까요<span className="text-danger"> *</span>
+              {t("addItem.whatToAdd")}<span className="text-danger"> *</span>
             </span>
             <input
               autoFocus
               value={draft.title}
               onChange={(e) => setDraft((d) => ({ ...d, title: e.target.value }))}
-              placeholder={draft.category === "grocery" ? "예: 우유" : "예: 지우 학원비 입금"}
+              placeholder={draft.category === "grocery" ? t("addItem.groceryPlaceholder") : t("addItem.todoPlaceholder")}
               className="h-12 rounded-xl border border-border/50 bg-background px-4 text-base text-foreground placeholder:text-muted-foreground shadow-sm focus:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/20"
             />
           </label>
@@ -119,19 +120,19 @@ export default function AddItemSheet({
           {draft.category === "grocery" ? (
             <label className="flex flex-col gap-2">
               <span className="text-sm font-bold text-foreground">
-                수량이나 메모<span className="text-muted-foreground font-normal"> (선택)</span>
+                {t("addItem.noteLabel")}<span className="text-muted-foreground font-normal">{t("addItem.optional")}</span>
               </span>
               <input
                 value={draft.note}
                 onChange={(e) => setDraft((d) => ({ ...d, note: e.target.value }))}
-                placeholder="예: 2개"
+                placeholder={t("addItem.notePlaceholder")}
                 className="h-12 rounded-xl border border-border/50 bg-background px-4 text-base text-foreground placeholder:text-muted-foreground shadow-sm focus:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/20"
               />
             </label>
           ) : (
             <div className="flex flex-col gap-2">
               <span className="text-sm font-bold text-foreground">
-                언제까지<span className="text-muted-foreground font-normal"> (선택)</span>
+                {t("addItem.dueLabel")}<span className="text-muted-foreground font-normal">{t("addItem.optional")}</span>
               </span>
               <div className="flex flex-wrap gap-2">
                 {DUE_CHIPS.map((chip) => (
@@ -159,7 +160,7 @@ export default function AddItemSheet({
           {/* Assignee */}
           <div className="flex flex-col gap-2">
             <span className="text-sm font-bold text-foreground">
-              담당자<span className="text-muted-foreground font-normal"> (선택)</span>
+              {t("addItem.assigneeLabel")}<span className="text-muted-foreground font-normal">{t("addItem.optional")}</span>
             </span>
             <div className="flex gap-4">
               {members.map((m) => (
@@ -200,7 +201,7 @@ export default function AddItemSheet({
             disabled={!canSubmit}
             className="flex min-h-14 w-full items-center justify-center rounded-2xl bg-primary text-base font-bold text-primary-foreground shadow-sm transition-transform disabled:bg-chrome disabled:text-muted-foreground disabled:shadow-none active:scale-[0.98]"
           >
-            담기
+            {t("addItem.submit")}
           </button>
         </div>
       </div>

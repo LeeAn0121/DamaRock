@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { IconX } from "@tabler/icons-react";
 import type { Item } from "./data";
+import { useI18n } from "./lib/i18n";
 import clsx from "clsx";
 
 type Folder = { id: string; name: string; icon: string };
@@ -16,6 +17,7 @@ export default function AddGrocerySheet({
   onClose: () => void;
   onAdd: (folderId: string, title: string, memo: string) => void;
 }) {
+  const { t } = useI18n();
   const [selectedFolder, setSelectedFolder] = useState<string>("");
   const [title, setTitle] = useState("");
   const [memo, setMemo] = useState("");
@@ -47,21 +49,21 @@ export default function AddGrocerySheet({
       <div className="flex-1" onClick={onClose} />
       <div className="bg-surface rounded-t-3xl shadow-2xl animate-in slide-in-from-bottom-full duration-300">
         <div className="flex items-center justify-between px-6 py-4 border-b border-border/40">
-          <h2 className="text-lg font-bold text-foreground">장보기 추가</h2>
+          <h2 className="text-lg font-bold text-foreground">{t("addGrocery.title")}</h2>
           <button onClick={onClose} className="p-2 text-muted-foreground hover:bg-chrome rounded-full transition-colors active:scale-95">
             <IconX size={24} stroke={2} />
           </button>
         </div>
         <form onSubmit={handleSubmit} className="px-6 py-5 flex flex-col gap-6">
           <div>
-            <label className="block text-sm font-bold text-muted-foreground mb-2">폴더 선택</label>
+            <label className="block text-sm font-bold text-muted-foreground mb-2">{t("addGrocery.chooseFolder")}</label>
             <div className="flex flex-wrap gap-2">
               <button
                 type="button"
                 onClick={() => setSelectedFolder("")}
                 className={clsx("px-4 py-2 rounded-xl text-sm font-bold transition-colors active:scale-95 border", selectedFolder === "" ? "bg-primary text-primary-foreground border-primary" : "bg-chrome text-foreground border-transparent")}
               >
-                기본 폴더
+                {t("grocery.defaultFolder")}
               </button>
               {folders.map(f => (
                 <button
@@ -76,28 +78,28 @@ export default function AddGrocerySheet({
             </div>
           </div>
           <div>
-            <label className="block text-sm font-bold text-muted-foreground mb-2">살 것</label>
-            <input 
+            <label className="block text-sm font-bold text-muted-foreground mb-2">{t("addGrocery.itemLabel")}</label>
+            <input
               autoFocus
               className="w-full bg-chrome text-foreground font-bold text-lg px-4 py-3 rounded-xl outline-none focus:ring-2 focus:ring-primary/50 placeholder-muted-foreground/50"
-              placeholder="예: 서울우유 1L"
+              placeholder={t("addGrocery.itemPlaceholder")}
               value={title}
               onChange={e => setTitle(e.target.value)}
             />
           </div>
           <div>
-            <label className="block text-sm font-bold text-muted-foreground mb-2">메모 (선택)</label>
-            <textarea 
+            <label className="block text-sm font-bold text-muted-foreground mb-2">{t("addGrocery.noteLabel")}</label>
+            <textarea
               rows={2}
               className="w-full bg-chrome text-foreground text-base px-4 py-3 rounded-xl outline-none focus:ring-2 focus:ring-primary/50 placeholder-muted-foreground/50 resize-none"
-              placeholder="추가 설명이나 개수를 적어주세요"
+              placeholder={t("addGrocery.notePlaceholder")}
               value={memo}
               onChange={e => setMemo(e.target.value)}
             />
           </div>
           <div className="flex gap-3 pt-2 pb-safe">
-            <button type="button" onClick={onClose} className="flex-1 py-4 bg-chrome text-foreground/70 font-bold rounded-2xl active:scale-[0.98] transition-transform">취소</button>
-            <button type="submit" disabled={!title.trim()} className="flex-1 py-4 bg-primary text-primary-foreground font-bold rounded-2xl disabled:opacity-50 active:scale-[0.98] transition-transform">추가</button>
+            <button type="button" onClick={onClose} className="flex-1 py-4 bg-chrome text-foreground/70 font-bold rounded-2xl active:scale-[0.98] transition-transform">{t("common.cancel")}</button>
+            <button type="submit" disabled={!title.trim()} className="flex-1 py-4 bg-primary text-primary-foreground font-bold rounded-2xl disabled:opacity-50 active:scale-[0.98] transition-transform">{t("common.add")}</button>
           </div>
         </form>
       </div>

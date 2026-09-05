@@ -3,11 +3,26 @@ import { useInstallPrompt } from "./hooks/useInstallPrompt";
 import clsx from "clsx";
 import {
   IconChevronLeft, IconChevronRight, IconLogout, IconUsers,
-  IconPalette, IconBell, IconLanguage, IconCalendar, IconHandMove,
-  IconTrash, IconUserEdit, IconMoon, IconSun, IconEdit, IconDownload
+  IconPalette, IconLanguage, IconCalendar, IconHandMove,
+  IconTrash, IconUserEdit, IconMoon, IconSun, IconEdit, IconDownload,
+  IconCheck, IconExternalLink, IconDeviceMobile
 } from "@tabler/icons-react";
 import { memberName, type Member } from "./data";
-import { supabase } from "./lib/supabaseClient";
+import { useI18n, type LangSetting } from "./lib/i18n";
+
+const THEMES: { id: string; nameKey: string; bg: string; primary: string }[] = [
+  { id: "clean-blue", nameKey: "theme.clean-blue", bg: "#F0F6FF", primary: "#2563EB" },
+  { id: "bonfire", nameKey: "theme.bonfire", bg: "#FFF5EE", primary: "#E05A2B" },
+  { id: "ink", nameKey: "theme.ink", bg: "#F8FAFC", primary: "#0F172A" },
+  { id: "dark", nameKey: "theme.dark", bg: "#121212", primary: "#3B82F6" },
+  { id: "postit", nameKey: "theme.postit", bg: "#FEF7D0", primary: "#D97706" },
+  { id: "beige-navy", nameKey: "theme.beige-navy", bg: "#F8F2ED", primary: "#1E3A8A" },
+  { id: "lavender", nameKey: "theme.lavender", bg: "#F5F3FF", primary: "#7C3AED" },
+  { id: "forest", nameKey: "theme.forest", bg: "#F0FDF4", primary: "#16A34A" },
+  { id: "cherry", nameKey: "theme.cherry", bg: "#FFF1F2", primary: "#E11D48" },
+  { id: "mint", nameKey: "theme.mint", bg: "#ECFEFF", primary: "#0891B2" },
+  { id: "grape-dark", nameKey: "theme.grape-dark", bg: "#1A1025", primary: "#A855F7" },
+];
 
 // A reusable switch component
 function Switch({ checked, onChange }: { checked: boolean; onChange: (c: boolean) => void }) {
@@ -98,45 +113,54 @@ export default function SettingsPage({
   userId,
   onBack,
   onOpenInvite,
+  onOpenGroups,
   onSignOut,
   updateLanguage,
   updateFamilyName,
+  updateDisplayName,
 }: {
   familyName: string;
   members: Member[];
   userId: string | null;
   onBack: () => void;
   onOpenInvite: () => void;
+  onOpenGroups: () => void;
   onSignOut: () => void;
   updateLanguage: (lang: string) => void;
   updateFamilyName: (name: string) => void;
+  updateDisplayName: (name: string) => void;
 }) {
-
+  const { t, setting: langSetting, setLanguage } = useI18n();
   const me = members.find(m => m.id === userId);
 
   // Push Notifications Settings
   const [notifyNewItem, setNotifyNewItem] = useState(() => localStorage.getItem("notifyNewItem") !== "false");
   const [notifyComments, setNotifyComments] = useState(() => localStorage.getItem("notifyComments") !== "false");
   const [notifyBriefing, setNotifyBriefing] = useState(() => localStorage.getItem("notifyBriefing") !== "false");
-    const { isInstallable, promptInstall } = useInstallPrompt();
+  const { isInstallable, isAppInstalled, promptInstall, isIOS, isInAppBrowser } = useInstallPrompt();
   const [briefingTime, setBriefingTime] = useState(() => localStorage.getItem("briefingTime") || "08:00");
   const [notifySummary, setNotifySummary] = useState(() => localStorage.getItem("notifySummary") !== "false");
   const [quietMode, setQuietMode] = useState(() => localStorage.getItem("quietMode") === "true");
   const [quietStart, setQuietStart] = useState(() => localStorage.getItem("quietStart") || "23:00");
   const [quietEnd, setQuietEnd] = useState(() => localStorage.getItem("quietEnd") || "07:00");
 
-  // Localizations & Regional
-  const [language, setLanguage] = useState(() => me?.language || localStorage.getItem("language") || "auto");
-
   const handleEditFamilyName = async () => {
-    const newName = window.prompt("새로운 가족 이름을 입력하세요", familyName);
+    const newName = window.prompt(t("settings.editFamilyNamePrompt"), familyName);
     if (newName && newName.trim() !== "" && newName !== familyName) {
       if (updateFamilyName) await updateFamilyName(newName.trim());
     }
   };
 
+  const handleEditDisplayName = async () => {
+    const current = memberName(members, userId ?? undefined);
+    const newName = window.prompt(t("settings.editNamePrompt"), current);
+    if (newName && newName.trim() !== "" && newName.trim() !== current) {
+      await updateDisplayName(newName.trim());
+    }
+  };
+
   const handleLanguageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const val = e.target.value;
+    const val = e.target.value as LangSetting;
     setLanguage(val);
     updateLanguage(val);
   };
@@ -159,20 +183,18 @@ export default function SettingsPage({
     localStorage.setItem("quietMode", String(quietMode));
     localStorage.setItem("quietStart", quietStart);
     localStorage.setItem("quietEnd", quietEnd);
-    localStorage.setItem("language", language);
     localStorage.setItem("holiday", holiday);
     localStorage.setItem("swipeAction", String(swipeAction));
-    localStorage.setItem("theme", theme);
   }, [
     notifyNewItem, notifyComments, notifyBriefing, briefingTime, notifySummary,
-    quietMode, quietStart, quietEnd, language, holiday, swipeAction, theme
+    quietMode, quietStart, quietEnd, holiday, swipeAction, theme
   ]);
 
   const appVersion = `v${__APP_VERSION__}`;
-  
+
   // Account login provider display (last login)
   const lastProvider = localStorage.getItem('lastLoginProvider');
-  const providerDisplay = lastProvider === 'kakao' ? '카카오톡' : lastProvider === 'google' ? 'Google' : '이메일';
+  const providerDisplay = lastProvider === 'kakao' ? t("settings.providerKakao") : lastProvider === 'google' ? t("settings.providerGoogle") : t("settings.providerEmail");
 
   return (
     <div className="min-h-dvh bg-background font-sans text-foreground">
@@ -180,17 +202,17 @@ export default function SettingsPage({
         <header className="flex items-center gap-1 border-b border-border/60 px-2 py-3">
           <button
             type="button"
-            aria-label="뒤로"
+            aria-label={t("common.back")}
             onClick={onBack}
             className="flex h-11 w-11 items-center justify-center rounded-full text-muted-foreground hover:bg-chrome/60 active:bg-chrome"
           >
             <IconChevronLeft size={20} stroke={1.75} />
           </button>
-          <h1 className="text-base font-bold text-foreground">설정</h1>
+          <h1 className="text-base font-bold text-foreground">{t("settings.header")}</h1>
         </header>
 
         <main className="flex-1 overflow-y-auto px-5 pb-10 pt-4">
-          
+
           {/* Profile Section */}
           <section className="flex flex-col gap-4 rounded-2xl bg-surface p-5 mb-8 border border-border/40 shadow-sm">
             <div className="flex items-center gap-4">
@@ -198,50 +220,76 @@ export default function SettingsPage({
                 {me?.avatar_url ? (
                   <img src={me.avatar_url} alt={me.name} className="h-full w-full object-cover" />
                 ) : (
-                  me?.initial ?? "나"
+                  me?.initial ?? t("common.me")
                 )}
               </span>
               <span className="min-w-0 flex-1">
                 <span className="block truncate text-lg font-bold text-foreground flex items-center gap-2">
                   {memberName(members, userId ?? undefined)}
-                  <button className="text-muted-foreground hover:text-primary transition-colors p-1" onClick={() => alert("표시 이름 변경 기능은 곧 제공될 예정입니다.")}><IconUserEdit size={16} stroke={2}/></button>
+                  <button className="text-muted-foreground hover:text-primary transition-colors p-1" onClick={handleEditDisplayName}><IconUserEdit size={16} stroke={2}/></button>
                 </span>
-                <span className="block text-sm font-medium text-muted-foreground">{me?.role ?? "가족 구성원"}</span>
+                <span className="block text-sm font-medium text-muted-foreground">
+                  {me?.role === "어른" ? t("role.adult") : me?.role === "아이" ? t("role.child") : t("settings.role")}
+                </span>
               </span>
             </div>
             <div className="mt-2 rounded-xl bg-chrome/50 p-3 flex justify-between items-center text-sm">
-              <span className="text-muted-foreground">로그인 방식</span>
+              <span className="text-muted-foreground">{t("settings.loginMethod")}</span>
               <span className="font-bold flex items-center gap-1">
                 {providerDisplay} {me && <span className="opacity-60 font-normal">({me.name})</span>}
               </span>
             </div>
           </section>
 
-          {/* Group Management */}
-          {isInstallable && (
-            <SettingsGroup label="앱 설치">
+          {/* App install — always shown, guidance adapts to what the current browser can actually do */}
+          <SettingsGroup label={t("settings.installGroup")}>
+            {isAppInstalled ? (
               <SettingsRow
-                label="홈 화면에 앱 설치하기"
+                label={t("settings.installedLabel")}
+                description={t("settings.installedDesc")}
+                icon={<IconCheck size={18} stroke={2} />}
+              />
+            ) : isInstallable ? (
+              <SettingsRow
+                label={t("settings.installLabel")}
                 icon={<IconDownload size={18} stroke={2} />}
                 onClick={promptInstall}
               />
-            </SettingsGroup>
-          )}
+            ) : isInAppBrowser ? (
+              <SettingsRow
+                label={t("settings.installInAppLabel")}
+                description={t("settings.installInAppDesc")}
+                icon={<IconExternalLink size={18} stroke={2} />}
+              />
+            ) : isIOS ? (
+              <SettingsRow
+                label={t("settings.installIOSLabel")}
+                description={t("settings.installIOSDesc")}
+                icon={<IconDeviceMobile size={18} stroke={2} />}
+              />
+            ) : (
+              <SettingsRow
+                label={t("settings.installUnsupportedLabel")}
+                description={t("settings.installUnsupportedDesc")}
+                icon={<IconDeviceMobile size={18} stroke={2} />}
+              />
+            )}
+          </SettingsGroup>
 
-          <SettingsGroup label="그룹 관리">
-            <SettingsRow 
-              label="가족 이름" 
+          <SettingsGroup label={t("settings.groupManagement")}>
+            <SettingsRow
+              label={t("settings.familyName")}
               onClick={handleEditFamilyName}
-              trailing={<span className="text-sm font-medium text-primary">{familyName} <IconEdit className="inline" size={14}/></span>} 
-            />
-            <SettingsRow 
-              label="함께한 시간" 
-              description="우리가 함께 기록하기 시작한 날"
-              trailing={<span className="text-sm font-bold text-muted-foreground text-right"><span className="text-primary">12일째</span> 함께 기록 중</span>} 
+              trailing={<span className="text-sm font-medium text-primary">{familyName} <IconEdit className="inline" size={14}/></span>}
             />
             <SettingsRow
-              label="그룹 멤버"
-              description="총 3명 (관리자, 나, 구성원)"
+              label={t("settings.timeTogether")}
+              description={t("settings.timeTogetherDesc")}
+              trailing={<span className="text-sm font-bold text-muted-foreground text-right">{t("settings.daysTogether", { n: 12 })}</span>}
+            />
+            <SettingsRow
+              label={t("settings.groupMembers")}
+              description={t("settings.memberCount", { n: members.length })}
               icon={<IconUsers size={18} stroke={2} />}
               onClick={onOpenInvite}
               trailing={
@@ -258,48 +306,66 @@ export default function SettingsPage({
               }
             />
             <SettingsRow
-              label="다른 그룹 참여하기"
-              description="여러 그룹을 오가며 사용할 수 있어요"
+              label={t("settings.switchGroup")}
+              description={t("settings.switchGroupDesc")}
               icon={<IconUsers size={18} stroke={2} />}
-              onClick={() => alert("다중 그룹 전환 기능은 서버 업데이트 후 지원됩니다.")}
+              onClick={onOpenGroups}
             />
           </SettingsGroup>
 
           {/* Theme */}
-          <SettingsGroup label="테마 및 화면">
-            <SettingsRow
-              label="디자인 테마"
-              icon={<IconPalette size={18} stroke={2} />}
-              trailing={
-                <select 
-                  className="bg-chrome text-sm font-bold py-1.5 px-3 rounded-lg border-0 outline-none focus:ring-2 focus:ring-primary text-foreground"
-                  value={theme}
-                  onChange={(e) => setTheme(e.target.value)}
-                >
-                  <option value="clean-blue">클린 블루</option>
-                  <option value="bonfire">모닥불</option>
-                  <option value="ink">잉크</option>
-                  <option value="dark">다크</option>
-                  <option value="postit">포스트잇</option>
-                  <option value="beige-navy">베이지네이비</option>
-                </select>
-              }
-            />
+          <SettingsGroup label={t("settings.themeGroup")}>
+            <li className="px-4 py-4">
+              <span className="mb-3 flex items-center gap-2 text-[15px] font-bold text-foreground">
+                <IconPalette size={18} stroke={2} className="text-primary/80" />
+                {t("settings.designTheme")}
+              </span>
+              <div className="-mx-1 flex gap-4 overflow-x-auto px-1 pb-1 scrollbar-hide">
+                {THEMES.map((opt) => (
+                  <button
+                    key={opt.id}
+                    type="button"
+                    onClick={() => setTheme(opt.id)}
+                    className="flex shrink-0 flex-col items-center gap-1.5"
+                  >
+                    <span
+                      className={clsx(
+                        "flex h-12 w-12 items-center justify-center rounded-full shadow-sm ring-2 ring-offset-2 ring-offset-surface transition-all",
+                        theme === opt.id ? "ring-primary scale-105" : "ring-transparent"
+                      )}
+                      style={{ background: `linear-gradient(135deg, ${opt.bg} 50%, ${opt.primary} 50%)` }}
+                    >
+                      {theme === opt.id && (
+                        <IconCheck size={16} stroke={3} className="text-white drop-shadow" />
+                      )}
+                    </span>
+                    <span
+                      className={clsx(
+                        "whitespace-nowrap text-[11px] font-medium",
+                        theme === opt.id ? "font-bold text-primary" : "text-muted-foreground"
+                      )}
+                    >
+                      {t(opt.nameKey)}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </li>
           </SettingsGroup>
 
           {/* Notifications */}
-          <SettingsGroup label="알림 설정">
+          <SettingsGroup label={t("settings.notificationGroup")}>
             <SettingsRow
-              label="새 항목 및 일정 추가"
+              label={t("settings.notifyNewItem")}
               trailing={<Switch checked={notifyNewItem} onChange={setNotifyNewItem} />}
             />
             <SettingsRow
-              label="새 댓글 알림"
+              label={t("settings.notifyComments")}
               trailing={<Switch checked={notifyComments} onChange={setNotifyComments} />}
             />
             <SettingsRow
-              label="모닝 브리핑"
-              description="오늘의 일정과 장보기를 아침에 알려드려요"
+              label={t("settings.notifyBriefing")}
+              description={t("settings.notifyBriefingDesc")}
               trailing={
                 <div className="flex items-center gap-3">
                   {notifyBriefing && <input type="time" value={briefingTime} onChange={e => setBriefingTime(e.target.value)} className="bg-chrome text-sm p-1 rounded-md" />}
@@ -308,32 +374,32 @@ export default function SettingsPage({
               }
             />
             <SettingsRow
-              label="주간 요약"
+              label={t("settings.notifySummary")}
               trailing={<Switch checked={notifySummary} onChange={setNotifySummary} />}
             />
             <div className="border-t border-border/40 mx-4" />
             <SettingsRow
-              label="조용히 알림 (야간 모드)"
-              description="설정한 시간에는 푸시 알림이 울리지 않아요"
+              label={t("settings.quietMode")}
+              description={t("settings.quietModeDesc")}
               icon={<IconMoon size={18} stroke={2} />}
               trailing={<Switch checked={quietMode} onChange={setQuietMode} />}
             />
             {quietMode && (
               <li className="flex items-center justify-between px-10 py-3 bg-chrome/30 text-sm">
-                <div className="flex items-center gap-2 text-muted-foreground"><IconMoon size={16}/> 시작 <input type="time" value={quietStart} onChange={e => setQuietStart(e.target.value)} className="bg-chrome px-2 py-1 rounded-md ml-2"/></div>
-                <div className="flex items-center gap-2 text-muted-foreground"><IconSun size={16}/> 종료 <input type="time" value={quietEnd} onChange={e => setQuietEnd(e.target.value)} className="bg-chrome px-2 py-1 rounded-md ml-2"/></div>
+                <div className="flex items-center gap-2 text-muted-foreground"><IconMoon size={16}/> {t("settings.quietStart")} <input type="time" value={quietStart} onChange={e => setQuietStart(e.target.value)} className="bg-chrome px-2 py-1 rounded-md ml-2"/></div>
+                <div className="flex items-center gap-2 text-muted-foreground"><IconSun size={16}/> {t("settings.quietEnd")} <input type="time" value={quietEnd} onChange={e => setQuietEnd(e.target.value)} className="bg-chrome px-2 py-1 rounded-md ml-2"/></div>
               </li>
             )}
           </SettingsGroup>
 
           {/* Regional Settings */}
-          <SettingsGroup label="언어 및 지역">
+          <SettingsGroup label={t("settings.regionGroup")}>
             <SettingsRow
-              label="언어 설정"
+              label={t("settings.languageLabel")}
               icon={<IconLanguage size={18} stroke={2} />}
               trailing={
-                <select value={language} onChange={handleLanguageChange} className="bg-chrome text-sm font-bold py-1.5 px-3 rounded-lg outline-none text-foreground">
-                  <option value="auto">자동 (시스템)</option>
+                <select value={langSetting} onChange={handleLanguageChange} className="bg-chrome text-sm font-bold py-1.5 px-3 rounded-lg outline-none text-foreground">
+                  <option value="auto">{t("settings.langAuto")}</option>
                   <option value="ko">한국어</option>
                   <option value="en">English</option>
                   <option value="ja">日本語</option>
@@ -342,51 +408,51 @@ export default function SettingsPage({
               }
             />
             <SettingsRow
-              label="달력 공휴일 기준"
+              label={t("settings.holidayLabel")}
               icon={<IconCalendar size={18} stroke={2} />}
               trailing={
                 <select value={holiday} onChange={e => setHoliday(e.target.value)} className="bg-chrome text-sm font-bold py-1.5 px-3 rounded-lg outline-none text-foreground">
-                  <option value="auto">자동 (시스템)</option>
-                  <option value="KR">한국 🇰🇷</option>
-                  <option value="US">미국 🇺🇸</option>
-                  <option value="JP">일본 🇯🇵</option>
-                  <option value="CN">중국 🇨🇳</option>
+                  <option value="auto">{t("settings.holidayAuto")}</option>
+                  <option value="KR">{t("holiday.kr")}</option>
+                  <option value="US">{t("holiday.us")}</option>
+                  <option value="JP">{t("holiday.jp")}</option>
+                  <option value="CN">{t("holiday.cn")}</option>
                 </select>
               }
             />
           </SettingsGroup>
 
           {/* Interactions */}
-          <SettingsGroup label="추가 설정">
+          <SettingsGroup label={t("settings.additionalGroup")}>
             <SettingsRow
-              label="스와이프로 삭제/완료"
-              description="탭 이동 대신 항목을 밀어서 액션을 띄웁니다."
+              label={t("settings.swipeAction")}
+              description={t("settings.swipeActionDesc")}
               icon={<IconHandMove size={18} stroke={2} />}
               trailing={<Switch checked={swipeAction} onChange={setSwipeAction} />}
             />
           </SettingsGroup>
 
           {/* Danger Zone */}
-          <SettingsGroup label="계정 관리">
+          <SettingsGroup label={t("settings.accountGroup")}>
             <SettingsRow
-              label="로그아웃"
+              label={t("settings.signOut")}
               icon={<IconLogout size={18} stroke={2} />}
               onClick={onSignOut}
             />
             <SettingsRow
-              label="계정 삭제"
+              label={t("settings.deleteAccount")}
               icon={<IconTrash size={18} stroke={2} />}
               destructive
               onClick={() => {
-                if(window.confirm("정말 계정을 삭제하시겠습니까? 되돌릴 수 없습니다.")) {
-                  alert("계정 삭제 처리는 서버 연동 후 지원됩니다.");
+                if (window.confirm(t("settings.confirmDeleteAccount"))) {
+                  alert(t("settings.deleteAccountUnavailable"));
                 }
               }}
             />
           </SettingsGroup>
 
           <div className="mt-8 flex justify-center pb-8">
-            <span className="text-sm font-medium text-muted-foreground/60">담아락 {appVersion}</span>
+            <span className="text-sm font-medium text-muted-foreground/60">{t("appName")} {appVersion}</span>
           </div>
         </main>
       </div>
