@@ -58,6 +58,15 @@ export function useAppData() {
     }
   };
 
+
+  const updateFamilyName = async (name: string) => {
+    if (!family) return;
+    const { error } = await supabase.from("families").update({ name }).eq("id", family.id);
+    if (!error) {
+      setFamily(prev => prev ? { ...prev, name } : null);
+    }
+  };
+
   const loadFamilyData = useCallback(
     async (uid: string) => {
       const { data: membership, error: mErr } = await supabase

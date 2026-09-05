@@ -120,6 +120,14 @@ export default function SettingsPage({
 
   // Localizations & Regional
   const [language, setLanguage] = useState(() => me?.language || localStorage.getItem("language") || "auto");
+
+  const handleEditFamilyName = async () => {
+    const newName = window.prompt("새로운 가족 이름을 입력하세요", familyName);
+    if (newName && newName.trim() !== "" && newName !== familyName) {
+      if (updateFamilyName) await updateFamilyName(newName.trim());
+    }
+  };
+
   const handleLanguageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const val = e.target.value;
     setLanguage(val);
@@ -216,7 +224,7 @@ export default function SettingsPage({
           <SettingsGroup label="그룹 관리">
             <SettingsRow 
               label="가족 이름" 
-              onClick={() => alert("가족 이름 수정 기능은 곧 제공될 예정입니다.")}
+              onClick={handleEditFamilyName}
               trailing={<span className="text-sm font-medium text-primary">{familyName} <IconEdit className="inline" size={14}/></span>} 
             />
             <SettingsRow 

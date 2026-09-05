@@ -136,9 +136,7 @@ export default function FamilyInvite({
                       ) : (
                         m.initial
                       )}
-                      {m.online && (
-                        <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-surface bg-success z-10" />
-                      )}
+                      
                     </span>
                     <span className="flex-1 text-base font-medium text-foreground">{m.name}</span>
                   </li>

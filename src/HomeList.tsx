@@ -23,6 +23,7 @@ export default function HomeList(props: {
   items: Item[];
   members: Member[];
   userId: string | null;
+  comments?: import("./data").Comment[];
   familyId: string | null;
   onToggleDone: (id: string) => void;
   onAssignCategory: (id: string, category: Category) => void;
@@ -168,9 +169,7 @@ export default function HomeList(props: {
                   ) : (
                     m.initial
                   )}
-                  {m.online && (
-                    <span className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full border-2 border-background bg-success z-10" />
-                  )}
+                  
                 </div>
               ))}
             </div>
@@ -257,7 +256,7 @@ export default function HomeList(props: {
                     onMove={moveItems}
                     onSelect={setSelectedItem}
                     members={members}
-                    comments={comments}
+                    comments={props.comments}
                     userId={userId}
                   />
                 </div>
@@ -397,7 +396,7 @@ export default function HomeList(props: {
                 <CalendarView
                   items={todo}
                   members={members}
-                  comments={comments}
+                  comments={props.comments}
                   userId={userId}
                   onToggleDone={onToggleDone}
                   onAddTodo={(title, dateStr) => props.addItem({ title, category: "todo", meta: dateStr })}
@@ -414,7 +413,7 @@ export default function HomeList(props: {
                     onEdit={handleEditTodo}
                     onSelect={setSelectedItem}
                     members={members}
-                    comments={comments}
+                    comments={props.comments}
                     userId={userId}
                   />
                 </div>
