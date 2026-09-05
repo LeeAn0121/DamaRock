@@ -132,6 +132,8 @@ export default function SettingsPage({
     localStorage.setItem("notifyBriefing", String(notifyBriefing));
     localStorage.setItem("briefingTime", briefingTime);
     localStorage.setItem("notifySummary", String(notifySummary));
+    localStorage.setItem("theme", theme);
+    document.documentElement.setAttribute("data-theme", theme);
     localStorage.setItem("quietMode", String(quietMode));
     localStorage.setItem("quietStart", quietStart);
     localStorage.setItem("quietEnd", quietEnd);
