@@ -162,56 +162,54 @@ export function ItemRows({
         ))}
       </ul>
 
-      {/* Action Popup */}
-      <div
-        className={clsx(
-          "fixed inset-0 z-[120] bg-black/40 backdrop-blur-sm transition-opacity duration-300",
-          actionItem ? "opacity-100" : "pointer-events-none opacity-0"
-        )}
-        onClick={() => setActionItem(null)}
-      />
-      <div
-        className={clsx(
-          "fixed inset-x-0 bottom-0 z-[130] flex max-h-[85dvh] flex-col rounded-t-3xl bg-background shadow-2xl transition-transform duration-300 ease-out sm:mx-auto sm:max-w-md pb-safe",
-          actionItem ? "translate-y-0" : "translate-y-full"
-        )}
-      >
-        <div className="flex h-1.5 w-full items-center justify-center pt-3 pb-4">
-          <div className="h-1.5 w-10 rounded-full bg-border/60" />
-        </div>
-        <div className="px-6 pb-4">
-          <h3 className="text-lg font-bold text-foreground mb-4 truncate">{actionItem?.title}</h3>
-          <div className="flex flex-col gap-2">
-            {onMove && (
-              <button
-                className="flex items-center gap-3 w-full p-4 rounded-xl bg-surface hover:bg-chrome active:scale-95 transition-all text-left font-medium"
-                onClick={() => { if(actionItem) onMove(actionItem); setActionItem(null); }}
-              >
-                <IconFolder size={20} className="text-muted-foreground" />
-                {t("itemRows.move")}
-              </button>
-            )}
-            {onEdit && (
-              <button
-                className="flex items-center gap-3 w-full p-4 rounded-xl bg-surface hover:bg-chrome active:scale-95 transition-all text-left font-medium"
-                onClick={() => { if(actionItem) onEdit(actionItem); setActionItem(null); }}
-              >
-                <IconEdit size={20} className="text-primary" />
-                {t("itemRows.editItem")}
-              </button>
-            )}
-            {onDelete && (
-              <button
-                className="flex items-center gap-3 w-full p-4 rounded-xl bg-danger/10 hover:bg-danger/20 active:scale-95 transition-all text-left font-medium text-danger"
-                onClick={() => { if(actionItem) onDelete(actionItem.id); setActionItem(null); }}
-              >
-                <IconTrash size={20} />
-                {t("itemRows.deleteItem")}
-              </button>
-            )}
+      {/* Action Popup — only exists in the DOM while open, so there's nothing
+          to briefly show/hide on mount (it used to be always-mounted and
+          CSS-toggled, which could flash open for a frame on page load). */}
+      {actionItem && (
+        <>
+          <div
+            className="fixed inset-0 z-[120] animate-in fade-in bg-black/40 backdrop-blur-sm duration-200"
+            onClick={() => setActionItem(null)}
+          />
+          <div className="fixed inset-x-0 bottom-0 z-[130] flex max-h-[85dvh] animate-in slide-in-from-bottom-full flex-col rounded-t-3xl bg-background shadow-2xl duration-300 ease-out sm:mx-auto sm:max-w-md pb-safe">
+            <div className="flex h-1.5 w-full items-center justify-center pt-3 pb-4">
+              <div className="h-1.5 w-10 rounded-full bg-border/60" />
+            </div>
+            <div className="px-6 pb-4">
+              <h3 className="text-lg font-bold text-foreground mb-4 truncate">{actionItem.title}</h3>
+              <div className="flex flex-col gap-2">
+                {onMove && (
+                  <button
+                    className="flex items-center gap-3 w-full p-4 rounded-xl bg-surface hover:bg-chrome active:scale-95 transition-all text-left font-medium"
+                    onClick={() => { onMove(actionItem); setActionItem(null); }}
+                  >
+                    <IconFolder size={20} className="text-muted-foreground" />
+                    {t("itemRows.move")}
+                  </button>
+                )}
+                {onEdit && (
+                  <button
+                    className="flex items-center gap-3 w-full p-4 rounded-xl bg-surface hover:bg-chrome active:scale-95 transition-all text-left font-medium"
+                    onClick={() => { onEdit(actionItem); setActionItem(null); }}
+                  >
+                    <IconEdit size={20} className="text-primary" />
+                    {t("itemRows.editItem")}
+                  </button>
+                )}
+                {onDelete && (
+                  <button
+                    className="flex items-center gap-3 w-full p-4 rounded-xl bg-danger/10 hover:bg-danger/20 active:scale-95 transition-all text-left font-medium text-danger"
+                    onClick={() => { onDelete(actionItem.id); setActionItem(null); }}
+                  >
+                    <IconTrash size={20} />
+                    {t("itemRows.deleteItem")}
+                  </button>
+                )}
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
+        </>
+      )}
     </>
   );
 }

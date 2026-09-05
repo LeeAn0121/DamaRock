@@ -4,6 +4,7 @@ import { supabase } from "./lib/supabaseClient";
 import type { Item, Member } from "./data";
 import { memberName } from "./data";
 import { useI18n } from "./lib/i18n";
+import { showToast } from "./components/Toast";
 import clsx from "clsx";
 
 type Comment = {
@@ -94,24 +95,37 @@ export default function ItemDetailSheet({
     const content = draft.trim();
     setDraft(""); // optimistic clear
 
-    await supabase.from("comments").insert({
+    const { error } = await supabase.from("comments").insert({
       item_id: item.id,
       family_id: familyId,
       author_id: userId,
       content,
     });
+    if (error) {
+      console.error("Comment insert error:", error);
+      setDraft(content);
+      showToast(t("itemDetail.addFailed"));
+    }
   };
 
   const handleEdit = async (commentId: string, oldContent: string) => {
     const newContent = window.prompt(t("itemDetail.editPrompt"), oldContent);
     if (newContent !== null && newContent.trim() !== oldContent) {
-      await supabase.from("comments").update({ content: newContent.trim() }).eq("id", commentId);
+      const { error } = await supabase.from("comments").update({ content: newContent.trim() }).eq("id", commentId);
+      if (error) {
+        console.error("Comment update error:", error);
+        showToast(t("itemDetail.editFailed"));
+      }
     }
   };
 
   const handleDelete = async (commentId: string) => {
     if (window.confirm(t("itemDetail.confirmDelete"))) {
-      await supabase.from("comments").delete().eq("id", commentId);
+      const { error } = await supabase.from("comments").delete().eq("id", commentId);
+      if (error) {
+        console.error("Comment delete error:", error);
+        showToast(t("itemDetail.deleteFailed"));
+      }
     }
   };
 
@@ -163,10 +177,12 @@ export default function ItemDetailSheet({
                     <span className="text-[10px] text-muted-foreground">
                       {isMe ? t("common.me") : memberName(members, comment.author_id)}
                     </span>
-                    <div className="flex gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
-                      <button onClick={() => handleEdit(comment.id, comment.content)} className="text-[10px] text-muted-foreground hover:text-primary">{t("common.edit")}</button>
-                      <button onClick={() => handleDelete(comment.id)} className="text-[10px] text-muted-foreground hover:text-danger">{t("common.delete")}</button>
-                    </div>
+                    {isMe && (
+                      <div className="flex gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                        <button onClick={() => handleEdit(comment.id, comment.content)} className="text-[10px] text-muted-foreground hover:text-primary">{t("common.edit")}</button>
+                        <button onClick={() => handleDelete(comment.id)} className="text-[10px] text-muted-foreground hover:text-danger">{t("common.delete")}</button>
+                      </div>
+                    )}
                   </div>
                   <div className={clsx("px-4 py-2 rounded-2xl text-sm", isMe ? "bg-primary text-primary-foreground rounded-tr-sm" : "bg-surface text-foreground rounded-tl-sm")}>
                     {comment.content}

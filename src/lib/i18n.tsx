@@ -148,6 +148,9 @@ const dict: Dict = {
   "itemDetail.placeholder": { ko: "댓글 입력...", en: "Write a comment...", ja: "コメントを入力...", zh: "输入评论..." },
   "itemDetail.editPrompt": { ko: "댓글을 수정하세요:", en: "Edit your comment:", ja: "コメントを修正してください：", zh: "请修改评论：" },
   "itemDetail.confirmDelete": { ko: "댓글을 삭제하시겠습니까?", en: "Delete this comment?", ja: "コメントを削除しますか？", zh: "确定要删除这条评论吗？" },
+  "itemDetail.addFailed": { ko: "댓글 등록에 실패했어요. 다시 시도해주세요.", en: "Couldn't post the comment. Please try again.", ja: "コメントの投稿に失敗しました。もう一度お試しください。", zh: "评论发布失败，请重试。" },
+  "itemDetail.editFailed": { ko: "댓글 수정에 실패했어요. 다시 시도해주세요.", en: "Couldn't edit the comment. Please try again.", ja: "コメントの修正に失敗しました。もう一度お試しください。", zh: "评论修改失败，请重试。" },
+  "itemDetail.deleteFailed": { ko: "댓글 삭제에 실패했어요. 다시 시도해주세요.", en: "Couldn't delete the comment. Please try again.", ja: "コメントの削除に失敗しました。もう一度お試しください。", zh: "评论删除失败，请重试。" },
 
   // item rows
   "itemRows.empty": { ko: "모두 담아뒀어요", en: "All caught up", ja: "すべて完了しました", zh: "全部完成啦" },
@@ -259,8 +262,8 @@ const dict: Dict = {
   "theme.grape-dark": { ko: "그레이프 다크", en: "Grape Dark", ja: "グレープダーク", zh: "葡萄暗紫" },
 
   // roles & regions
-  "role.adult": { ko: "어른", en: "Adult", ja: "大人", zh: "成人" },
-  "role.child": { ko: "아이", en: "Child", ja: "子供", zh: "儿童" },
+  "role.leader": { ko: "가족대표", en: "Family lead", ja: "家族代表", zh: "家庭代表" },
+  "role.member": { ko: "구성원", en: "Member", ja: "メンバー", zh: "成员" },
   "holiday.kr": { ko: "한국 🇰🇷", en: "Korea 🇰🇷", ja: "韓国 🇰🇷", zh: "韩国 🇰🇷" },
   "holiday.us": { ko: "미국 🇺🇸", en: "USA 🇺🇸", ja: "アメリカ 🇺🇸", zh: "美国 🇺🇸" },
   "holiday.jp": { ko: "일본 🇯🇵", en: "Japan 🇯🇵", ja: "日本 🇯🇵", zh: "日本 🇯🇵" },

@@ -4,7 +4,7 @@ export type Member = {
   id: string;
   name: string;
   initial: string;
-  role: "어른" | "아이";
+  role: "가족대표" | "구성원";
   language?: string;
 
   avatar_url?: string | null;

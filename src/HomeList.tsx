@@ -394,6 +394,8 @@ export default function HomeList(props: {
                 <GroceryFolders
                   items={items}
                   members={members}
+                  comments={props.comments}
+                  userId={userId}
                   onToggleDone={onToggleDone}
                   onDelete={handleDelete}
                   onEdit={handleEdit}

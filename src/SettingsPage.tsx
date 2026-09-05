@@ -234,7 +234,7 @@ export default function SettingsPage({
                   <button className="text-muted-foreground hover:text-primary transition-colors p-1" onClick={handleEditDisplayName}><IconUserEdit size={16} stroke={2}/></button>
                 </span>
                 <span className="block text-sm font-medium text-muted-foreground">
-                  {me?.role === "어른" ? t("role.adult") : me?.role === "아이" ? t("role.child") : t("settings.role")}
+                  {me?.role === "가족대표" ? t("role.leader") : me?.role === "구성원" ? t("role.member") : t("settings.role")}
                 </span>
               </span>
             </div>

@@ -14,7 +14,7 @@ const ACTIVE_FAMILY_KEY = "damarock_active_family";
 
 type MemberRow = {
   user_id: string;
-  role: "어른" | "아이";
+  role: "가족대표" | "구성원";
   profiles: { display_name: string; initial: string; avatar_url: string | null; language?: string } | null;
 };
 
