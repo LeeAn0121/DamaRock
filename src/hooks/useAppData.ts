@@ -189,6 +189,9 @@ export function useAppData() {
           const isSystem = (payload.new && payload.new.title === '__SYSTEM_FOLDERS__') || (payload.old && payload.old.title === '__SYSTEM_FOLDERS__');
           if (isSystem) return;
 
+          const notify = localStorage.getItem("notifyItemChanges") !== "false";
+          if (!notify) return;
+
           if (typeof window !== "undefined" && "Notification" in window) {
             if (Notification.permission === "default") {
               Notification.requestPermission();
@@ -203,7 +206,7 @@ export function useAppData() {
                 const categoryStr = itemData.category === "todo" ? "할 일" : (itemData.category === "grocery" ? "장보기 항목" : "항목");
                 const itemTitle = itemData.title;
                 
-                if (eventType === "INSERT") {
+                if (eventType === "INSERT" && itemData.added_by !== userId) {
                   body = `새로운 ${categoryStr} '${itemTitle}'(이)가 등록되었습니다.`;
                 } else if (eventType === "UPDATE") {
                   body = `${categoryStr} '${itemTitle}'(이)가 수정/완료되었습니다.`;
@@ -222,7 +225,15 @@ export function useAppData() {
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "family_members", filter: `family_id=eq.${family.id}` },
-        () => loadFamilyData(userId)
+        (payload) => {
+          loadFamilyData(userId);
+          if (payload.eventType === "INSERT" && payload.new.user_id !== userId) {
+            const notify = localStorage.getItem("notifyMemberJoin") !== "false";
+            if (notify && typeof window !== "undefined" && "Notification" in window && Notification.permission === "granted") {
+              new Notification("담아락 소식", { body: "새로운 가족 구성원이 참여했습니다!", icon: `${import.meta.env.BASE_URL}icon-192.png` });
+            }
+          }
+        }
       )
       .on(
         "postgres_changes",

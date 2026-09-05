@@ -19,8 +19,20 @@ export default function SettingsPage({
   onOpenInvite: () => void;
   onSignOut: () => void;
 }) {
-  const [newItemAlerts, setNewItemAlerts] = useState(true);
-  const [doneAlerts, setDoneAlerts] = useState(true);
+  const [notifyItemChanges, setNotifyItemChanges] = useState(() => typeof window !== 'undefined' ? localStorage.getItem("notifyItemChanges") !== "false" : true);
+  const [notifyMemberJoin, setNotifyMemberJoin] = useState(() => typeof window !== 'undefined' ? localStorage.getItem("notifyMemberJoin") !== "false" : true);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem("notifyItemChanges", String(notifyItemChanges));
+    }
+  }, [notifyItemChanges]);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem("notifyMemberJoin", String(notifyMemberJoin));
+    }
+  }, [notifyMemberJoin]);
   const appVersion = `v${__APP_VERSION__}`;
 
   const me = members.find((m) => m.id === userId);
@@ -88,12 +100,12 @@ export default function SettingsPage({
 
           <SettingsGroup label="알림">
             <SettingsRow
-              label="새 항목 알림"
-              trailing={<Switch checked={newItemAlerts} onChange={setNewItemAlerts} label="새 항목 알림" />}
+              label="새로운 구성원 참여 알림"
+              trailing={<Switch checked={notifyMemberJoin} onChange={setNotifyMemberJoin} label="새로운 구성원 참여 알림" />}
             />
             <SettingsRow
-              label="완료 알림"
-              trailing={<Switch checked={doneAlerts} onChange={setDoneAlerts} label="완료 알림" />}
+              label="일정 및 장보기 변경 알림"
+              trailing={<Switch checked={notifyItemChanges} onChange={setNotifyItemChanges} label="일정 및 장보기 변경 알림" />}
             />
           </SettingsGroup>
 
