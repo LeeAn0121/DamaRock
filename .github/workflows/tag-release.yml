@@ -21,16 +21,34 @@ jobs:
         id: version
         run: echo "version=$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
 
-      - name: Create and push tag if it doesn't exist yet
+      - name: Check whether tag already exists
+        id: check
         env:
           TAG: v${{ steps.version.outputs.version }}
         run: |
           git fetch --tags --quiet
           if git rev-parse "$TAG" >/dev/null 2>&1; then
-            echo "Tag $TAG already exists, skipping."
-            exit 0
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
           fi
+
+      - name: Create and push tag
+        if: steps.check.outputs.exists == 'false'
+        env:
+          TAG: v${{ steps.version.outputs.version }}
+        run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git tag -a "$TAG" -m "Release $TAG"
           git push origin "$TAG"
+
+      # Tags pushed with the default GITHUB_TOKEN don't trigger other workflows
+      # (release.yml's `on: push: tags`), so the release is created directly here
+      # instead of relying on that chain.
+      - name: Create GitHub Release
+        if: steps.check.outputs.exists == 'false'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.version.outputs.version }}
+          generate_release_notes: true
