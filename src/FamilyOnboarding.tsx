@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { IconLogout, IconUserPlus, IconUsers } from "@tabler/icons-react";
 import { useI18n } from "./lib/i18n";
+import Spinner from "./components/Spinner";
 
 export default function FamilyOnboarding({
   onCreate,
@@ -8,8 +9,8 @@ export default function FamilyOnboarding({
   onSignOut,
   error,
 }: {
-  onCreate: (name: string) => void;
-  onJoin: (code: string) => void;
+  onCreate: (name: string) => Promise<void>;
+  onJoin: (code: string) => Promise<void>;
   onSignOut: () => void;
   error?: string | null;
 }) {
@@ -17,10 +18,32 @@ export default function FamilyOnboarding({
   const [mode, setMode] = useState<"choose" | "create" | "join">("choose");
   const [name, setName] = useState(t("onboarding.defaultFamilyName"));
   const [code, setCode] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleCreate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitting(true);
+    try {
+      await onCreate(name.trim() || t("onboarding.defaultFamilyName"));
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleJoin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!code.trim()) return;
+    setSubmitting(true);
+    try {
+      await onJoin(code.trim());
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   return (
     <div className="flex min-h-dvh flex-col bg-gradient-to-b from-background via-background to-primary/5 px-6 pt-10 font-sans text-foreground pb-10">
-      <header className="flex items-center justify-between mb-8">
+      <header className="flex animate-in fade-in items-center justify-between mb-8 duration-500">
         <div className="flex items-center gap-2">
           <img src={`${import.meta.env.BASE_URL}icon-192.png`} alt={t("appName")} className="h-6 w-6 rounded-md shadow-sm" />
           <span className="text-xl font-extrabold tracking-tight text-primary">{t("appName")}</span>
@@ -37,7 +60,7 @@ export default function FamilyOnboarding({
 
       <div className="flex flex-1 flex-col justify-center pb-20">
         {mode === "choose" && (
-          <div className="flex flex-col items-center">
+          <div className="flex animate-in fade-in slide-in-from-bottom-2 flex-col items-center duration-400">
             <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-primary/10 text-primary">
               <IconUsers size={36} stroke={1.5} />
             </div>
@@ -82,11 +105,8 @@ export default function FamilyOnboarding({
 
         {mode === "create" && (
           <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              onCreate(name.trim() || t("onboarding.defaultFamilyName"));
-            }}
-            className="flex w-full max-w-sm mx-auto flex-col gap-6"
+            onSubmit={handleCreate}
+            className="flex w-full max-w-sm mx-auto animate-in fade-in slide-in-from-bottom-2 flex-col gap-6 duration-300"
           >
             <div className="text-center mb-4">
               <h1 className="text-2xl font-extrabold text-foreground tracking-tight">{t("onboarding.createTitle")}</h1>
@@ -109,14 +129,17 @@ export default function FamilyOnboarding({
               <button
                 type="button"
                 onClick={() => setMode("choose")}
-                className="flex min-h-14 flex-1 items-center justify-center rounded-xl bg-surface border border-border/60 text-[15px] font-bold text-foreground shadow-sm hover:bg-chrome transition-colors"
+                disabled={submitting}
+                className="flex min-h-14 flex-1 items-center justify-center rounded-xl bg-surface border border-border/60 text-[15px] font-bold text-foreground shadow-sm hover:bg-chrome transition-colors disabled:opacity-50"
               >
                 {t("common.back")}
               </button>
               <button
                 type="submit"
-                className="flex min-h-14 flex-[2] items-center justify-center rounded-xl bg-primary text-[15px] font-bold text-primary-foreground shadow-sm transition-transform active:scale-[0.98]"
+                disabled={submitting}
+                className="flex min-h-14 flex-[2] items-center justify-center gap-2 rounded-xl bg-primary text-[15px] font-bold text-primary-foreground shadow-sm transition-transform active:scale-[0.98] disabled:opacity-70"
               >
+                {submitting && <Spinner size={18} />}
                 {t("onboarding.createSubmit")}
               </button>
             </div>
@@ -125,11 +148,8 @@ export default function FamilyOnboarding({
 
         {mode === "join" && (
           <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              onJoin(code.trim());
-            }}
-            className="flex w-full max-w-sm mx-auto flex-col gap-6"
+            onSubmit={handleJoin}
+            className="flex w-full max-w-sm mx-auto animate-in fade-in slide-in-from-bottom-2 flex-col gap-6 duration-300"
           >
             <div className="text-center mb-4">
               <h1 className="text-2xl font-extrabold text-foreground tracking-tight">{t("onboarding.joinTitle")}</h1>
@@ -152,15 +172,17 @@ export default function FamilyOnboarding({
               <button
                 type="button"
                 onClick={() => setMode("choose")}
-                className="flex min-h-14 flex-1 items-center justify-center rounded-xl bg-surface border border-border/60 text-[15px] font-bold text-foreground shadow-sm hover:bg-chrome transition-colors"
+                disabled={submitting}
+                className="flex min-h-14 flex-1 items-center justify-center rounded-xl bg-surface border border-border/60 text-[15px] font-bold text-foreground shadow-sm hover:bg-chrome transition-colors disabled:opacity-50"
               >
                 {t("common.back")}
               </button>
               <button
                 type="submit"
-                disabled={!code.trim()}
-                className="flex min-h-14 flex-[2] items-center justify-center rounded-xl bg-primary text-[15px] font-bold text-primary-foreground shadow-sm transition-transform disabled:bg-chrome disabled:text-muted-foreground disabled:shadow-none active:scale-[0.98]"
+                disabled={!code.trim() || submitting}
+                className="flex min-h-14 flex-[2] items-center justify-center gap-2 rounded-xl bg-primary text-[15px] font-bold text-primary-foreground shadow-sm transition-transform disabled:bg-chrome disabled:text-muted-foreground disabled:shadow-none active:scale-[0.98]"
               >
+                {submitting && <Spinner size={18} />}
                 {t("onboarding.joinSubmit")}
               </button>
             </div>

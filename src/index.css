@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @import "pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css";
 @import "../.styleseed/palette.css";
+@plugin "tailwindcss-animate";
 
 :root {
   /* Soften the generated near-black (#0D0B09) to a warm dark grey — pure/near

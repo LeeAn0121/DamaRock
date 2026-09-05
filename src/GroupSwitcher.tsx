@@ -2,6 +2,7 @@ import { useState } from "react";
 import { IconChevronLeft, IconCheck, IconUsers, IconUserPlus } from "@tabler/icons-react";
 import type { Family } from "./hooks/useAppData";
 import { useI18n } from "./lib/i18n";
+import Spinner from "./components/Spinner";
 
 export default function GroupSwitcher({
   families,
@@ -15,8 +16,8 @@ export default function GroupSwitcher({
   families: Family[];
   activeFamilyId: string | null;
   onSwitch: (id: string) => void;
-  onCreate: (name: string) => void;
-  onJoin: (code: string) => void;
+  onCreate: (name: string) => Promise<void>;
+  onJoin: (code: string) => Promise<void>;
   onBack: () => void;
   error?: string | null;
 }) {
@@ -24,9 +25,33 @@ export default function GroupSwitcher({
   const [mode, setMode] = useState<"list" | "create" | "join">("list");
   const [name, setName] = useState(t("onboarding.defaultFamilyName"));
   const [code, setCode] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   const activeFamily = families.find((f) => f.id === activeFamilyId);
   const otherFamilies = families.filter((f) => f.id !== activeFamilyId);
+
+  const handleCreate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitting(true);
+    try {
+      await onCreate(name.trim() || t("onboarding.defaultFamilyName"));
+      setMode("list");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleJoin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!code.trim()) return;
+    setSubmitting(true);
+    try {
+      await onJoin(code.trim());
+      setMode("list");
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   return (
     <div className="min-h-dvh bg-background font-sans text-foreground">
@@ -45,7 +70,7 @@ export default function GroupSwitcher({
 
         <main className="flex-1 overflow-y-auto px-5 pb-10 pt-4">
           {mode === "list" && (
-            <>
+            <div className="animate-in fade-in slide-in-from-bottom-1 duration-300">
               {error && (
                 <p className="mb-4 rounded-lg bg-danger/10 px-4 py-2 text-center text-[13px] font-bold text-danger">
                   {error}
@@ -107,17 +132,13 @@ export default function GroupSwitcher({
                   </span>
                 </button>
               </div>
-            </>
+            </div>
           )}
 
           {mode === "create" && (
             <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                onCreate(name.trim() || t("onboarding.defaultFamilyName"));
-                setMode("list");
-              }}
-              className="flex w-full max-w-sm mx-auto flex-col gap-6 pt-4"
+              onSubmit={handleCreate}
+              className="flex w-full max-w-sm mx-auto animate-in fade-in slide-in-from-bottom-2 flex-col gap-6 pt-4 duration-300"
             >
               <div className="text-center mb-4">
                 <h1 className="text-2xl font-extrabold text-foreground tracking-tight">{t("onboarding.createTitle")}</h1>
@@ -137,14 +158,17 @@ export default function GroupSwitcher({
                 <button
                   type="button"
                   onClick={() => setMode("list")}
-                  className="flex min-h-14 flex-1 items-center justify-center rounded-xl bg-surface border border-border/60 text-[15px] font-bold text-foreground shadow-sm hover:bg-chrome transition-colors"
+                  disabled={submitting}
+                  className="flex min-h-14 flex-1 items-center justify-center rounded-xl bg-surface border border-border/60 text-[15px] font-bold text-foreground shadow-sm hover:bg-chrome transition-colors disabled:opacity-50"
                 >
                   {t("common.cancel")}
                 </button>
                 <button
                   type="submit"
-                  className="flex min-h-14 flex-[2] items-center justify-center rounded-xl bg-primary text-[15px] font-bold text-primary-foreground shadow-sm transition-transform active:scale-[0.98]"
+                  disabled={submitting}
+                  className="flex min-h-14 flex-[2] items-center justify-center gap-2 rounded-xl bg-primary text-[15px] font-bold text-primary-foreground shadow-sm transition-transform active:scale-[0.98] disabled:opacity-70"
                 >
+                  {submitting && <Spinner size={18} />}
                   {t("onboarding.createSubmit")}
                 </button>
               </div>
@@ -153,13 +177,8 @@ export default function GroupSwitcher({
 
           {mode === "join" && (
             <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                if (!code.trim()) return;
-                onJoin(code.trim());
-                setMode("list");
-              }}
-              className="flex w-full max-w-sm mx-auto flex-col gap-6 pt-4"
+              onSubmit={handleJoin}
+              className="flex w-full max-w-sm mx-auto animate-in fade-in slide-in-from-bottom-2 flex-col gap-6 pt-4 duration-300"
             >
               <div className="text-center mb-4">
                 <h1 className="text-2xl font-extrabold text-foreground tracking-tight">{t("onboarding.joinTitle")}</h1>
@@ -179,15 +198,17 @@ export default function GroupSwitcher({
                 <button
                   type="button"
                   onClick={() => setMode("list")}
-                  className="flex min-h-14 flex-1 items-center justify-center rounded-xl bg-surface border border-border/60 text-[15px] font-bold text-foreground shadow-sm hover:bg-chrome transition-colors"
+                  disabled={submitting}
+                  className="flex min-h-14 flex-1 items-center justify-center rounded-xl bg-surface border border-border/60 text-[15px] font-bold text-foreground shadow-sm hover:bg-chrome transition-colors disabled:opacity-50"
                 >
                   {t("common.cancel")}
                 </button>
                 <button
                   type="submit"
-                  disabled={!code.trim()}
-                  className="flex min-h-14 flex-[2] items-center justify-center rounded-xl bg-primary text-[15px] font-bold text-primary-foreground shadow-sm transition-transform disabled:bg-chrome disabled:text-muted-foreground disabled:shadow-none active:scale-[0.98]"
+                  disabled={!code.trim() || submitting}
+                  className="flex min-h-14 flex-[2] items-center justify-center gap-2 rounded-xl bg-primary text-[15px] font-bold text-primary-foreground shadow-sm transition-transform disabled:bg-chrome disabled:text-muted-foreground disabled:shadow-none active:scale-[0.98]"
                 >
+                  {submitting && <Spinner size={18} />}
                   {t("onboarding.joinSubmit")}
                 </button>
               </div>

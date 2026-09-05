@@ -13,6 +13,7 @@ export function ActionableItem({
   onToggle,
   onLongPress,
   onSelect,
+  index = 0,
 }: {
   item: Item;
   members: Member[];
@@ -21,6 +22,7 @@ export function ActionableItem({
   onToggle: (id: string) => void;
   onLongPress?: (item: Item) => void;
   onSelect?: (item: Item) => void;
+  index?: number;
 }) {
   const { t } = useI18n();
   const timerRef = useRef<number | null>(null);
@@ -54,7 +56,8 @@ export function ActionableItem({
 
   return (
     <li
-      className="group relative flex flex-col border-b border-border/40 last:border-0 bg-surface select-none overflow-hidden"
+      className="group relative flex flex-col border-b border-border/40 last:border-0 bg-surface select-none overflow-hidden animate-in fade-in slide-in-from-bottom-1 fill-mode-both"
+      style={{ animationDelay: `${Math.min(index, 8) * 40}ms`, animationDuration: "300ms" }}
       onContextMenu={handleContextMenu}
     >
       <div
@@ -144,10 +147,11 @@ export function ItemRows({
   return (
     <>
       <ul className="divide-y divide-border/60">
-        {items.map((item) => (
+        {items.map((item, index) => (
           <ActionableItem
             key={item.id}
             item={item}
+            index={index}
             members={members}
             comments={comments}
             userId={userId}

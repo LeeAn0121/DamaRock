@@ -287,6 +287,7 @@ export default function HomeList(props: {
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
         >
+          <div key={currentTab} className="animate-in fade-in duration-200">
           {currentTab === "grocery" ? (
             activeItems.filter(i => i.category === "grocery" || i.category === "inbox").length === 0 ? (
               <EmptyState />
@@ -410,6 +411,7 @@ export default function HomeList(props: {
               )}
             </>
           )}
+          </div>
         </main>
 
         <ActivitySheet
@@ -476,22 +478,51 @@ function EmptyState() {
   );
 }
 
+function SkeletonBlock({ className, delay }: { className: string; delay: number }) {
+  return (
+    <div
+      className={clsx("animate-in fade-in slide-in-from-bottom-1 fill-mode-both", className)}
+      style={{ animationDelay: `${delay}ms`, animationDuration: "500ms" }}
+    >
+      <div className="h-full w-full animate-pulse rounded-[inherit] bg-chrome" />
+    </div>
+  );
+}
+
 export function LoadingState() {
   const { t } = useI18n();
   return (
-    <div className="min-h-dvh bg-background font-sans">
-      <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col">
+    <div className="flex min-h-dvh flex-col items-center bg-background font-sans">
+      <div className="flex min-h-dvh w-full max-w-md flex-col">
         <div className="flex items-center justify-between border-b border-border/60 px-4 py-3">
-          <span className="text-base font-bold text-primary">{t("appName")}</span>
-          <div className="h-9 w-9 animate-pulse rounded-full bg-chrome" />
+          <span className="flex animate-in fade-in items-center gap-2 text-base font-bold text-primary">
+            <img
+              src={`${import.meta.env.BASE_URL}icon-192.png`}
+              alt=""
+              className="h-6 w-6 animate-pulse rounded-md"
+              style={{ animationDuration: "1.6s" }}
+            />
+            {t("appName")}
+          </span>
+          <SkeletonBlock className="h-9 w-9 rounded-full" delay={0} />
         </div>
         <div className="px-4 pt-4">
-          <div className="h-4 w-32 animate-pulse rounded bg-chrome" />
-          <div className="mt-3 h-24 animate-pulse rounded-lg bg-chrome/70" />
-          <div className="mt-6 h-4 w-20 animate-pulse rounded bg-chrome" />
-          <div className="mt-2 h-40 animate-pulse rounded-lg bg-chrome/50" />
-          <div className="mt-6 h-4 w-16 animate-pulse rounded bg-chrome" />
-          <div className="mt-2 h-32 animate-pulse rounded-lg bg-chrome/50" />
+          <SkeletonBlock className="h-4 w-32 rounded" delay={60} />
+          <div className="mt-3">
+            <SkeletonBlock className="h-24 rounded-lg" delay={120} />
+          </div>
+          <div className="mt-6">
+            <SkeletonBlock className="h-4 w-20 rounded" delay={180} />
+          </div>
+          <div className="mt-2">
+            <SkeletonBlock className="h-40 rounded-lg" delay={240} />
+          </div>
+          <div className="mt-6">
+            <SkeletonBlock className="h-4 w-16 rounded" delay={300} />
+          </div>
+          <div className="mt-2">
+            <SkeletonBlock className="h-32 rounded-lg" delay={360} />
+          </div>
         </div>
       </div>
     </div>

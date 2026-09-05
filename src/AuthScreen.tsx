@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "./lib/supabaseClient";
 import { IconCheck } from "@tabler/icons-react";
 import { useI18n } from "./lib/i18n";
+import Spinner from "./components/Spinner";
 
 function KakaoMark() {
   return (
@@ -40,6 +41,7 @@ function GoogleMark() {
 export default function AuthScreen() {
   const { t } = useI18n();
   const [authError, setAuthError] = useState<string | null>(null);
+  const [redirecting, setRedirecting] = useState<"google" | "kakao" | null>(null);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -59,10 +61,14 @@ export default function AuthScreen() {
   const lastLogin = typeof window !== "undefined" ? localStorage.getItem('lastLoginProvider') : null;
 
   const signIn = (provider: "google" | "kakao") => {
+    setRedirecting(provider);
     localStorage.setItem('lastLoginProvider', provider);
     supabase.auth.signInWithOAuth({
       provider,
       options: { redirectTo: window.location.origin + import.meta.env.BASE_URL },
+    }).then(({ error }) => {
+      // Only reachable on failure — success navigates the whole page away.
+      if (error) setRedirecting(null);
     });
   };
 
@@ -72,20 +78,29 @@ export default function AuthScreen() {
       <div className="absolute top-0 left-0 w-full h-1/2 bg-gradient-to-b from-primary/10 to-transparent pointer-events-none" />
 
       <div className="z-10 flex flex-col items-center max-w-sm w-full">
-        <div className="flex items-center gap-2 mb-8">
+        <div className="flex animate-in fade-in slide-in-from-bottom-2 items-center gap-2 mb-8 duration-500 fill-mode-both">
           <img src={`${import.meta.env.BASE_URL}icon-192.png`} alt={t("appName")} className="h-10 w-10 rounded-xl shadow-md border border-border/50" />
           <span className="text-3xl font-extrabold tracking-tight text-primary">{t("appName")}</span>
         </div>
 
-        <h1 className="text-center text-3xl font-extrabold leading-tight text-foreground tracking-tight">
+        <h1
+          className="animate-in fade-in slide-in-from-bottom-2 text-center text-3xl font-extrabold leading-tight text-foreground tracking-tight duration-500 fill-mode-both"
+          style={{ animationDelay: "80ms" }}
+        >
           {t("auth.headline1")}<br />
           <span className="text-primary">{t("auth.headline2")}</span>
         </h1>
-        <p className="mt-4 whitespace-pre-line text-center text-[15px] font-medium leading-relaxed text-muted-foreground/90">
+        <p
+          className="mt-4 animate-in fade-in slide-in-from-bottom-2 whitespace-pre-line text-center text-[15px] font-medium leading-relaxed text-muted-foreground/90 duration-500 fill-mode-both"
+          style={{ animationDelay: "140ms" }}
+        >
           {t("auth.subtitle")}
         </p>
 
-        <div className="mt-10 w-full rounded-2xl bg-surface/80 p-5 shadow-sm border border-border/40 backdrop-blur-sm">
+        <div
+          className="mt-10 w-full animate-in fade-in slide-in-from-bottom-2 rounded-2xl bg-surface/80 p-5 shadow-sm border border-border/40 backdrop-blur-sm duration-500 fill-mode-both"
+          style={{ animationDelay: "200ms" }}
+        >
           <ul className="flex flex-col gap-3.5 text-[14px] font-medium text-foreground">
             <li className="flex items-center gap-3">
               <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-primary"><IconCheck size={14} stroke={3} /></div>
@@ -102,30 +117,35 @@ export default function AuthScreen() {
           </ul>
         </div>
 
-        <div className="mt-12 flex w-full flex-col gap-3">
+        <div
+          className="mt-12 flex w-full animate-in fade-in slide-in-from-bottom-2 flex-col gap-3 duration-500 fill-mode-both"
+          style={{ animationDelay: "260ms" }}
+        >
           <button
             type="button"
             onClick={() => signIn("kakao")}
-            className="relative flex h-14 items-center justify-center rounded-2xl bg-[#FEE500] text-[15px] font-bold text-[#191600] shadow-sm transition-transform hover:bg-[#f4dc00] active:scale-[0.98]"
+            disabled={redirecting !== null}
+            className="relative flex h-14 items-center justify-center rounded-2xl bg-[#FEE500] text-[15px] font-bold text-[#191600] shadow-sm transition-transform hover:bg-[#f4dc00] active:scale-[0.98] disabled:opacity-70"
           >
             <span className="absolute left-5 flex items-center">
-              <KakaoMark />
+              {redirecting === "kakao" ? <Spinner size={18} /> : <KakaoMark />}
             </span>
             {t("auth.kakao")}
-            {lastLogin === "kakao" && (
+            {lastLogin === "kakao" && !redirecting && (
               <span className="absolute right-4 text-[11px] font-extrabold bg-[#191600]/10 text-[#191600] px-2 py-1 rounded-md">{t("auth.recentLogin")}</span>
             )}
           </button>
           <button
             type="button"
             onClick={() => signIn("google")}
-            className="relative flex h-14 items-center justify-center rounded-2xl border border-border bg-surface text-[15px] font-bold text-foreground shadow-sm transition-transform hover:bg-chrome/50 active:scale-[0.98]"
+            disabled={redirecting !== null}
+            className="relative flex h-14 items-center justify-center rounded-2xl border border-border bg-surface text-[15px] font-bold text-foreground shadow-sm transition-transform hover:bg-chrome/50 active:scale-[0.98] disabled:opacity-70"
           >
             <span className="absolute left-5 flex items-center">
-              <GoogleMark />
+              {redirecting === "google" ? <Spinner size={18} /> : <GoogleMark />}
             </span>
             {t("auth.google")}
-            {lastLogin === "google" && (
+            {lastLogin === "google" && !redirecting && (
               <span className="absolute right-4 text-[11px] font-extrabold bg-muted text-muted-foreground px-2 py-1 rounded-md">{t("auth.recentLogin")}</span>
             )}
           </button>
