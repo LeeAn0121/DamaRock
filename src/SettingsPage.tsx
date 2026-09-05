@@ -119,7 +119,12 @@ export default function SettingsPage({
   const [quietEnd, setQuietEnd] = useState(() => localStorage.getItem("quietEnd") || "07:00");
 
   // Localizations & Regional
-  const [language, setLanguage] = useState(() => localStorage.getItem("language") || "auto");
+  const [language, setLanguage] = useState(() => me?.language || localStorage.getItem("language") || "auto");
+  const handleLanguageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const val = e.target.value;
+    setLanguage(val);
+    updateLanguage(val);
+  };
   const [holiday, setHoliday] = useState(() => localStorage.getItem("holiday") || "auto");
 
   // Interaction
@@ -149,7 +154,6 @@ export default function SettingsPage({
   ]);
 
   const appVersion = `v${__APP_VERSION__}`;
-  const me = members.find((m) => m.id === userId);
   
   // Account login provider display (last login)
   const lastProvider = localStorage.getItem('lastLoginProvider');
@@ -313,7 +317,7 @@ export default function SettingsPage({
               label="언어 설정"
               icon={<IconLanguage size={18} stroke={2} />}
               trailing={
-                <select value={language} onChange={e => setLanguage(e.target.value)} className="bg-chrome text-sm font-bold py-1.5 px-3 rounded-lg outline-none text-foreground">
+                <select value={language} onChange={handleLanguageChange} className="bg-chrome text-sm font-bold py-1.5 px-3 rounded-lg outline-none text-foreground">
                   <option value="auto">자동 (시스템)</option>
                   <option value="ko">한국어</option>
                   <option value="en">English</option>

@@ -13,7 +13,7 @@ const PENDING_JOIN_KEY = "damarock_pending_join";
 type MemberRow = {
   user_id: string;
   role: "가족대표" | "구성원";
-  profiles: { display_name: string; initial: string; avatar_url: string | null } | null;
+  profiles: { display_name: string; initial: string; avatar_url: string | null; language?: string } | null;
 };
 
 type ItemRow = {
@@ -49,6 +49,15 @@ export function useAppData() {
     return rows.map((m) => ({ ...m, online: online.has(m.id) }));
   }, []);
 
+
+  const updateLanguage = async (lang: string) => {
+    if (!userId) return;
+    const { error } = await supabase.from("profiles").update({ language: lang }).eq("id", userId);
+    if (!error) {
+      setMembers(prev => prev.map(m => m.id === userId ? { ...m, language: lang } : m));
+    }
+  };
+
   const loadFamilyData = useCallback(
     async (uid: string) => {
       const { data: membership, error: mErr } = await supabase
@@ -74,7 +83,7 @@ export function useAppData() {
           supabase.from("families").select("id, name, invite_code").eq("id", familyId).single(),
           supabase
             .from("family_members")
-            .select("user_id, role, profiles(display_name, initial, avatar_url)")
+            .select("user_id, role, profiles(display_name, initial, avatar_url, language)")
             .eq("family_id", familyId)
             .returns<MemberRow[]>(),
           supabase

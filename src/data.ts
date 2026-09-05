@@ -5,6 +5,8 @@ export type Member = {
   name: string;
   initial: string;
   role: "가족대표" | "구성원";
+  language?: string;
+
   avatar_url?: string | null;
   online?: boolean;
 };
