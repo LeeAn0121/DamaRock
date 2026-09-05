@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import { IconChevronLeft, IconChevronRight, IconCheck, IconPlus, IconTrash, IconEdit } from "@tabler/icons-react";
 import type { Item, Member } from "./data";
 import { memberName } from "./data";
@@ -7,6 +7,8 @@ import clsx from "clsx";
 export default function CalendarView({
   items,
   members,
+  comments = [],
+  userId,
   onToggleDone,
   onAddTodo,
   onDelete,
@@ -14,6 +16,8 @@ export default function CalendarView({
 }: {
   items: Item[];
   members: Member[];
+  comments?: import("./data").Comment[];
+  userId?: string | null;
   onToggleDone: (id: string) => void;
   onAddTodo: (title: string, dateStr: string) => void;
   onDelete?: (id: string) => void;
@@ -166,14 +170,24 @@ export default function CalendarView({
                       <span className="w-1 h-3 bg-primary rounded-full" /> 할 일
                     </h4>
                     <ul className="flex flex-col gap-3">
-                      {todos.map(item => (
-                        <li key={item.id} className="flex items-start gap-3 group">
+                      {todos.map(item => {
+                        const itemComments = comments.filter(c => c.item_id === item.id);
+                        return (
+                        <React.Fragment key={item.id}>
+                        <li className="flex items-start gap-3 group">
                           <button onClick={() => onToggleDone(item.id)} className={clsx("mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded border-2 transition-colors", item.done ? "border-primary bg-primary text-primary-foreground" : "border-border text-transparent")}>
                             <IconCheck size={13} stroke={3} />
                           </button>
                           <div className="flex flex-col flex-1 min-w-0" data-meta={item.meta || undefined}>
                             <span className={clsx("text-sm font-bold truncate", item.done ? "text-muted-foreground line-through" : "text-foreground")}>{item.title}</span>
-                            <span className="text-xs text-muted-foreground mt-0.5 truncate">{memberName(members, item.addedBy)}</span>
+                            <span className="text-xs text-muted-foreground mt-0.5 truncate flex items-center gap-2">
+                              {item.addedBy === userId ? "나" : memberName(members, item.addedBy)}
+                              {itemComments.length > 0 && (
+                                <span className="font-bold text-[10px] text-primary bg-primary/10 px-1.5 py-0.5 rounded-full">
+                                  댓글 {itemComments.length}
+                                </span>
+                              )}
+                            </span>
                           </div>
                           <div className="flex items-center gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                             {onEdit && (
@@ -188,7 +202,24 @@ export default function CalendarView({
                             )}
                           </div>
                         </li>
-                      ))}
+                        {itemComments.length > 0 && (
+                          <div className="flex flex-col gap-2 pb-3 px-10 relative z-10 -mt-1">
+                            {itemComments.map(c => {
+                              const isMe = c.author_id === userId;
+                              return (
+                                <div key={c.id} className={clsx("px-3 py-2 rounded-2xl text-[13px] leading-tight max-w-[90%]", isMe ? "bg-primary/10 text-foreground self-end rounded-tr-sm" : "bg-chrome text-foreground self-start rounded-tl-sm")}>
+                                  <span className={clsx("block text-[10px] font-bold mb-0.5", isMe ? "text-primary text-right" : "text-muted-foreground")}>
+                                    {isMe ? "나" : memberName(members, c.author_id)}
+                                  </span>
+                                  {c.content}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+                        </React.Fragment>
+                        );
+                      })}
                     </ul>
                   </div>
                 )}

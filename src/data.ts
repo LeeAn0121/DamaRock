@@ -22,3 +22,12 @@ export type Item = {
 
 export const memberName = (members: Member[], id?: string) =>
   members.find((m) => m.id === id)?.name ?? "가족";
+
+export type Comment = {
+  id: string;
+  item_id: string;
+  family_id: string;
+  author_id: string;
+  content: string;
+  created_at: string;
+};

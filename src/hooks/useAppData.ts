@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 import { supabase } from "../lib/supabaseClient";
-import type { Category, Item, Member } from "../data";
+import type { Category, Item, Member, Comment } from "../data";
 
 export type Family = { id: string; name: string; inviteCode: string };
 export type Invite = { id: string; invitedName: string; invitedEmail: string | null };
@@ -34,6 +34,7 @@ export function useAppData() {
   const [family, setFamily] = useState<Family | null>(null);
   const [members, setMembers] = useState<Member[]>([]);
   const [items, setItems] = useState<Item[]>([]);
+  const [comments, setComments] = useState<Comment[]>([]);
   const [invites, setInvites] = useState<Invite[]>([]);
   const onlineIdsRef = useRef<Set<string>>(new Set());
 
@@ -65,7 +66,7 @@ export function useAppData() {
 
       const familyId = membership.family_id as string;
 
-      const [{ data: familyRow, error: fErr }, { data: memberRows }, { data: itemRows }, { data: inviteRows }] =
+      const [{ data: familyRow, error: fErr }, { data: memberRows }, { data: itemRows }, { data: inviteRows }, { data: commentRows }] =
         await Promise.all([
           supabase.from("families").select("id, name, invite_code").eq("id", familyId).single(),
           supabase
@@ -84,6 +85,12 @@ export function useAppData() {
             .select("id, invited_name, invited_email")
             .eq("family_id", familyId)
             .eq("status", "pending"),
+          supabase
+            .from("comments")
+            .select("*")
+            .eq("family_id", familyId)
+            .order("created_at", { ascending: true })
+            .returns<Comment[]>(),
         ]);
 
       if (fErr || !familyRow) {
@@ -119,6 +126,7 @@ export function useAppData() {
       setInvites(
         (inviteRows ?? []).map((r) => ({ id: r.id, invitedName: r.invited_name, invitedEmail: r.invited_email }))
       );
+      setComments(commentRows ?? []);
       setStatus("ready");
     },
     [applyOnline]
@@ -248,6 +256,19 @@ export function useAppData() {
         "postgres_changes",
         { event: "*", schema: "public", table: "family_invites", filter: `family_id=eq.${family.id}` },
         () => loadFamilyData(userId)
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "comments", filter: `family_id=eq.${family.id}` },
+        (payload) => {
+          if (payload.eventType === "INSERT") {
+            setComments((prev) => [...prev, payload.new as Comment]);
+          } else if (payload.eventType === "UPDATE") {
+            setComments((prev) => prev.map((c) => c.id === payload.new.id ? (payload.new as Comment) : c));
+          } else if (payload.eventType === "DELETE") {
+            setComments((prev) => prev.filter((c) => c.id !== payload.old.id));
+          }
+        }
       )
       .subscribe(async (subStatus) => {
         if (subStatus === "SUBSCRIBED") {
@@ -385,6 +406,7 @@ export function useAppData() {
     family,
     members,
     items,
+    comments,
     invites,
     toggleDone,
     assignCategory,

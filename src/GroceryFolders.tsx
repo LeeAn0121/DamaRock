@@ -17,6 +17,8 @@ type PopupState =
 export default function GroceryFolders({
   items,
   members,
+  comments = [],
+  userId,
   onToggleDone,
   onDelete,
   onEdit,
@@ -26,6 +28,8 @@ export default function GroceryFolders({
 }: {
   items: Item[];
   members: Member[];
+  comments?: import("./data").Comment[];
+  userId?: string | null;
   onToggleDone: (id: string) => void;
   onDelete: (id: string) => void;
   onEdit: (item: Item) => void;
@@ -177,10 +181,10 @@ export default function GroceryFolders({
               
               {!isCollapsed && (
                 <div className="flex-1 animate-in fade-in slide-in-from-top-2 duration-200">
-                  <ItemRows items={active} onToggle={onToggleDone} onDelete={onDelete} onEdit={onEdit} onMove={handleMove} onSelect={onSelect} members={members} />
+                  <ItemRows items={active} onToggle={onToggleDone} onDelete={onDelete} onEdit={onEdit} onMove={handleMove} onSelect={onSelect} members={members} comments={comments} userId={userId} />
                   {done.length > 0 && (
                     <DoneDisclosure count={done.length}>
-                      <ItemRows items={done} onToggle={onToggleDone} onDelete={onDelete} onEdit={onEdit} onMove={handleMove} onSelect={onSelect} members={members} />
+                      <ItemRows items={done} onToggle={onToggleDone} onDelete={onDelete} onEdit={onEdit} onMove={handleMove} onSelect={onSelect} members={members} comments={comments} userId={userId} />
                     </DoneDisclosure>
                   )}
                 </div>
@@ -211,10 +215,10 @@ export default function GroceryFolders({
             </div>
             {!collapsed["unassigned"] && (
               <div className="flex-1 animate-in fade-in slide-in-from-top-2 duration-200">
-                <ItemRows items={unassigned.filter(i => !i.done)} onToggle={onToggleDone} onDelete={onDelete} onEdit={onEdit} onMove={handleMove} onSelect={onSelect} members={members} />
+                <ItemRows items={unassigned.filter(i => !i.done)} onToggle={onToggleDone} onDelete={onDelete} onEdit={onEdit} onMove={handleMove} onSelect={onSelect} members={members} comments={comments} userId={userId} />
                 {unassigned.some((i) => i.done) && (
                   <DoneDisclosure count={unassigned.filter(i => i.done).length}>
-                    <ItemRows items={unassigned.filter((i) => i.done)} onToggle={onToggleDone} onDelete={onDelete} onEdit={onEdit} onMove={handleMove} onSelect={onSelect} members={members} />
+                    <ItemRows items={unassigned.filter((i) => i.done)} onToggle={onToggleDone} onDelete={onDelete} onEdit={onEdit} onMove={handleMove} onSelect={onSelect} members={members} comments={comments} userId={userId} />
                   </DoneDisclosure>
                 )}
               </div>

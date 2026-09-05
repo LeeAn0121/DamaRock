@@ -102,6 +102,7 @@ export default function App() {
     <>
       <HomeList
         items={data.items}
+        comments={data.comments}
         members={data.members}
         userId={data.userId}
         familyId={data.family?.id ?? null}
