@@ -114,6 +114,7 @@ export default function App() {
         moveItems={data.moveItems}
         onOpenAddSheet={() => setAddSheetOpen(true)}
         onOpenSettings={() => setScreen("settings")}
+        onOpenInvite={() => setScreen("invite")}
         deleteItem={data.deleteItem}
         refreshData={data.refreshData}
         hasUnreadActivity={data.hasUnreadActivity}
