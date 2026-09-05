@@ -42,18 +42,6 @@ export function useAppData() {
   const [hasUnreadActivity, setHasUnreadActivity] = useState(false);
   const clearUnreadActivity = useCallback(() => setHasUnreadActivity(false), []);
 
-  const refreshInviteCode = useCallback(
-    async () => {
-      if (!family) return;
-      const { data, error: rpcError } = await supabase.rpc("refresh_invite_code", { p_family_id: family.id });
-      if (rpcError) {
-        console.error(rpcError);
-        return;
-      }
-      if (userId) await loadFamilyData(userId);
-    },
-    [family, userId, loadFamilyData]
-  );
 
 
   const applyOnline = useCallback((rows: Member[]) => {
@@ -149,6 +137,19 @@ export function useAppData() {
       setStatus("ready");
     },
     [applyOnline]
+  );
+
+  const refreshInviteCode = useCallback(
+    async () => {
+      if (!family) return;
+      const { data, error: rpcError } = await supabase.rpc("refresh_invite_code", { p_family_id: family.id });
+      if (rpcError) {
+        console.error(rpcError);
+        return;
+      }
+      if (userId) await loadFamilyData(userId);
+    },
+    [family, userId, loadFamilyData]
   );
 
   // Capture ?join=<code> from an invite link before it's lost — persisted across
