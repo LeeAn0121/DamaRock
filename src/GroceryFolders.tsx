@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import type { Item, Member } from "./data";
-import { IconFolder, IconPlus, IconTrash, IconChevronDown, IconChevronRight } from "@tabler/icons-react";
+import { IconFolder, IconPlus, IconTrash, IconChevronDown, IconChevronRight, IconCheck } from "@tabler/icons-react";
 import { ItemRows, DoneDisclosure } from "./HomeList";
 import { showToast } from "./components/Toast";
 import clsx from "clsx";
