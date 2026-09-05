@@ -54,11 +54,15 @@ export default function AuthScreen() {
     }
   }, []);
 
-  const signIn = (provider: "google" | "kakao") =>
+  const lastLogin = typeof window !== "undefined" ? localStorage.getItem('lastLoginProvider') : null;
+
+  const signIn = (provider: "google" | "kakao") => {
+    localStorage.setItem('lastLoginProvider', provider);
     supabase.auth.signInWithOAuth({
       provider,
       options: { redirectTo: window.location.origin + import.meta.env.BASE_URL },
     });
+  };
 
   return (
     <div className="flex min-h-dvh flex-col items-center justify-center px-6 font-sans text-foreground pb-12 relative overflow-hidden bg-gradient-to-b from-background via-background to-primary/5">
@@ -107,6 +111,9 @@ export default function AuthScreen() {
               <KakaoMark />
             </span>
             카카오로 시작하기
+            {lastLogin === "kakao" && (
+              <span className="absolute right-4 text-[11px] font-extrabold bg-[#191600]/10 text-[#191600] px-2 py-1 rounded-md">최근 로그인</span>
+            )}
           </button>
           <button
             type="button"
@@ -117,6 +124,9 @@ export default function AuthScreen() {
               <GoogleMark />
             </span>
             Google로 시작하기
+            {lastLogin === "google" && (
+              <span className="absolute right-4 text-[11px] font-extrabold bg-muted text-muted-foreground px-2 py-1 rounded-md">최근 로그인</span>
+            )}
           </button>
 
           {authError && (
