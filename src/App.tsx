@@ -29,9 +29,34 @@ export default function App() {
   );
 }
 
+function useIsOnline(): boolean {
+  const [isOnline, setIsOnline] = useState(() => typeof navigator === "undefined" || navigator.onLine);
+  useEffect(() => {
+    const goOnline = () => setIsOnline(true);
+    const goOffline = () => setIsOnline(false);
+    window.addEventListener("online", goOnline);
+    window.addEventListener("offline", goOffline);
+    return () => {
+      window.removeEventListener("online", goOnline);
+      window.removeEventListener("offline", goOffline);
+    };
+  }, []);
+  return isOnline;
+}
+
+function OfflineBanner() {
+  const { t } = useI18n();
+  return (
+    <div className="sticky top-0 z-[200] animate-in fade-in slide-in-from-top-2 bg-danger px-4 py-1.5 text-center text-xs font-bold text-danger-foreground duration-300">
+      {t("app.offlineBanner")}
+    </div>
+  );
+}
+
 function AppShell() {
   const { t, setLanguage } = useI18n();
   const data = useAppData();
+  const isOnline = useIsOnline();
   const [screen, setScreen] = useState<Screen>(useInitialScreen);
   const [addSheetOpen, setAddSheetOpen] = useState(
     () => typeof window !== "undefined" && new URLSearchParams(window.location.search).get("modal") === "add"
@@ -68,16 +93,18 @@ function AppShell() {
     }
   }, [data.userId]);
 
+  const addFromSheet = (item: Omit<Item, "id" | "done" | "created_at">) => {
+    data.addItem({ title: item.title, category: item.category, assignee: item.assignee, meta: item.meta });
+  };
+
+  let content: React.ReactNode;
+
   if (data.status === "loading") {
-    return <LoadingState />;
-  }
-
-  if (data.status === "signed-out") {
-    return <AuthScreen />;
-  }
-
-  if (data.status === "needs-family") {
-    return (
+    content = <LoadingState />;
+  } else if (data.status === "signed-out") {
+    content = <AuthScreen />;
+  } else if (data.status === "needs-family") {
+    content = (
       <FamilyOnboarding
         onCreate={data.createFamily}
         onJoin={data.joinFamily}
@@ -85,10 +112,8 @@ function AppShell() {
         error={data.error}
       />
     );
-  }
-
-  if (data.status === "error") {
-    return (
+  } else if (data.status === "error") {
+    content = (
       <div className="flex min-h-dvh flex-col items-center justify-center gap-3 bg-background px-6 text-center font-sans">
         <p className="text-base font-bold text-foreground">{t("app.errorTitle")}</p>
         <p className="text-sm text-muted-foreground">{data.error}</p>
@@ -101,14 +126,8 @@ function AppShell() {
         </button>
       </div>
     );
-  }
-
-  const addFromSheet = (item: Omit<Item, "id" | "done" | "created_at">) => {
-    data.addItem({ title: item.title, category: item.category, assignee: item.assignee, meta: item.meta });
-  };
-
-  if (screen === "settings") {
-    return (
+  } else if (screen === "settings") {
+    content = (
       <SettingsPage
         familyName={data.family?.name ?? t("appName")}
         familyCreatedAt={data.family?.createdAt ?? null}
@@ -124,10 +143,8 @@ function AppShell() {
         syncNotificationSettings={data.syncNotificationSettings}
       />
     );
-  }
-
-  if (screen === "groups") {
-    return (
+  } else if (screen === "groups") {
+    content = (
       <GroupSwitcher
         families={data.families}
         activeFamilyId={data.family?.id ?? null}
@@ -138,10 +155,8 @@ function AppShell() {
         error={data.error}
       />
     );
-  }
-
-  if (screen === "invite") {
-    return (
+  } else if (screen === "invite") {
+    content = (
       <FamilyInvite
         onRefreshCode={data.refreshInviteCode}
         family={data.family}
@@ -152,39 +167,46 @@ function AppShell() {
         onBack={() => setScreen("settings")}
       />
     );
+  } else {
+    content = (
+      <>
+        <HomeList
+          items={data.items}
+          comments={data.comments}
+          members={data.members}
+          userId={data.userId}
+          familyId={data.family?.id ?? null}
+          onToggleDone={data.toggleDone}
+          onAssignCategory={(id: string, category: Category) => data.assignCategory(id, category)}
+          onQuickAdd={data.quickAdd}
+          addItem={data.addItem}
+          editItem={data.editItem}
+          moveItems={data.moveItems}
+          onOpenAddSheet={() => setAddSheetOpen(true)}
+          onOpenSettings={() => setScreen("settings")}
+          onOpenInvite={() => setScreen("invite")}
+          deleteItem={data.deleteItem}
+          restoreItem={data.restoreItem}
+          hardDeleteItem={data.hardDeleteItem}
+          refreshData={data.refreshData}
+          hasUnreadActivity={data.hasUnreadActivity}
+          clearUnreadActivity={data.clearUnreadActivity}
+        />
+        <AddItemSheet
+          open={addSheetOpen}
+          members={data.members}
+          onClose={() => setAddSheetOpen(false)}
+          onSubmit={addFromSheet}
+        />
+        <ToastContainer />
+      </>
+    );
   }
 
   return (
     <>
-      <HomeList
-        items={data.items}
-        comments={data.comments}
-        members={data.members}
-        userId={data.userId}
-        familyId={data.family?.id ?? null}
-        onToggleDone={data.toggleDone}
-        onAssignCategory={(id: string, category: Category) => data.assignCategory(id, category)}
-        onQuickAdd={data.quickAdd}
-        addItem={data.addItem}
-        editItem={data.editItem}
-        moveItems={data.moveItems}
-        onOpenAddSheet={() => setAddSheetOpen(true)}
-        onOpenSettings={() => setScreen("settings")}
-        onOpenInvite={() => setScreen("invite")}
-        deleteItem={data.deleteItem}
-        restoreItem={data.restoreItem}
-        hardDeleteItem={data.hardDeleteItem}
-        refreshData={data.refreshData}
-        hasUnreadActivity={data.hasUnreadActivity}
-        clearUnreadActivity={data.clearUnreadActivity}
-      />
-      <AddItemSheet
-        open={addSheetOpen}
-        members={data.members}
-        onClose={() => setAddSheetOpen(false)}
-        onSubmit={addFromSheet}
-      />
-      <ToastContainer />
+      {!isOnline && <OfflineBanner />}
+      {content}
     </>
   );
 }

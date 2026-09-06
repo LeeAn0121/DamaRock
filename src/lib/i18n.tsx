@@ -271,6 +271,9 @@ const dict: Dict = {
 
   // notifications & background errors
   "errors.familyNotFound": { ko: "가족 정보를 찾을 수 없어요", en: "Couldn't find that family", ja: "家族情報が見つかりません", zh: "找不到家庭信息" },
+  "errors.networkError": { ko: "인터넷 연결을 확인해주세요", en: "Please check your internet connection", ja: "インターネット接続を確認してください", zh: "请检查网络连接" },
+  "errors.offlineActionBlocked": { ko: "오프라인 상태예요. 인터넷에 연결되면 다시 시도해주세요.", en: "You're offline. Please try again once you're back online.", ja: "オフラインです。オンラインに戻ってから再度お試しください。", zh: "您已离线，请联网后重试。" },
+  "app.offlineBanner": { ko: "오프라인 상태예요 · 최신 정보가 아닐 수 있어요", en: "You're offline · this may not be up to date", ja: "オフラインです・最新の情報でない場合があります", zh: "您已离线 · 内容可能不是最新的" },
   "errors.addItemFailedTitle": { ko: "아이템 추가 실패", en: "Failed to add item", ja: "アイテムの追加に失敗しました", zh: "添加项目失败" },
   "errors.detail": { ko: "상세", en: "Detail", ja: "詳細", zh: "详情" },
   "errors.hint": { ko: "힌트", en: "Hint", ja: "ヒント", zh: "提示" },

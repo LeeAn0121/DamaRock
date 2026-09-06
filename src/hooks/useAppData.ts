@@ -11,6 +11,36 @@ type Status = "loading" | "signed-out" | "needs-family" | "ready" | "error";
 
 const PENDING_JOIN_KEY = "damarock_pending_join";
 const ACTIVE_FAMILY_KEY = "damarock_active_family";
+const SNAPSHOT_KEY = "damarock_snapshot";
+
+type Snapshot = {
+  family: Family;
+  members: Member[];
+  items: Item[];
+  comments: Comment[];
+  invites: Invite[];
+};
+
+// Lets the app open straight to the last-known list instead of a blank
+// loading screen when there's no connection yet (or ever) to reach
+// Supabase — a grocery app is most useful exactly when you're standing in
+// a store with bad signal.
+function loadSnapshot(): Snapshot | null {
+  try {
+    const raw = localStorage.getItem(SNAPSHOT_KEY);
+    return raw ? (JSON.parse(raw) as Snapshot) : null;
+  } catch {
+    return null;
+  }
+}
+
+function saveSnapshot(snapshot: Snapshot) {
+  try {
+    localStorage.setItem(SNAPSHOT_KEY, JSON.stringify(snapshot));
+  } catch {
+    // storage full/unavailable — the cache is a nice-to-have, not critical
+  }
+}
 
 function isQuietHours(): boolean {
   if (localStorage.getItem("quietMode") !== "true") return false;
@@ -59,15 +89,16 @@ type ItemRow = {
 
 export function useAppData() {
   const { t } = useI18n();
-  const [status, setStatus] = useState<Status>("loading");
+  const [snapshot] = useState(() => loadSnapshot());
+  const [status, setStatus] = useState<Status>(snapshot ? "ready" : "loading");
   const [error, setError] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
-  const [family, setFamily] = useState<Family | null>(null);
+  const [family, setFamily] = useState<Family | null>(snapshot?.family ?? null);
   const [families, setFamilies] = useState<Family[]>([]);
-  const [members, setMembers] = useState<Member[]>([]);
-  const [items, setItems] = useState<Item[]>([]);
-  const [comments, setComments] = useState<Comment[]>([]);
-  const [invites, setInvites] = useState<Invite[]>([]);
+  const [members, setMembers] = useState<Member[]>(snapshot?.members ?? []);
+  const [items, setItems] = useState<Item[]>(snapshot?.items ?? []);
+  const [comments, setComments] = useState<Comment[]>(snapshot?.comments ?? []);
+  const [invites, setInvites] = useState<Invite[]>(snapshot?.invites ?? []);
   const onlineIdsRef = useRef<Set<string>>(new Set());
 
   const [hasUnreadActivity, setHasUnreadActivity] = useState(false);
@@ -138,6 +169,20 @@ export function useAppData() {
 
   const loadFamilyData = useCallback(
     async (uid: string, preferredFamilyId?: string) => {
+      // A network failure (offline, DNS, etc.) with cached data already on
+      // screen should just leave that cached data up rather than replacing
+      // a usable stale list with an error screen — the realtime
+      // reconnect/next successful refresh will bring it current again.
+      const failSoft = (message: string) => {
+        if (family) {
+          console.error("loadFamilyData failed, keeping cached data:", message);
+          return;
+        }
+        setError(message);
+        setStatus("error");
+      };
+
+      try {
       const { data: memberships, error: mErr } = await supabase
         .from("family_members")
         .select("family_id")
@@ -145,8 +190,7 @@ export function useAppData() {
         .order("joined_at", { ascending: true });
 
       if (mErr) {
-        setError(mErr.message);
-        setStatus("error");
+        failSoft(mErr.message);
         return;
       }
       if (!memberships || memberships.length === 0) {
@@ -193,46 +237,49 @@ export function useAppData() {
         ]);
 
       if (fErr || !familyRow) {
-        setError(fErr?.message ?? t("errors.familyNotFound"));
-        setStatus("error");
+        failSoft(fErr?.message ?? t("errors.familyNotFound"));
         return;
       }
 
-      setFamily({ id: familyRow.id, name: familyRow.name, inviteCode: familyRow.invite_code, createdAt: familyRow.created_at });
-      setMembers(
-        applyOnline(
-          (memberRows ?? []).map((r) => ({
-            id: r.user_id,
-            name: r.profiles?.display_name ?? "가족",
-            initial: r.profiles?.initial ?? "가",
-            avatar_url: r.profiles?.avatar_url?.replace(/^http:\/\//i, 'https://'),
-            role: r.role,
-          }))
-        )
-      );
-      setItems(
-        (itemRows ?? []).map((r) => ({
-          id: r.id,
-          title: r.title,
-          category: r.category,
-          done: r.done,
-          addedBy: r.added_by,
-          assignee: r.assignee ?? undefined,
-          meta: r.meta ?? undefined,
-          created_at: r.created_at,
-          deleted_at: r.deleted_at,
+      const resolvedFamily: Family = { id: familyRow.id, name: familyRow.name, inviteCode: familyRow.invite_code, createdAt: familyRow.created_at };
+      const resolvedMembers = applyOnline(
+        (memberRows ?? []).map((r) => ({
+          id: r.user_id,
+          name: r.profiles?.display_name ?? "가족",
+          initial: r.profiles?.initial ?? "가",
+          avatar_url: r.profiles?.avatar_url?.replace(/^http:\/\//i, 'https://'),
+          role: r.role,
         }))
       );
+      const resolvedItems: Item[] = (itemRows ?? []).map((r) => ({
+        id: r.id,
+        title: r.title,
+        category: r.category,
+        done: r.done,
+        addedBy: r.added_by,
+        assignee: r.assignee ?? undefined,
+        meta: r.meta ?? undefined,
+        created_at: r.created_at,
+        deleted_at: r.deleted_at,
+      }));
       const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-      setInvites(
-        (inviteRows ?? [])
-          .filter(r => r.created_at > oneDayAgo)
-          .map((r) => ({ id: r.id, invitedName: r.invited_name, invitedEmail: r.invited_email }))
-      );
-      setComments(commentRows ?? []);
+      const resolvedInvites: Invite[] = (inviteRows ?? [])
+        .filter(r => r.created_at > oneDayAgo)
+        .map((r) => ({ id: r.id, invitedName: r.invited_name, invitedEmail: r.invited_email }));
+      const resolvedComments = commentRows ?? [];
+
+      setFamily(resolvedFamily);
+      setMembers(resolvedMembers);
+      setItems(resolvedItems);
+      setInvites(resolvedInvites);
+      setComments(resolvedComments);
       setStatus("ready");
+      saveSnapshot({ family: resolvedFamily, members: resolvedMembers, items: resolvedItems, comments: resolvedComments, invites: resolvedInvites });
+      } catch (err) {
+        failSoft(err instanceof Error ? err.message : String(err));
+      }
     },
-    [applyOnline, t]
+    [applyOnline, t, family]
   );
 
   const switchFamily = useCallback(
@@ -281,6 +328,13 @@ export function useAppData() {
       }
       setUserId(session.user.id);
       loadFamilyData(session.user.id);
+    }).catch((err) => {
+      if (!active) return;
+      console.error("getSession failed:", err);
+      // If a cached snapshot already put us in "ready", leave that stale-
+      // but-usable view up instead of bouncing to an error screen.
+      setStatus((prev) => (prev === "loading" ? "error" : prev));
+      setError((prev) => prev ?? t("errors.networkError"));
     });
 
     const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
@@ -404,8 +458,13 @@ export function useAppData() {
       const current = items.find((i) => i.id === id);
       if (!current) return;
       setItems((prev) => prev.map((i) => (i.id === id ? { ...i, done: !i.done } : i)));
-      const { error: updateError } = await supabase.from("items").update({ done: !current.done }).eq("id", id);
-      if (updateError && userId) loadFamilyData(userId);
+      try {
+        const { error: updateError } = await supabase.from("items").update({ done: !current.done }).eq("id", id);
+        if (updateError && userId) loadFamilyData(userId);
+      } catch (err) {
+        console.error("Toggle done failed:", err);
+        if (userId) loadFamilyData(userId); // revert the optimistic flip if the write never landed
+      }
     },
     [items, userId, loadFamilyData]
   );
@@ -422,17 +481,26 @@ export function useAppData() {
   const addItem = useCallback(
     async (input: { title: string; category: Category; assignee?: string; meta?: string }) => {
       if (!family || !userId) return;
-      const { error: insertError } = await supabase.from("items").insert({
-        family_id: family.id,
-        title: input.title,
-        category: input.category,
-        added_by: userId,
-        assignee: input.assignee ?? null,
-        meta: input.meta ?? null,
-      });
-      if (insertError) {
-        console.error("Item add error:", insertError);
-        window.alert(`${t("errors.addItemFailedTitle")}: ${insertError.message}\n${t("errors.detail")}: ${insertError.details}\n${t("errors.hint")}: ${insertError.hint}`);
+      if (typeof navigator !== "undefined" && !navigator.onLine) {
+        window.alert(t("errors.offlineActionBlocked"));
+        return;
+      }
+      try {
+        const { error: insertError } = await supabase.from("items").insert({
+          family_id: family.id,
+          title: input.title,
+          category: input.category,
+          added_by: userId,
+          assignee: input.assignee ?? null,
+          meta: input.meta ?? null,
+        });
+        if (insertError) {
+          console.error("Item add error:", insertError);
+          window.alert(`${t("errors.addItemFailedTitle")}: ${insertError.message}\n${t("errors.detail")}: ${insertError.details}\n${t("errors.hint")}: ${insertError.hint}`);
+        }
+      } catch (err) {
+        console.error("Item add failed:", err);
+        window.alert(navigator.onLine ? String(err) : t("errors.offlineActionBlocked"));
       }
     },
     [family, userId, t]
