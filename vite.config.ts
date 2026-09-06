@@ -15,13 +15,16 @@ export default defineConfig({
     VitePWA({
       registerType: "autoUpdate",
       injectRegister: null,
-      workbox: {
-        // Force every open tab (including an installed/standalone PWA) to
-        // pick up a new deploy on its own — otherwise skipWaiting/clientsClaim
-        // only take effect on the *next* navigation, so a page left open
-        // across a deploy would silently keep running stale JS.
-        clientsClaim: true,
-        skipWaiting: true,
+      // A custom service worker (src/sw.ts) is required for push/
+      // notificationclick handlers — generateSW's auto-built worker has no
+      // hook for that. skipWaiting/clientsClaim are called directly in
+      // sw.ts instead of via workbox options here, for the same reason as
+      // before: an already-open tab should pick up a new deploy on its own.
+      strategies: "injectManifest",
+      srcDir: "src",
+      filename: "sw.ts",
+      injectManifest: {
+        globPatterns: ["**/*.{js,css,html,woff2,png,ico,svg,webmanifest}"],
       },
       manifest: {
         name: "담아락 (DamaRock)",

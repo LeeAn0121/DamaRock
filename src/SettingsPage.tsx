@@ -119,6 +119,7 @@ export default function SettingsPage({
   updateLanguage,
   updateFamilyName,
   updateDisplayName,
+  syncNotificationSettings,
 }: {
   familyName: string;
   familyCreatedAt: string | null;
@@ -131,6 +132,16 @@ export default function SettingsPage({
   updateLanguage: (lang: string) => void;
   updateFamilyName: (name: string) => void;
   updateDisplayName: (name: string) => void;
+  syncNotificationSettings: (partial: {
+    notifyNewItem?: boolean;
+    notifyComments?: boolean;
+    notifyBriefing?: boolean;
+    briefingTime?: string;
+    notifySummary?: boolean;
+    quietMode?: boolean;
+    quietStart?: string;
+    quietEnd?: string;
+  }) => void;
 }) {
   const { t, setting: langSetting, setLanguage } = useI18n();
   const me = members.find(m => m.id === userId);
@@ -190,6 +201,10 @@ export default function SettingsPage({
     localStorage.setItem("quietEnd", quietEnd);
     localStorage.setItem("holiday", holiday);
     localStorage.setItem("swipeAction", String(swipeAction));
+    syncNotificationSettings({
+      notifyNewItem, notifyComments, notifyBriefing, briefingTime, notifySummary,
+      quietMode, quietStart, quietEnd,
+    });
   }, [
     notifyNewItem, notifyComments, notifyBriefing, briefingTime, notifySummary,
     quietMode, quietStart, quietEnd, holiday, swipeAction, theme

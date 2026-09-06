@@ -106,6 +106,36 @@ export function useAppData() {
     }
   };
 
+  // Mirrors the localStorage-backed toggles in SettingsPage up to the
+  // server: an in-tab notification can check localStorage directly, but a
+  // scheduled morning-briefing/weekly-summary job runs with no browser tab
+  // (and no localStorage) to read from, so it needs this instead.
+  const syncNotificationSettings = useCallback(
+    async (partial: {
+      notifyNewItem?: boolean;
+      notifyComments?: boolean;
+      notifyBriefing?: boolean;
+      briefingTime?: string;
+      notifySummary?: boolean;
+      quietMode?: boolean;
+      quietStart?: string;
+      quietEnd?: string;
+    }) => {
+      if (!userId) return;
+      const row: Record<string, string | boolean> = { user_id: userId };
+      if (partial.notifyNewItem !== undefined) row.notify_new_item = partial.notifyNewItem;
+      if (partial.notifyComments !== undefined) row.notify_comments = partial.notifyComments;
+      if (partial.notifyBriefing !== undefined) row.notify_briefing = partial.notifyBriefing;
+      if (partial.briefingTime !== undefined) row.briefing_time = partial.briefingTime;
+      if (partial.notifySummary !== undefined) row.notify_summary = partial.notifySummary;
+      if (partial.quietMode !== undefined) row.quiet_mode = partial.quietMode;
+      if (partial.quietStart !== undefined) row.quiet_start = partial.quietStart;
+      if (partial.quietEnd !== undefined) row.quiet_end = partial.quietEnd;
+      await supabase.from("notification_settings").upsert(row, { onConflict: "user_id" });
+    },
+    [userId]
+  );
+
   const loadFamilyData = useCallback(
     async (uid: string, preferredFamilyId?: string) => {
       const { data: memberships, error: mErr } = await supabase
@@ -537,5 +567,6 @@ export function useAppData() {
     updateLanguage,
     updateFamilyName,
     updateDisplayName,
+    syncNotificationSettings,
   };
 }

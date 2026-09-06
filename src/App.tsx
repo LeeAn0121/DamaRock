@@ -9,6 +9,7 @@ import GroupSwitcher from "./GroupSwitcher";
 import { useAppData } from "./hooks/useAppData";
 import { ToastContainer } from "./components/Toast";
 import { LanguageProvider, useI18n, type LangSetting } from "./lib/i18n";
+import { subscribeToPush } from "./lib/push";
 import type { Category, Item } from "./data";
 
 type Screen = "home" | "settings" | "invite" | "groups";
@@ -44,15 +45,28 @@ function AppShell() {
     if (me?.language) setLanguage(me.language as LangSetting);
   }, [me?.language, setLanguage]);
 
+  // Re-subscribe on every load (idempotent — getSubscription() returns the
+  // existing one if still valid) so a renewed/expired subscription self-heals
+  // without the user having to do anything.
+  useEffect(() => {
+    if (!data.userId) return;
+    if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "granted") {
+      subscribeToPush(data.userId);
+    }
+  }, [data.userId]);
+
   useEffect(() => {
     if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "default") {
       const request = () => {
-        Notification.requestPermission();
+        Notification.requestPermission().then((permission) => {
+          if (permission === "granted" && data.userId) subscribeToPush(data.userId);
+        });
         document.removeEventListener("click", request);
       };
       document.addEventListener("click", request);
+      return () => document.removeEventListener("click", request);
     }
-  }, []);
+  }, [data.userId]);
 
   if (data.status === "loading") {
     return <LoadingState />;
@@ -107,6 +121,7 @@ function AppShell() {
         updateLanguage={data.updateLanguage}
         updateFamilyName={data.updateFamilyName}
         updateDisplayName={data.updateDisplayName}
+        syncNotificationSettings={data.syncNotificationSettings}
       />
     );
   }
