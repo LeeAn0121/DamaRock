@@ -11,6 +11,8 @@ import { ToastContainer } from "./components/Toast";
 import { LanguageProvider, useI18n, type LangSetting } from "./lib/i18n";
 import { subscribeToPush } from "./lib/push";
 import { onUpdateAvailable } from "./lib/swUpdate";
+import { useNotificationPermission } from "./hooks/useNotificationPermission";
+import { useInstallPrompt } from "./hooks/useInstallPrompt";
 import type { Category, Item } from "./data";
 
 type Screen = "home" | "settings" | "invite" | "groups";
@@ -76,11 +78,49 @@ function UpdateBanner({ onApply }: { onApply: () => void }) {
   );
 }
 
+function NotificationPermissionBanner({
+  permission,
+  onAllow,
+  onDismiss,
+  needsIOSInstall,
+}: {
+  permission: "default" | "granted" | "denied" | "unsupported";
+  onAllow: () => void;
+  onDismiss: () => void;
+  needsIOSInstall: boolean;
+}) {
+  const { t } = useI18n();
+  if (permission !== "default") return null;
+
+  return (
+    <div className="sticky top-0 z-[200] flex animate-in fade-in slide-in-from-top-2 items-center justify-center gap-3 bg-foreground px-4 py-1.5 text-center text-xs font-bold text-background duration-300">
+      <span>{needsIOSInstall ? t("app.iosInstallForNotif") : t("app.enableNotif")}</span>
+      {!needsIOSInstall && (
+        <button
+          type="button"
+          onClick={onAllow}
+          className="rounded-full bg-background/20 px-3 py-0.5 underline-offset-2 hover:underline"
+        >
+          {t("app.allow")}
+        </button>
+      )}
+      <button type="button" onClick={onDismiss} className="text-background/70">
+        ✕
+      </button>
+    </div>
+  );
+}
+
 function AppShell() {
   const { t, setLanguage } = useI18n();
   const data = useAppData();
   const isOnline = useIsOnline();
   const applyUpdate = useUpdateAvailable();
+  const { isIOS, isAppInstalled } = useInstallPrompt();
+  const notif = useNotificationPermission(data.userId);
+  const [notifBannerDismissed, setNotifBannerDismissed] = useState(
+    () => typeof localStorage !== "undefined" && localStorage.getItem("notifBannerDismissed") === "true"
+  );
   const [screen, setScreen] = useState<Screen>(useInitialScreen);
   const [addSheetOpen, setAddSheetOpen] = useState(
     () => typeof window !== "undefined" && new URLSearchParams(window.location.search).get("modal") === "add"
@@ -104,18 +144,10 @@ function AppShell() {
     }
   }, [data.userId]);
 
-  useEffect(() => {
-    if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "default") {
-      const request = () => {
-        Notification.requestPermission().then((permission) => {
-          if (permission === "granted" && data.userId) subscribeToPush(data.userId);
-        });
-        document.removeEventListener("click", request);
-      };
-      document.addEventListener("click", request);
-      return () => document.removeEventListener("click", request);
-    }
-  }, [data.userId]);
+  const dismissNotifBanner = () => {
+    localStorage.setItem("notifBannerDismissed", "true");
+    setNotifBannerDismissed(true);
+  };
 
   const addFromSheet = (item: Omit<Item, "id" | "done" | "created_at">) => {
     data.addItem({ title: item.title, category: item.category, assignee: item.assignee, meta: item.meta });
@@ -232,6 +264,14 @@ function AppShell() {
     <>
       {applyUpdate && <UpdateBanner onApply={applyUpdate} />}
       {!isOnline && <OfflineBanner />}
+      {data.status === "ready" && !notifBannerDismissed && (
+        <NotificationPermissionBanner
+          permission={notif.permission}
+          onAllow={notif.request}
+          onDismiss={dismissNotifBanner}
+          needsIOSInstall={isIOS && !isAppInstalled}
+        />
+      )}
       {content}
     </>
   );

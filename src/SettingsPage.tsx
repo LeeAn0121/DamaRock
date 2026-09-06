@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useInstallPrompt } from "./hooks/useInstallPrompt";
+import { useNotificationPermission } from "./hooks/useNotificationPermission";
 import clsx from "clsx";
 import {
   IconChevronLeft, IconChevronRight, IconLogout, IconUsers,
@@ -154,6 +155,8 @@ export default function SettingsPage({
   const [notifyComments, setNotifyComments] = useState(() => localStorage.getItem("notifyComments") !== "false");
   const [notifyBriefing, setNotifyBriefing] = useState(() => localStorage.getItem("notifyBriefing") !== "false");
   const { isInstallable, isAppInstalled, promptInstall, isIOS, isInAppBrowser } = useInstallPrompt();
+  const notifPerm = useNotificationPermission(userId);
+  const iosNeedsInstall = isIOS && !isAppInstalled;
   const [briefingTime, setBriefingTime] = useState(() => localStorage.getItem("briefingTime") || "08:00");
   const [notifySummary, setNotifySummary] = useState(() => localStorage.getItem("notifySummary") !== "false");
   const [quietMode, setQuietMode] = useState(() => localStorage.getItem("quietMode") === "true");
@@ -377,6 +380,30 @@ export default function SettingsPage({
 
           {/* Notifications */}
           <SettingsGroup label={t("settings.notificationGroup")}>
+            <SettingsRow
+              label={t("settings.notifPermission")}
+              description={
+                iosNeedsInstall ? t("settings.notifPermissionIOS")
+                : notifPerm.permission === "granted" ? t("settings.notifPermissionGranted")
+                : notifPerm.permission === "denied" ? t("settings.notifPermissionDenied")
+                : notifPerm.permission === "unsupported" ? t("settings.notifPermissionUnsupported")
+                : undefined
+              }
+              trailing={
+                !iosNeedsInstall && notifPerm.permission === "default" ? (
+                  <button
+                    type="button"
+                    onClick={notifPerm.request}
+                    className="text-xs font-bold text-primary bg-primary/10 px-3 py-1.5 rounded-full"
+                  >
+                    {t("settings.enableNotifButton")}
+                  </button>
+                ) : notifPerm.permission === "granted" ? (
+                  <IconCheck size={18} stroke={2.5} className="text-primary" />
+                ) : undefined
+              }
+            />
+            <div className="border-t border-border/40 mx-4" />
             <SettingsRow
               label={t("settings.notifyNewItem")}
               trailing={<Switch checked={notifyNewItem} onChange={setNotifyNewItem} />}
