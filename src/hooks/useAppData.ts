@@ -84,6 +84,7 @@ type ItemRow = {
   assignee: string | null;
   meta: string | null;
   created_at: string;
+  updated_at: string;
   deleted_at: string | null;
 };
 
@@ -225,7 +226,7 @@ export function useAppData() {
             .returns<MemberRow[]>(),
           supabase
             .from("items")
-            .select("id, title, category, done, added_by, assignee, meta, created_at, deleted_at")
+            .select("id, title, category, done, added_by, assignee, meta, created_at, updated_at, deleted_at")
             .eq("family_id", familyId)
             .order("created_at", { ascending: false })
             .returns<ItemRow[]>(),
@@ -266,6 +267,7 @@ export function useAppData() {
         assignee: r.assignee ?? undefined,
         meta: r.meta ?? undefined,
         created_at: r.created_at,
+        updated_at: r.updated_at,
         deleted_at: r.deleted_at,
       }));
       const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();

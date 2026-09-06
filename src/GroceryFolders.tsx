@@ -3,8 +3,11 @@ import type { Item, Member } from "./data";
 import { IconFolder, IconPlus, IconTrash, IconChevronDown, IconChevronRight, IconCheck } from "@tabler/icons-react";
 import { ItemRows, DoneDisclosure } from "./ItemRows";
 import { showToast } from "./components/Toast";
-import { useI18n } from "./lib/i18n";
+import { useI18n, formatShortDate } from "./lib/i18n";
 import clsx from "clsx";
+
+const todayDateStr = () => new Date().toISOString().slice(0, 10);
+const itemDateStr = (item: Item) => (item.updated_at ?? item.created_at).slice(0, 10);
 
 export type Folder = { id: string; name: string; icon: string };
 
@@ -42,7 +45,7 @@ export default function GroceryFolders({
   onRestore: (id: string) => void;
   onHardDelete: (id: string) => void;
 }) {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const [popup, setPopup] = useState<PopupState>({ type: 'NONE' });
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({ "done_folder": true });
   const [inputValue, setInputValue] = useState("");
@@ -52,6 +55,22 @@ export default function GroceryFolders({
   // also linger in its old folder or the purchased list.
   const groceryItems = items.filter((i) => i.category === "grocery" && i.title !== "__SYSTEM_FOLDERS__" && !i.deleted_at);
   const purchasedItems = items.filter((i) => i.done && !i.deleted_at);
+
+  // Group everything older than today into per-date folders so "구매완료"
+  // doesn't just grow into one endless flat list — today's purchases stay
+  // front and center, older ones archive themselves automatically.
+  const today = todayDateStr();
+  const todaysPurchased = purchasedItems.filter((i) => itemDateStr(i) === today);
+  const purchasedByDate = useMemo(() => {
+    const map = new Map<string, Item[]>();
+    for (const item of purchasedItems) {
+      const dateStr = itemDateStr(item);
+      if (dateStr === today) continue;
+      if (!map.has(dateStr)) map.set(dateStr, []);
+      map.get(dateStr)!.push(item);
+    }
+    return new Map([...map.entries()].sort((a, b) => b[0].localeCompare(a[0])));
+  }, [purchasedItems, today]);
   const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
   const deletedItems = items.filter(i => i.deleted_at && i.deleted_at > thirtyDaysAgo);
 
@@ -235,9 +254,12 @@ export default function GroceryFolders({
           </button>
         </div>
 
-        {/* Archive: purchased + deleted — a second, quieter grouped surface */}
+        {/* Archive: purchased + deleted — a second, quieter grouped surface.
+            Today's purchases show directly; anything older auto-archives
+            into its own per-date folder below instead of piling into one
+            ever-growing flat list. */}
         <div className="flex flex-col rounded-2xl bg-surface shadow-sm border border-border/40 divide-y divide-border/40">
-          {purchasedItems.length > 0 && (
+          {todaysPurchased.length > 0 && (
             <div className={clsx("flex flex-col px-4 transition-all", collapsed["done_folder"] ? "py-2.5" : "py-3")}>
               <div className={clsx("flex items-center justify-between transition-all", !collapsed["done_folder"] ? "mb-3 border-b border-border/40 pb-2" : "")}>
                 <div className="flex items-center gap-2 flex-1 overflow-hidden">
@@ -246,18 +268,44 @@ export default function GroceryFolders({
                   </button>
                   <div className="flex flex-col flex-1 min-w-0" onClick={() => toggleCollapse("done_folder")}>
                     <h3 className="text-base font-extrabold flex items-center gap-2 text-muted-foreground cursor-pointer truncate">
-                      <IconCheck size={18} /> {t("grocery.purchased")} <span className="font-normal text-sm">({purchasedItems.length})</span>
+                      <IconCheck size={18} /> {t("grocery.purchased")} <span className="font-normal text-sm">({todaysPurchased.length})</span>
                     </h3>
                   </div>
                 </div>
               </div>
               {!collapsed["done_folder"] && (
                 <div className="flex-1 animate-in fade-in slide-in-from-top-2 duration-200">
-                  <ItemRows items={purchasedItems} onToggle={onToggleDone} onDelete={onDelete} onEdit={onEdit} onMove={handleMove} onSelect={onSelect} members={members} comments={comments} userId={userId} />
+                  <ItemRows items={todaysPurchased} onToggle={onToggleDone} onDelete={onDelete} onEdit={onEdit} onMove={handleMove} onSelect={onSelect} members={members} comments={comments} userId={userId} />
                 </div>
               )}
             </div>
           )}
+
+          {[...purchasedByDate.entries()].map(([dateStr, dateItems]) => {
+            const key = `done_date_${dateStr}`;
+            const isCollapsed = collapsed[key] !== false; // collapsed by default
+            return (
+              <div key={key} className={clsx("flex flex-col px-4 transition-all", isCollapsed ? "py-2.5" : "py-3")}>
+                <div className={clsx("flex items-center justify-between transition-all", !isCollapsed ? "mb-3 border-b border-border/40 pb-2" : "")}>
+                  <div className="flex items-center gap-2 flex-1 overflow-hidden">
+                    <button onClick={() => toggleCollapse(key)} className="text-muted-foreground hover:text-foreground active:scale-90 transition-transform p-1">
+                      {isCollapsed ? <IconChevronRight size={18}/> : <IconChevronDown size={18}/>}
+                    </button>
+                    <div className="flex flex-col flex-1 min-w-0" onClick={() => toggleCollapse(key)}>
+                      <h3 className="text-base font-extrabold flex items-center gap-2 text-muted-foreground cursor-pointer truncate">
+                        <IconFolder size={18} /> {formatShortDate(lang, dateStr)} <span className="font-normal text-sm">({dateItems.length})</span>
+                      </h3>
+                    </div>
+                  </div>
+                </div>
+                {!isCollapsed && (
+                  <div className="flex-1 animate-in fade-in slide-in-from-top-2 duration-200">
+                    <ItemRows items={dateItems} onToggle={onToggleDone} onDelete={onDelete} onEdit={onEdit} onMove={handleMove} onSelect={onSelect} members={members} comments={comments} userId={userId} />
+                  </div>
+                )}
+              </div>
+            );
+          })}
 
           <div className={clsx("flex flex-col px-4 transition-all", collapsed["deleted_folder"] ? "py-2.5" : "py-3")}>
             <div className={clsx("flex items-center justify-between transition-all", !collapsed["deleted_folder"] ? "mb-3 border-b border-border/40 pb-2" : "")}>

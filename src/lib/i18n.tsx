@@ -373,3 +373,19 @@ export function formatMonthYear(lang: Lang, year: number, month: number): string
       return `${year}년 ${month + 1}월`;
   }
 }
+
+const MONTHS_EN_SHORT = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+/** dateStr is "YYYY-MM-DD" */
+export function formatShortDate(lang: Lang, dateStr: string): string {
+  const [, m, d] = dateStr.split("-").map(Number);
+  switch (lang) {
+    case "en":
+      return `${MONTHS_EN_SHORT[m - 1]} ${d}`;
+    case "ja":
+    case "zh":
+      return `${m}月${d}日`;
+    default:
+      return `${m}월 ${d}일`;
+  }
+}
