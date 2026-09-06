@@ -5,7 +5,14 @@ declare const self: ServiceWorkerGlobalScope;
 
 precacheAndRoute(self.__WB_MANIFEST);
 
-self.skipWaiting();
+// "prompt" update mode: a newly installed worker stays waiting until the
+// page (via updateSW(true), after the user taps the update banner) tells it
+// to take over. Skipping waiting unconditionally here would activate every
+// new deploy immediately and force a surprise reload on anyone with the app
+// already open.
+self.addEventListener("message", (event) => {
+  if (event.data?.type === "SKIP_WAITING") self.skipWaiting();
+});
 self.addEventListener("activate", (event) => {
   event.waitUntil(self.clients.claim());
 });

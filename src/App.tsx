@@ -10,6 +10,7 @@ import { useAppData } from "./hooks/useAppData";
 import { ToastContainer } from "./components/Toast";
 import { LanguageProvider, useI18n, type LangSetting } from "./lib/i18n";
 import { subscribeToPush } from "./lib/push";
+import { onUpdateAvailable } from "./lib/swUpdate";
 import type { Category, Item } from "./data";
 
 type Screen = "home" | "settings" | "invite" | "groups";
@@ -53,10 +54,33 @@ function OfflineBanner() {
   );
 }
 
+function useUpdateAvailable(): (() => void) | null {
+  const [apply, setApply] = useState<(() => void) | null>(null);
+  useEffect(() => onUpdateAvailable((fn) => setApply(() => fn)), []);
+  return apply;
+}
+
+function UpdateBanner({ onApply }: { onApply: () => void }) {
+  const { t } = useI18n();
+  return (
+    <div className="sticky top-0 z-[200] flex animate-in fade-in slide-in-from-top-2 items-center justify-center gap-3 bg-primary px-4 py-1.5 text-center text-xs font-bold text-primary-foreground duration-300">
+      <span>{t("app.updateAvailable")}</span>
+      <button
+        type="button"
+        onClick={onApply}
+        className="rounded-full bg-primary-foreground/20 px-3 py-0.5 underline-offset-2 hover:underline"
+      >
+        {t("app.updateNow")}
+      </button>
+    </div>
+  );
+}
+
 function AppShell() {
   const { t, setLanguage } = useI18n();
   const data = useAppData();
   const isOnline = useIsOnline();
+  const applyUpdate = useUpdateAvailable();
   const [screen, setScreen] = useState<Screen>(useInitialScreen);
   const [addSheetOpen, setAddSheetOpen] = useState(
     () => typeof window !== "undefined" && new URLSearchParams(window.location.search).get("modal") === "add"
@@ -206,6 +230,7 @@ function AppShell() {
 
   return (
     <>
+      {applyUpdate && <UpdateBanner onApply={applyUpdate} />}
       {!isOnline && <OfflineBanner />}
       {content}
     </>

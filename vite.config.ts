@@ -13,13 +13,15 @@ export default defineConfig({
     react(),
     tailwindcss(),
     VitePWA({
-      registerType: "autoUpdate",
+      // "prompt" (not "autoUpdate"): with frequent deploys, autoUpdate's
+      // silent background reload was firing mid-session and looked like the
+      // app randomly refreshing itself. main.tsx now shows an update banner
+      // via onNeedRefresh and only reloads when the user taps it.
+      registerType: "prompt",
       injectRegister: null,
       // A custom service worker (src/sw.ts) is required for push/
       // notificationclick handlers — generateSW's auto-built worker has no
-      // hook for that. skipWaiting/clientsClaim are called directly in
-      // sw.ts instead of via workbox options here, for the same reason as
-      // before: an already-open tab should pick up a new deploy on its own.
+      // hook for that.
       strategies: "injectManifest",
       srcDir: "src",
       filename: "sw.ts",
