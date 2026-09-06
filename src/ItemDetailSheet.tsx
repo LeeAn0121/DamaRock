@@ -5,6 +5,7 @@ import type { Item, Member } from "./data";
 import { memberName } from "./data";
 import { useI18n } from "./lib/i18n";
 import { showToast } from "./components/Toast";
+import TypingIndicator from "./components/TypingIndicator";
 import clsx from "clsx";
 
 type Comment = {
@@ -23,6 +24,8 @@ export default function ItemDetailSheet({
   familyId,
   userId,
   onClose,
+  typingUsers = {},
+  onTyping,
 }: {
   item: Item | null;
   open: boolean;
@@ -30,6 +33,8 @@ export default function ItemDetailSheet({
   familyId: string;
   userId: string;
   onClose: () => void;
+  typingUsers?: Record<string, string>;
+  onTyping?: () => void;
 }) {
   const { t } = useI18n();
   const [comments, setComments] = useState<Comment[]>([]);
@@ -201,12 +206,15 @@ export default function ItemDetailSheet({
           <div ref={bottomRef} />
         </div>
 
+        <div className="px-5">
+          <TypingIndicator names={typingUsers} />
+        </div>
         <form onSubmit={handleSubmit} className="border-t border-border/40 p-4 pb-safe flex gap-2">
           <input
             type="text"
             placeholder={t("itemDetail.placeholder")}
             value={draft}
-            onChange={(e) => setDraft(e.target.value)}
+            onChange={(e) => { setDraft(e.target.value); onTyping?.(); }}
             className="flex-1 rounded-full bg-surface px-4 py-2 text-sm font-medium outline-none placeholder:text-muted-foreground focus:ring-2 focus:ring-primary/20"
           />
           <button

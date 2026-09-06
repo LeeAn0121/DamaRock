@@ -185,6 +185,8 @@ function AppShell() {
           onOpenAddSheet={() => setAddSheetOpen(true)}
           onOpenSettings={() => setScreen("settings")}
           onOpenInvite={() => setScreen("invite")}
+          typingByContext={data.typingByContext}
+          notifyTyping={data.notifyTyping}
           deleteItem={data.deleteItem}
           restoreItem={data.restoreItem}
           hardDeleteItem={data.hardDeleteItem}

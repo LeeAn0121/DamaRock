@@ -2,6 +2,7 @@ import { useState, useMemo } from "react";
 import { IconX } from "@tabler/icons-react";
 import type { Item } from "./data";
 import { useI18n } from "./lib/i18n";
+import TypingIndicator from "./components/TypingIndicator";
 import clsx from "clsx";
 
 type Folder = { id: string; name: string; icon: string };
@@ -11,11 +12,15 @@ export default function AddGrocerySheet({
   items,
   onClose,
   onAdd,
+  typingUsers = {},
+  onTyping,
 }: {
   open: boolean;
   items: Item[]; // to parse folders
   onClose: () => void;
   onAdd: (folderId: string, title: string, memo: string) => void;
+  typingUsers?: Record<string, string>;
+  onTyping?: () => void;
 }) {
   const { t } = useI18n();
   const [selectedFolder, setSelectedFolder] = useState<string>("");
@@ -84,7 +89,7 @@ export default function AddGrocerySheet({
               className="w-full bg-chrome text-foreground font-bold text-lg px-4 py-3 rounded-xl outline-none focus:ring-2 focus:ring-primary/50 placeholder-muted-foreground/50"
               placeholder={t("addGrocery.itemPlaceholder")}
               value={title}
-              onChange={e => setTitle(e.target.value)}
+              onChange={e => { setTitle(e.target.value); onTyping?.(); }}
             />
           </div>
           <div>
@@ -97,7 +102,8 @@ export default function AddGrocerySheet({
               onChange={e => setMemo(e.target.value)}
             />
           </div>
-          <div className="flex gap-3 pt-2 pb-safe">
+          <TypingIndicator names={typingUsers} />
+          <div className="flex gap-3 pb-safe">
             <button type="button" onClick={onClose} className="flex-1 py-4 bg-chrome text-foreground/70 font-bold rounded-2xl active:scale-[0.98] transition-transform">{t("common.cancel")}</button>
             <button type="submit" disabled={!title.trim()} className="flex-1 py-4 bg-primary text-primary-foreground font-bold rounded-2xl disabled:opacity-50 active:scale-[0.98] transition-transform">{t("common.add")}</button>
           </div>

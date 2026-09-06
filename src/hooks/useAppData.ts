@@ -100,6 +100,12 @@ export function useAppData() {
   const [comments, setComments] = useState<Comment[]>(snapshot?.comments ?? []);
   const [invites, setInvites] = useState<Invite[]>(snapshot?.invites ?? []);
   const onlineIdsRef = useRef<Set<string>>(new Set());
+  const familyChannelRef = useRef<RealtimeChannel | null>(null);
+  const typingTimeoutsRef = useRef<Record<string, number>>({});
+  // context -> userId -> display name. "context" is a free-form string the
+  // caller picks (e.g. `comment:${itemId}`, "newItem") so unrelated typing
+  // indicators never bleed into each other.
+  const [typingByContext, setTypingByContext] = useState<Record<string, Record<string, string>>>({});
 
   const [hasUnreadActivity, setHasUnreadActivity] = useState(false);
   const clearUnreadActivity = useCallback(() => setHasUnreadActivity(false), []);
@@ -369,8 +375,26 @@ export function useAppData() {
     const channel: RealtimeChannel = supabase.channel(`family:${family.id}`, {
       config: { presence: { key: userId } },
     });
+    familyChannelRef.current = channel;
 
     channel
+      .on("broadcast", { event: "typing" }, ({ payload }) => {
+        const { context, userId: typerId, name } = payload as { context: string; userId: string; name: string };
+        if (typerId === userId) return; // ignore our own echo
+        setTypingByContext((prev) => ({
+          ...prev,
+          [context]: { ...prev[context], [typerId]: name },
+        }));
+        const key = `${context}:${typerId}`;
+        if (typingTimeoutsRef.current[key]) clearTimeout(typingTimeoutsRef.current[key]);
+        typingTimeoutsRef.current[key] = window.setTimeout(() => {
+          setTypingByContext((prev) => {
+            const contextMap = { ...prev[context] };
+            delete contextMap[typerId];
+            return { ...prev, [context]: contextMap };
+          });
+        }, 3000);
+      })
       .on("presence", { event: "sync" }, () => {
         onlineIdsRef.current = new Set(Object.keys(channel.presenceState()));
         setMembers((prev) => applyOnline(prev));
@@ -449,9 +473,29 @@ export function useAppData() {
       });
 
     return () => {
+      familyChannelRef.current = null;
+      Object.values(typingTimeoutsRef.current).forEach(clearTimeout);
+      typingTimeoutsRef.current = {};
       supabase.removeChannel(channel);
     };
   }, [family, userId, loadFamilyData, applyOnline, t]);
+
+  const lastTypingSentRef = useRef<Record<string, number>>({});
+  const notifyTyping = useCallback(
+    (context: string) => {
+      if (!userId || !familyChannelRef.current) return;
+      const now = Date.now();
+      if (now - (lastTypingSentRef.current[context] ?? 0) < 1500) return; // throttle
+      lastTypingSentRef.current[context] = now;
+      const name = members.find((m) => m.id === userId)?.name ?? "";
+      familyChannelRef.current.send({
+        type: "broadcast",
+        event: "typing",
+        payload: { context, userId, name },
+      });
+    },
+    [userId, members]
+  );
 
   const toggleDone = useCallback(
     async (id: string) => {
@@ -636,5 +680,7 @@ export function useAppData() {
     updateFamilyName,
     updateDisplayName,
     syncNotificationSettings,
+    typingByContext,
+    notifyTyping,
   };
 }

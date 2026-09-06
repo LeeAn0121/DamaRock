@@ -34,6 +34,8 @@ export default function HomeList(props: {
   onOpenAddSheet: () => void;
   onOpenSettings: () => void;
   onOpenInvite: () => void;
+  typingByContext: Record<string, Record<string, string>>;
+  notifyTyping: (context: string) => void;
   deleteItem: (id: string) => void;
   restoreItem: (id: string) => void;
   hardDeleteItem: (id: string) => void;
@@ -52,6 +54,8 @@ export default function HomeList(props: {
     editItem,
     onOpenSettings,
     onOpenInvite,
+    typingByContext,
+    notifyTyping,
     deleteItem,
     refreshData,
     hasUnreadActivity,
@@ -465,6 +469,8 @@ export default function HomeList(props: {
             userId={userId}
             familyId={familyId}
             onClose={() => setSelectedItem(null)}
+            typingUsers={selectedItem ? (typingByContext[`comment:${selectedItem.id}`] ?? {}) : {}}
+            onTyping={() => selectedItem && notifyTyping(`comment:${selectedItem.id}`)}
           />
         )}
 
@@ -493,6 +499,8 @@ export default function HomeList(props: {
             const meta = memo ? folderId + "::MEMO::" + memo : folderId;
             props.addItem({ title, category: "grocery", meta });
           }}
+          typingUsers={typingByContext["newItem"] ?? {}}
+          onTyping={() => notifyTyping("newItem")}
         />
       </div>
     </div>

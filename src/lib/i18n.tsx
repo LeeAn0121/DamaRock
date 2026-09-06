@@ -148,6 +148,8 @@ const dict: Dict = {
   "itemDetail.placeholder": { ko: "댓글 입력...", en: "Write a comment...", ja: "コメントを入力...", zh: "输入评论..." },
   "itemDetail.editPrompt": { ko: "댓글을 수정하세요:", en: "Edit your comment:", ja: "コメントを修正してください：", zh: "请修改评论：" },
   "itemDetail.confirmDelete": { ko: "댓글을 삭제하시겠습니까?", en: "Delete this comment?", ja: "コメントを削除しますか？", zh: "确定要删除这条评论吗？" },
+  "typing.oneUser": { ko: "{{name}}님이 입력 중...", en: "{{name}} is typing...", ja: "{{name}}さんが入力中...", zh: "{{name}} 正在输入..." },
+  "typing.multiUsers": { ko: "{{name}} 외 {{count}}명이 입력 중...", en: "{{name}} and {{count}} others are typing...", ja: "{{name}}さん他{{count}}人が入力中...", zh: "{{name}} 等 {{count}} 人正在输入..." },
   "itemDetail.addFailed": { ko: "댓글 등록에 실패했어요. 다시 시도해주세요.", en: "Couldn't post the comment. Please try again.", ja: "コメントの投稿に失敗しました。もう一度お試しください。", zh: "评论发布失败，请重试。" },
   "itemDetail.editFailed": { ko: "댓글 수정에 실패했어요. 다시 시도해주세요.", en: "Couldn't edit the comment. Please try again.", ja: "コメントの修正に失敗しました。もう一度お試しください。", zh: "评论修改失败，请重试。" },
   "itemDetail.deleteFailed": { ko: "댓글 삭제에 실패했어요. 다시 시도해주세요.", en: "Couldn't delete the comment. Please try again.", ja: "コメントの削除に失敗しました。もう一度お試しください。", zh: "评论删除失败，请重试。" },
