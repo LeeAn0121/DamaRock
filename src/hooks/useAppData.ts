@@ -88,6 +88,21 @@ type ItemRow = {
   deleted_at: string | null;
 };
 
+function mapItemRow(r: ItemRow): Item {
+  return {
+    id: r.id,
+    title: r.title,
+    category: r.category,
+    done: r.done,
+    addedBy: r.added_by,
+    assignee: r.assignee ?? undefined,
+    meta: r.meta ?? undefined,
+    created_at: r.created_at,
+    updated_at: r.updated_at,
+    deleted_at: r.deleted_at,
+  };
+}
+
 export function useAppData() {
   const { t } = useI18n();
   const [snapshot] = useState(() => loadSnapshot());
@@ -102,6 +117,11 @@ export function useAppData() {
   const [invites, setInvites] = useState<Invite[]>(snapshot?.invites ?? []);
   const onlineIdsRef = useRef<Set<string>>(new Set());
   const familyChannelRef = useRef<RealtimeChannel | null>(null);
+  // Guards against out-of-order async responses: only the most recently
+  // issued loadFamilyData call is allowed to apply its results, so a slow
+  // stale fetch (e.g. one queued right before an optimistic delete) can't
+  // resolve later and overwrite newer state with old data.
+  const loadRequestIdRef = useRef(0);
   const typingTimeoutsRef = useRef<Record<string, number>>({});
   // context -> userId -> display name. "context" is a free-form string the
   // caller picks (e.g. `comment:${itemId}`, "newItem") so unrelated typing
@@ -180,7 +200,10 @@ export function useAppData() {
       // screen should just leave that cached data up rather than replacing
       // a usable stale list with an error screen — the realtime
       // reconnect/next successful refresh will bring it current again.
+      const requestId = ++loadRequestIdRef.current;
+      const isStale = () => loadRequestIdRef.current !== requestId;
       const failSoft = (message: string) => {
+        if (isStale()) return;
         if (family) {
           console.error("loadFamilyData failed, keeping cached data:", message);
           return;
@@ -196,6 +219,7 @@ export function useAppData() {
         .eq("user_id", uid)
         .order("joined_at", { ascending: true });
 
+      if (isStale()) return;
       if (mErr) {
         failSoft(mErr.message);
         return;
@@ -214,6 +238,7 @@ export function useAppData() {
         .from("families")
         .select("id, name, invite_code, created_at")
         .in("id", familyIds);
+      if (isStale()) return;
       setFamilies((familyRows ?? []).map((f) => ({ id: f.id, name: f.name, inviteCode: f.invite_code, createdAt: f.created_at })));
 
       const [{ data: familyRow, error: fErr }, { data: memberRows }, { data: itemRows }, { data: inviteRows }, { data: commentRows }] =
@@ -243,6 +268,7 @@ export function useAppData() {
             .returns<Comment[]>(),
         ]);
 
+      if (isStale()) return;
       if (fErr || !familyRow) {
         failSoft(fErr?.message ?? t("errors.familyNotFound"));
         return;
@@ -258,18 +284,7 @@ export function useAppData() {
           role: r.role,
         }))
       );
-      const resolvedItems: Item[] = (itemRows ?? []).map((r) => ({
-        id: r.id,
-        title: r.title,
-        category: r.category,
-        done: r.done,
-        addedBy: r.added_by,
-        assignee: r.assignee ?? undefined,
-        meta: r.meta ?? undefined,
-        created_at: r.created_at,
-        updated_at: r.updated_at,
-        deleted_at: r.deleted_at,
-      }));
+      const resolvedItems: Item[] = (itemRows ?? []).map(mapItemRow);
       const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
       const resolvedInvites: Invite[] = (inviteRows ?? [])
         .filter(r => r.created_at > oneDayAgo)
@@ -284,6 +299,7 @@ export function useAppData() {
       setStatus("ready");
       saveSnapshot({ family: resolvedFamily, members: resolvedMembers, items: resolvedItems, comments: resolvedComments, invites: resolvedInvites });
       } catch (err) {
+        if (isStale()) return;
         failSoft(err instanceof Error ? err.message : String(err));
       }
     },
@@ -405,10 +421,24 @@ export function useAppData() {
         "postgres_changes",
         { event: "*", schema: "public", table: "items", filter: `family_id=eq.${family.id}` },
         (payload) => {
-          loadFamilyData(userId);
+          // Apply the change directly from the payload instead of
+          // re-fetching the whole family on every single item edit — a full
+          // refetch here raced against optimistic local updates (a delete
+          // could get overwritten by a slightly-stale in-flight fetch) and,
+          // since items change constantly, made the app feel like it was
+          // reloading itself all the time.
+          const newRow = payload.new as ItemRow | null;
+          const oldRow = payload.old as ItemRow | null;
+          if (payload.eventType === "INSERT" && newRow) {
+            const mapped = mapItemRow(newRow);
+            setItems((prev) => (prev.some((i) => i.id === mapped.id) ? prev : [mapped, ...prev]));
+          } else if (payload.eventType === "UPDATE" && newRow) {
+            const mapped = mapItemRow(newRow);
+            setItems((prev) => prev.map((i) => (i.id === mapped.id ? mapped : i)));
+          } else if (payload.eventType === "DELETE" && oldRow) {
+            setItems((prev) => prev.filter((i) => i.id !== oldRow.id));
+          }
 
-          const newRow = payload.new as Partial<ItemRow> | null;
-          const oldRow = payload.old as Partial<ItemRow> | null;
           const isSystem = newRow?.title === '__SYSTEM_FOLDERS__' || oldRow?.title === '__SYSTEM_FOLDERS__';
           if (isSystem) return;
 
@@ -642,12 +672,6 @@ export function useAppData() {
     await supabase.from("family_invites").update({ status: "cancelled" }).eq("id", id);
   }, []);
 
-  const refreshData = useCallback(() => {
-    if (userId) {
-      loadFamilyData(userId);
-    }
-  }, [userId, loadFamilyData]);
-
   const signOut = useCallback(() => supabase.auth.signOut(), []);
 
   return {
@@ -673,7 +697,6 @@ export function useAppData() {
     createFamily,
     joinFamily,
     cancelInvite,
-    refreshData,
     signOut,
     hasUnreadActivity,
     clearUnreadActivity,

@@ -39,7 +39,6 @@ export default function HomeList(props: {
   deleteItem: (id: string) => void;
   restoreItem: (id: string) => void;
   hardDeleteItem: (id: string) => void;
-  refreshData?: () => void;
   hasUnreadActivity?: boolean;
   clearUnreadActivity?: () => void;
 }) {
@@ -57,17 +56,11 @@ export default function HomeList(props: {
     typingByContext,
     notifyTyping,
     deleteItem,
-    refreshData,
     hasUnreadActivity,
     clearUnreadActivity,
   } = props;
   const viewState = useUrlState();
   const [currentTab, setCurrentTab] = useState<"grocery" | "todo">("grocery");
-
-  // Refresh data whenever the tab changes to ensure fresh state
-  useEffect(() => {
-    refreshData?.();
-  }, [currentTab, refreshData]);
 
   const [activityOpen, setActivityOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);

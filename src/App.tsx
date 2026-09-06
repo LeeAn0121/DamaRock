@@ -190,7 +190,6 @@ function AppShell() {
           deleteItem={data.deleteItem}
           restoreItem={data.restoreItem}
           hardDeleteItem={data.hardDeleteItem}
-          refreshData={data.refreshData}
           hasUnreadActivity={data.hasUnreadActivity}
           clearUnreadActivity={data.clearUnreadActivity}
         />
