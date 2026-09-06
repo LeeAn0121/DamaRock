@@ -87,12 +87,19 @@ export default function HomeList(props: {
   }, [searchOpen]);
   const [addGroceryOpen, setAddGroceryOpen] = useState(false);
 
+  // "스와이프로 삭제/완료" claims the same horizontal swipe gesture for
+  // per-item actions, so when it's on this tab-switch swipe steps aside
+  // ("탭 이동 대신" — its own settings copy says so) rather than the two
+  // fighting over the same gesture.
+  const tabSwipeEnabled = typeof localStorage === "undefined" || localStorage.getItem("swipeAction") !== "true";
+
   const handleTouchStart = (e: React.TouchEvent) => {
+    if (!tabSwipeEnabled) return;
     setTouchStart({x: e.targetTouches[0].clientX, y: e.targetTouches[0].clientY});
   };
 
   const handleTouchEnd = (e: React.TouchEvent) => {
-    if (touchStart === null) return;
+    if (!tabSwipeEnabled || touchStart === null) return;
     const touchEndX = e.changedTouches[0].clientX;
     const distance = touchEndX - touchStart.x;
 

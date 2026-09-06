@@ -48,7 +48,10 @@ export default function GroceryFolders({
   const [inputValue, setInputValue] = useState("");
 
   const systemItem = items.find((i) => i.title === "__SYSTEM_FOLDERS__");
-  const groceryItems = items.filter((i) => i.category === "grocery" && i.title !== "__SYSTEM_FOLDERS__");
+  // A deleted item belongs only in the "삭제됨" section below — it must not
+  // also linger in its old folder or the purchased list.
+  const groceryItems = items.filter((i) => i.category === "grocery" && i.title !== "__SYSTEM_FOLDERS__" && !i.deleted_at);
+  const purchasedItems = items.filter((i) => i.done && !i.deleted_at);
   const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
   const deletedItems = items.filter(i => i.deleted_at && i.deleted_at > thirtyDaysAgo);
 
@@ -234,7 +237,7 @@ export default function GroceryFolders({
 
         {/* Archive: purchased + deleted — a second, quieter grouped surface */}
         <div className="flex flex-col rounded-2xl bg-surface shadow-sm border border-border/40 divide-y divide-border/40">
-          {items.filter(i => i.done).length > 0 && (
+          {purchasedItems.length > 0 && (
             <div className={clsx("flex flex-col px-4 transition-all", collapsed["done_folder"] ? "py-2.5" : "py-3")}>
               <div className={clsx("flex items-center justify-between transition-all", !collapsed["done_folder"] ? "mb-3 border-b border-border/40 pb-2" : "")}>
                 <div className="flex items-center gap-2 flex-1 overflow-hidden">
@@ -243,14 +246,14 @@ export default function GroceryFolders({
                   </button>
                   <div className="flex flex-col flex-1 min-w-0" onClick={() => toggleCollapse("done_folder")}>
                     <h3 className="text-base font-extrabold flex items-center gap-2 text-muted-foreground cursor-pointer truncate">
-                      <IconCheck size={18} /> {t("grocery.purchased")} <span className="font-normal text-sm">({items.filter(i => i.done).length})</span>
+                      <IconCheck size={18} /> {t("grocery.purchased")} <span className="font-normal text-sm">({purchasedItems.length})</span>
                     </h3>
                   </div>
                 </div>
               </div>
               {!collapsed["done_folder"] && (
                 <div className="flex-1 animate-in fade-in slide-in-from-top-2 duration-200">
-                  <ItemRows items={items.filter(i => i.done)} onToggle={onToggleDone} onDelete={onDelete} onEdit={onEdit} onMove={handleMove} onSelect={onSelect} members={members} comments={comments} userId={userId} />
+                  <ItemRows items={purchasedItems} onToggle={onToggleDone} onDelete={onDelete} onEdit={onEdit} onMove={handleMove} onSelect={onSelect} members={members} comments={comments} userId={userId} />
                 </div>
               )}
             </div>

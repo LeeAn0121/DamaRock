@@ -5,12 +5,16 @@ import type { Item, Member } from "./data";
 import { memberName } from "./data";
 import { useI18n } from "./lib/i18n";
 
+const SWIPE_REVEAL = 76;
+const SWIPE_COMMIT_THRESHOLD = 40;
+
 export function ActionableItem({
   item,
   members,
   comments = [],
   userId,
   onToggle,
+  onDelete,
   onLongPress,
   onSelect,
   index = 0,
@@ -20,6 +24,7 @@ export function ActionableItem({
   comments?: import("./data").Comment[];
   userId?: string | null;
   onToggle: (id: string) => void;
+  onDelete?: (id: string) => void;
   onLongPress?: (item: Item) => void;
   onSelect?: (item: Item) => void;
   index?: number;
@@ -27,6 +32,21 @@ export function ActionableItem({
   const { t } = useI18n();
   const timerRef = useRef<number | null>(null);
   const [isActive, setIsActive] = useState(false);
+
+  // "스와이프로 삭제/완료" setting: swipe the row itself to reveal a
+  // complete/delete shortcut, instead of tapping to open the full action
+  // sheet. Read directly from localStorage (same pattern as other
+  // preference reads elsewhere) rather than threading a prop through every
+  // list ancestor for one boolean.
+  const swipeEnabled = typeof localStorage !== "undefined" && localStorage.getItem("swipeAction") === "true";
+
+  const [dragX, setDragX] = useState(0);
+  const dragState = useRef<{ startX: number; startY: number; dragging: boolean; axisLocked: "x" | "y" | null }>({
+    startX: 0,
+    startY: 0,
+    dragging: false,
+    axisLocked: null,
+  });
 
   const startPress = () => {
     setIsActive(true);
@@ -43,6 +63,10 @@ export function ActionableItem({
 
   const handleClick = (e: React.MouseEvent) => {
     cancelPress();
+    if (dragX !== 0) {
+      setDragX(0);
+      return;
+    }
     onSelect?.(item);
   };
 
@@ -50,6 +74,47 @@ export function ActionableItem({
     e.preventDefault();
     cancelPress();
     onLongPress?.(item);
+  };
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    startPress();
+    if (!swipeEnabled) return;
+    const touch = e.targetTouches[0];
+    dragState.current = { startX: touch.clientX, startY: touch.clientY, dragging: false, axisLocked: null };
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!swipeEnabled) {
+      cancelPress();
+      return;
+    }
+    const touch = e.targetTouches[0];
+    const dx = touch.clientX - dragState.current.startX;
+    const dy = touch.clientY - dragState.current.startY;
+
+    if (!dragState.current.axisLocked) {
+      if (Math.abs(dx) < 8 && Math.abs(dy) < 8) return; // too small to tell yet
+      dragState.current.axisLocked = Math.abs(dx) > Math.abs(dy) ? "x" : "y";
+    }
+    if (dragState.current.axisLocked === "y") return; // vertical scroll — don't hijack it
+
+    dragState.current.dragging = true;
+    cancelPress();
+    const clamped = Math.max(-SWIPE_REVEAL, Math.min(SWIPE_REVEAL, dx));
+    setDragX(clamped);
+  };
+
+  const handleTouchEnd = () => {
+    cancelPress();
+    if (!dragState.current.dragging) return;
+    dragState.current.dragging = false;
+    if (dragX <= -SWIPE_COMMIT_THRESHOLD) {
+      setDragX(-SWIPE_REVEAL);
+    } else if (dragX >= SWIPE_COMMIT_THRESHOLD) {
+      setDragX(SWIPE_REVEAL);
+    } else {
+      setDragX(0);
+    }
   };
 
   const itemComments = comments.filter(c => c.item_id === item.id);
@@ -60,15 +125,41 @@ export function ActionableItem({
       style={{ animationDelay: `${Math.min(index, 8) * 40}ms`, animationDuration: "300ms" }}
       onContextMenu={handleContextMenu}
     >
+      {swipeEnabled && (
+        <>
+          <button
+            type="button"
+            aria-label={t("itemRows.swipeComplete")}
+            onClick={() => { onToggle(item.id); setDragX(0); }}
+            className="absolute inset-y-0 left-0 flex items-center justify-center bg-success text-success-foreground"
+            style={{ width: SWIPE_REVEAL }}
+          >
+            <IconCheck size={20} stroke={2.5} />
+          </button>
+          {onDelete && (
+            <button
+              type="button"
+              aria-label={t("itemRows.swipeDelete")}
+              onClick={() => { onDelete(item.id); setDragX(0); }}
+              className="absolute inset-y-0 right-0 flex items-center justify-center bg-danger text-white"
+              style={{ width: SWIPE_REVEAL }}
+            >
+              <IconTrash size={20} stroke={2.5} />
+            </button>
+          )}
+        </>
+      )}
       <div
         className={clsx(
-          "relative z-10 flex min-w-0 items-center py-3 px-4 bg-surface transition-colors duration-200 cursor-pointer sm:hover:bg-chrome/40",
-          isActive ? "bg-chrome/60" : ""
+          "relative z-10 flex min-w-0 items-center py-3 px-4 bg-surface cursor-pointer sm:hover:bg-chrome/40",
+          isActive ? "bg-chrome/60" : "",
+          dragState.current.dragging ? "" : "transition-transform duration-200"
         )}
+        style={swipeEnabled ? { transform: `translateX(${dragX}px)` } : undefined}
         onClick={handleClick}
-        onTouchStart={startPress}
-        onTouchEnd={cancelPress}
-        onTouchMove={cancelPress}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
         onMouseDown={startPress}
         onMouseUp={cancelPress}
         onMouseLeave={cancelPress}
@@ -140,6 +231,7 @@ export function ItemRows({
             comments={comments}
             userId={userId}
             onToggle={onToggle}
+            onDelete={onDelete}
             onLongPress={setActionItem}
             onSelect={onSelect}
           />

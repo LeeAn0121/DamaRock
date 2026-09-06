@@ -158,6 +158,8 @@ const dict: Dict = {
   "itemRows.editItem": { ko: "항목 수정", en: "Edit item", ja: "項目を修正", zh: "编辑项目" },
   "itemRows.deleteItem": { ko: "항목 삭제", en: "Delete item", ja: "項目を削除", zh: "删除项目" },
   "itemRows.done": { ko: "담음 ({{n}})", en: "Done ({{n}})", ja: "完了（{{n}}）", zh: "已完成（{{n}}）" },
+  "itemRows.swipeComplete": { ko: "완료 처리", en: "Mark complete", ja: "完了にする", zh: "标记完成" },
+  "itemRows.swipeDelete": { ko: "삭제", en: "Delete", ja: "削除", zh: "删除" },
 
   // calendar
   "calendar.noSchedule": { ko: "등록된 일정이 없어요", en: "No events yet", ja: "登録された予定はありません", zh: "还没有安排的日程" },
