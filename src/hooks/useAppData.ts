@@ -12,6 +12,33 @@ type Status = "loading" | "signed-out" | "needs-family" | "ready" | "error";
 const PENDING_JOIN_KEY = "damarock_pending_join";
 const ACTIVE_FAMILY_KEY = "damarock_active_family";
 
+function isQuietHours(): boolean {
+  if (localStorage.getItem("quietMode") !== "true") return false;
+  const [sh, sm] = (localStorage.getItem("quietStart") || "23:00").split(":").map(Number);
+  const [eh, em] = (localStorage.getItem("quietEnd") || "07:00").split(":").map(Number);
+  const now = new Date();
+  const nowMinutes = now.getHours() * 60 + now.getMinutes();
+  const startMinutes = sh * 60 + sm;
+  const endMinutes = eh * 60 + em;
+  if (startMinutes === endMinutes) return false;
+  return startMinutes < endMinutes
+    ? nowMinutes >= startMinutes && nowMinutes < endMinutes
+    : nowMinutes >= startMinutes || nowMinutes < endMinutes; // wraps past midnight
+}
+
+function notifyIfAllowed(settingKey: string, title: string, body: string) {
+  if (localStorage.getItem(settingKey) === "false") return;
+  if (isQuietHours()) return;
+  if (typeof window === "undefined" || !("Notification" in window)) return;
+  if (Notification.permission === "default") {
+    Notification.requestPermission();
+    return;
+  }
+  if (Notification.permission === "granted") {
+    new Notification(title, { body, icon: `${import.meta.env.BASE_URL}icon-192.png` });
+  }
+}
+
 type MemberRow = {
   user_id: string;
   role: "가족대표" | "구성원";
@@ -275,37 +302,25 @@ export function useAppData() {
           const isSystem = newRow?.title === '__SYSTEM_FOLDERS__' || oldRow?.title === '__SYSTEM_FOLDERS__';
           if (isSystem) return;
 
-          const notify = localStorage.getItem("notifyItemChanges") !== "false";
-          if (!notify) return;
+          const eventType = payload.eventType;
+          const itemData = newRow || oldRow;
+          if (!itemData) return;
 
-          if (typeof window !== "undefined" && "Notification" in window) {
-            if (Notification.permission === "default") {
-              Notification.requestPermission();
-            }
-            if (Notification.permission === "granted") {
-              const eventType = payload.eventType;
-              const itemData = newRow || oldRow;
-              const title = t("notif.activityTitle");
-              let body = "";
+          const categoryStr = itemData.category === "todo" ? t("common.todo") : (itemData.category === "grocery" ? t("notif.categoryGroceryItem") : t("notif.categoryItem"));
+          const itemTitle = itemData.title ?? "";
+          let body = "";
 
-              if (itemData) {
-                const categoryStr = itemData.category === "todo" ? t("common.todo") : (itemData.category === "grocery" ? t("notif.categoryGroceryItem") : t("notif.categoryItem"));
-                const itemTitle = itemData.title ?? "";
+          if (eventType === "INSERT" && itemData.added_by !== userId) {
+            body = t("notif.itemInserted", { category: categoryStr, title: itemTitle });
+          } else if (eventType === "UPDATE") {
+            body = t("notif.itemUpdated", { category: categoryStr, title: itemTitle });
+          } else if (eventType === "DELETE") {
+            body = t("notif.itemDeleted", { category: categoryStr, title: itemTitle });
+          }
 
-                if (eventType === "INSERT" && itemData.added_by !== userId) {
-                  body = t("notif.itemInserted", { category: categoryStr, title: itemTitle });
-                } else if (eventType === "UPDATE") {
-                  body = t("notif.itemUpdated", { category: categoryStr, title: itemTitle });
-                } else if (eventType === "DELETE") {
-                  body = t("notif.itemDeleted", { category: categoryStr, title: itemTitle });
-                }
-
-                if (body) {
-                  setHasUnreadActivity(true);
-                  new Notification(title, { body, icon: `${import.meta.env.BASE_URL}icon-192.png` });
-                }
-              }
-            }
+          if (body) {
+            setHasUnreadActivity(true);
+            notifyIfAllowed("notifyNewItem", t("notif.activityTitle"), body);
           }
         }
       )
@@ -316,10 +331,7 @@ export function useAppData() {
           loadFamilyData(userId);
           if (payload.eventType === "INSERT" && payload.new.user_id !== userId) {
             setHasUnreadActivity(true);
-            const notify = localStorage.getItem("notifyMemberJoin") !== "false";
-            if (notify && typeof window !== "undefined" && "Notification" in window && Notification.permission === "granted") {
-              new Notification(t("notif.newsTitle"), { body: t("notif.memberJoined"), icon: `${import.meta.env.BASE_URL}icon-192.png` });
-            }
+            notifyIfAllowed("notifyNewItem", t("notif.newsTitle"), t("notif.memberJoined"));
           }
         }
       )
@@ -333,7 +345,12 @@ export function useAppData() {
         { event: "*", schema: "public", table: "comments", filter: `family_id=eq.${family.id}` },
         (payload) => {
           if (payload.eventType === "INSERT") {
-            setComments((prev) => [...prev, payload.new as Comment]);
+            const newComment = payload.new as Comment;
+            setComments((prev) => [...prev, newComment]);
+            if (newComment.author_id !== userId) {
+              setHasUnreadActivity(true);
+              notifyIfAllowed("notifyComments", t("notif.activityTitle"), t("notif.newComment"));
+            }
           } else if (payload.eventType === "UPDATE") {
             setComments((prev) => prev.map((c) => c.id === payload.new.id ? (payload.new as Comment) : c));
           } else if (payload.eventType === "DELETE") {

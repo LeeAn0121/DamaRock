@@ -277,6 +277,7 @@ const dict: Dict = {
   "notif.activityTitle": { ko: "담아락 가족 활동", en: "DamaRock family activity", ja: "DamaRock 家族アクティビティ", zh: "DamaRock 家庭动态" },
   "notif.newsTitle": { ko: "담아락 소식", en: "DamaRock news", ja: "DamaRock からのお知らせ", zh: "DamaRock 消息" },
   "notif.memberJoined": { ko: "새로운 가족 구성원이 참여했습니다!", en: "A new family member has joined!", ja: "新しい家族メンバーが参加しました！", zh: "新的家庭成员已加入！" },
+  "notif.newComment": { ko: "새로운 댓글이 달렸어요.", en: "Someone left a new comment.", ja: "新しいコメントが届きました。", zh: "有新的评论。" },
   "notif.itemInserted": { ko: "새로운 {{category}} '{{title}}'(이)가 등록되었습니다.", en: "New {{category}} '{{title}}' was added.", ja: "新しい{{category}}「{{title}}」が登録されました。", zh: "已添加新的{{category}}「{{title}}」。" },
   "notif.itemUpdated": { ko: "{{category}} '{{title}}'(이)가 수정/완료되었습니다.", en: "{{category}} '{{title}}' was updated/completed.", ja: "{{category}}「{{title}}」が修正・完了されました。", zh: "{{category}}「{{title}}」已更新/完成。" },
   "notif.itemDeleted": { ko: "{{category}} '{{title}}'(이)가 삭제되었습니다.", en: "{{category}} '{{title}}' was deleted.", ja: "{{category}}「{{title}}」が削除されました。", zh: "{{category}}「{{title}}」已删除。" },
